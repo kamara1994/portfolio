@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { projects } from '@/data/projects'
+import { useProjectModal } from '@/components/ProjectModal'
 
 const DIFFICULTY: Record<string, { complexity: number; impact: number; time: string }> = {
   'blue-soc-p8': { complexity: 9, impact: 10, time: '3 months' },
@@ -31,6 +32,7 @@ function DifficultyBar({ value, color }: { value: number; color: string }) {
 
 export default function ProjectsFilter() {
   const [activeCategory, setActiveCategory] = useState('All')
+  const { open, Modal } = useProjectModal()
   const availableCategories = ['All', ...Array.from(new Set(projects.map(p => p.category)))]
   const filtered = activeCategory === 'All' ? projects : projects.filter(p => p.category === activeCategory)
 
@@ -68,104 +70,111 @@ export default function ProjectsFilter() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}>
-                  <Link href={`/projects/${project.id}`}>
-                    <div className="group relative overflow-hidden rounded-lg border border-[rgba(0,212,255,0.1)] hover:border-[rgba(0,212,255,0.3)] transition-all duration-300 h-full"
-                      style={{ background: '#010c1e' }}>
+                  <div className="group relative overflow-hidden rounded-lg border border-[rgba(0,212,255,0.1)] hover:border-[rgba(0,212,255,0.3)] transition-all duration-300 h-full"
+                    style={{ background: '#010c1e' }}>
 
-                      {/* Screenshot */}
-                      <div className="relative w-full h-56 overflow-hidden">
-                        {project.screenshot ? (
-                          <img
-                            src={project.screenshot}
-                            alt={project.title}
-                            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center"
-                            style={{ background: 'linear-gradient(135deg, rgba(0,212,255,0.05), rgba(129,140,248,0.05))' }}>
-                            <div className="font-orbitron text-6xl font-black text-[rgba(0,212,255,0.1)]">{project.num}</div>
-                          </div>
+                    {/* Screenshot */}
+                    <div className="relative w-full h-56 overflow-hidden">
+                      {project.screenshot ? (
+                        <img
+                          src={project.screenshot}
+                          alt={project.title}
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"
+                          style={{ background: 'linear-gradient(135deg, rgba(0,212,255,0.05), rgba(129,140,248,0.05))' }}>
+                          <div className="font-orbitron text-6xl font-black text-[rgba(0,212,255,0.1)]">{project.num}</div>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#010c1e] via-transparent to-transparent" />
+
+                      <div className="absolute top-3 right-3 flex gap-2">
+                        {project.featured && (
+                          <span className="font-mono text-[8px] px-2 py-1 border border-[rgba(0,245,212,0.5)] text-neon bg-[rgba(0,0,0,0.7)] backdrop-blur-sm">
+                            FLAGSHIP
+                          </span>
                         )}
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#010c1e] via-transparent to-transparent" />
-
-                        {/* Badges */}
-                        <div className="absolute top-3 right-3 flex gap-2">
-                          {project.featured && (
-                            <span className="font-mono text-[8px] px-2 py-1 border border-[rgba(0,245,212,0.5)] text-neon bg-[rgba(0,0,0,0.7)] backdrop-blur-sm">
-                              FLAGSHIP
-                            </span>
-                          )}
-                          {project.demo && (
-                            <span className="font-mono text-[8px] px-2 py-1 border border-[rgba(0,212,255,0.5)] text-cyan bg-[rgba(0,0,0,0.7)] backdrop-blur-sm flex items-center gap-1">
-                              <span className="w-1 h-1 rounded-full bg-cyan animate-pulse" />
-                              LIVE
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Number */}
-                        <div className="absolute bottom-3 left-3 font-orbitron text-2xl font-black text-[rgba(0,212,255,0.3)]">
-                          {project.num}
-                        </div>
+                        {project.demo && (
+                          <span className="font-mono text-[8px] px-2 py-1 border border-[rgba(0,212,255,0.5)] text-cyan bg-[rgba(0,0,0,0.7)] backdrop-blur-sm flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-cyan animate-pulse" />
+                            LIVE
+                          </span>
+                        )}
                       </div>
 
-                      {/* Card content */}
-                      <div className="p-5">
-                        <div className="font-mono text-[9px] text-cyan tracking-[2px] uppercase mb-2">{project.category}</div>
-                        <h3 className="font-orbitron text-base font-bold text-[#e2eaff] mb-1 group-hover:text-cyan transition-colors leading-tight">
-                          {project.title}
-                        </h3>
-                        <p className="font-mono text-[10px] text-muted mb-4 leading-relaxed line-clamp-2">{project.subtitle}</p>
+                      <div className="absolute bottom-3 left-3 font-orbitron text-2xl font-black text-[rgba(0,212,255,0.3)]">
+                        {project.num}
+                      </div>
+                    </div>
 
-                        {diff && (
-                          <div className="space-y-2 mb-4">
-                            <div>
-                              <div className="font-mono text-[8px] text-muted tracking-wider mb-1">COMPLEXITY</div>
-                              <DifficultyBar value={diff.complexity} color="#00d4ff" />
-                            </div>
-                            <div>
-                              <div className="font-mono text-[8px] text-muted tracking-wider mb-1">IMPACT</div>
-                              <DifficultyBar value={diff.impact} color="#00f5d4" />
-                            </div>
-                            <div className="font-mono text-[8px] text-[rgba(0,212,255,0.4)]">⏱ {diff.time}</div>
+                    {/* Card content */}
+                    <div className="p-5">
+                      <div className="font-mono text-[9px] text-cyan tracking-[2px] uppercase mb-2">{project.category}</div>
+                      <h3 className="font-orbitron text-base font-bold text-[#e2eaff] mb-1 group-hover:text-cyan transition-colors leading-tight">
+                        {project.title}
+                      </h3>
+                      <p className="font-mono text-[10px] text-muted mb-4 leading-relaxed line-clamp-2">{project.subtitle}</p>
+
+                      {diff && (
+                        <div className="space-y-2 mb-4">
+                          <div>
+                            <div className="font-mono text-[8px] text-muted tracking-wider mb-1">COMPLEXITY</div>
+                            <DifficultyBar value={diff.complexity} color="#00d4ff" />
                           </div>
-                        )}
-
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {project.stack.slice(0, 4).map(s => (
-                            <span key={s} className="font-mono text-[8px] px-2 py-0.5 bg-[rgba(0,212,255,0.05)] border border-[rgba(0,212,255,0.1)] text-cyan2">{s}</span>
-                          ))}
-                          {project.stack.length > 4 && (
-                            <span className="font-mono text-[8px] text-muted">+{project.stack.length - 4} more</span>
-                          )}
+                          <div>
+                            <div className="font-mono text-[8px] text-muted tracking-wider mb-1">IMPACT</div>
+                            <DifficultyBar value={diff.impact} color="#00f5d4" />
+                          </div>
+                          <div className="font-mono text-[8px] text-[rgba(0,212,255,0.4)]">⏱ {diff.time}</div>
                         </div>
+                      )}
 
-                        <div className="flex items-center justify-between pt-3 border-t border-[rgba(0,212,255,0.08)]">
-                          <span className="font-mono text-[10px] text-neon group-hover:text-cyan transition-colors">
-                            VIEW CASE STUDY →
-                          </span>
-                          <div className="flex gap-2">
-                            {project.github && (
-                              <span className="font-mono text-[8px] border border-[rgba(0,212,255,0.15)] text-muted px-2 py-0.5">GH</span>
-                            )}
-                            {project.demo && (
-                              <span className="font-mono text-[8px] border border-[rgba(0,245,212,0.15)] text-neon px-2 py-0.5">LIVE</span>
-                            )}
-                            {project.report && (
-                              <span className="font-mono text-[8px] border border-[rgba(255,170,0,0.15)] text-[#ffaa00] px-2 py-0.5">DOC</span>
-                            )}
-                          </div>
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {project.stack.slice(0, 4).map(s => (
+                          <span key={s} className="font-mono text-[8px] px-2 py-0.5 bg-[rgba(0,212,255,0.05)] border border-[rgba(0,212,255,0.1)] text-cyan2">{s}</span>
+                        ))}
+                        {project.stack.length > 4 && (
+                          <span className="font-mono text-[8px] text-muted">+{project.stack.length - 4} more</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-3 border-t border-[rgba(0,212,255,0.08)]">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => open(project.id)}
+                            className="font-mono text-[9px] px-2.5 py-1 border border-cyan-500/30 text-cyan hover:bg-cyan-500/10 transition-all"
+                          >
+                            QUICK VIEW
+                          </button>
+                          <Link href={`/projects/${project.id}`}
+                            className="font-mono text-[10px] text-neon hover:text-cyan transition-colors">
+                            FULL →
+                          </Link>
+                        </div>
+                        <div className="flex gap-2">
+                          {project.github && (
+                            <span className="font-mono text-[8px] border border-[rgba(0,212,255,0.15)] text-muted px-2 py-0.5">GH</span>
+                          )}
+                          {project.demo && (
+                            <span className="font-mono text-[8px] border border-[rgba(0,245,212,0.15)] text-neon px-2 py-0.5">LIVE</span>
+                          )}
+                          {project.report && (
+                            <span className="font-mono text-[8px] border border-[rgba(255,170,0,0.15)] text-[#ffaa00] px-2 py-0.5">DOC</span>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 </motion.div>
               )
             })}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Project Modal */}
+      {Modal}
     </section>
   )
 }

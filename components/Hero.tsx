@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-const InteractiveTerminal = dynamic(() => import('@/components/InteractiveTerminal'), { ssr: false })
+const CertShowcase = dynamic(() => import('@/components/CertShowcase'), { ssr: false })
 
 const roles = ['SOC Analyst', 'Security Engineer', 'AI Security Engineer', 'Cloud Security Engineer', 'Penetration Tester']
 
@@ -148,7 +148,7 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* RIGHT — Interactive Terminal */}
+        {/* RIGHT — Cert Showcase */}
         <motion.div
           initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
           className="flex flex-col items-center gap-8"
@@ -165,7 +165,7 @@ export default function Hero() {
           </div>
 
           <div className="w-full max-w-md">
-            <InteractiveTerminal />
+            <CertShowcase />
           </div>
         </motion.div>
 

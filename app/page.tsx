@@ -17,6 +17,7 @@ import GitHubFeed from '@/components/GitHubFeed'
 import JourneyTimeline from '@/components/JourneyTimeline'
 import HireMe from '@/components/HireMe'
 import ThreatTicker from '@/components/ThreatTicker'
+import AIChat from '@/components/AIChat'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
@@ -63,6 +64,7 @@ export default function Home() {
             <HireMe />
 
             <Contact />
+            <AIChat />
             <Footer />
           </motion.main>
         )}
