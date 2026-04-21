@@ -10,11 +10,9 @@ export default function Hero() {
   const [deleting, setDeleting] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // TYPEWRITER
   useEffect(() => {
     const target = roles[roleIdx]
     let timer: NodeJS.Timeout
-
     if (!deleting && displayed.length < target.length) {
       timer = setTimeout(() => setDisplayed(target.slice(0, displayed.length + 1)), 80)
     } else if (!deleting && displayed.length === target.length) {
@@ -28,21 +26,17 @@ export default function Hero() {
     return () => clearTimeout(timer)
   }, [displayed, deleting, roleIdx])
 
-  // MATRIX RAIN
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-
     canvas.width = canvas.offsetWidth
     canvas.height = canvas.offsetHeight
-
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01ABCDEF</>{}[]'
     const fontSize = 13
     const cols = Math.floor(canvas.width / fontSize)
     const drops: number[] = Array(cols).fill(1)
-
     const draw = () => {
       ctx.fillStyle = 'rgba(2,8,24,0.06)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -55,19 +49,13 @@ export default function Hero() {
         drops[i]++
       })
     }
-
     const interval = setInterval(draw, 50)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <section id="hero" className="relative min-h-screen flex items-center pt-24 pb-16 px-6 overflow-hidden">
-
-      {/* Matrix canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full opacity-30 pointer-events-none"
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30 pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
@@ -89,10 +77,7 @@ export default function Hero() {
           >
             <span className="block text-[#e2eaff]">Joseph</span>
             <span className="block text-[#e2eaff]">Allan</span>
-            <span
-              className="block glitch-wrapper holo-text"
-              data-text="Kamara"
-            >Kamara</span>
+            <span className="block glitch-wrapper holo-text" data-text="Kamara">Kamara</span>
           </motion.h1>
 
           <motion.div
@@ -112,7 +97,6 @@ export default function Hero() {
             and threat detection — where machine intelligence meets operational security.
           </motion.p>
 
-          {/* Role tags */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
             className="flex flex-wrap gap-2 mb-10"
@@ -124,7 +108,6 @@ export default function Hero() {
             ))}
           </motion.div>
 
-          {/* BUTTONS */}
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
             className="flex flex-wrap gap-4 mb-12"
@@ -140,7 +123,6 @@ export default function Hero() {
             </a>
           </motion.div>
 
-          {/* STATS */}
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
             className="grid grid-cols-4 border border-[rgba(0,212,255,0.12)] max-w-lg"
@@ -159,7 +141,7 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* RIGHT — Terminal + Profile */}
+        {/* RIGHT */}
         <motion.div
           initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
           className="flex flex-col items-center gap-8"
@@ -191,7 +173,7 @@ export default function Hero() {
               <div className="text-muted pl-4">CompTIA Security+ ✓</div>
               <div className="text-muted pl-4">Cisco CCNA ✓</div>
               <div className="text-muted pl-4">TCM PSAA ✓</div>
-              <div className="text-yellow-400 pl-4">CompTIA PenTest+ [IN PROGRESS]</div>
+              <div className="text-muted pl-4">CompTIA PenTest+ ✓</div>
               <div className="mt-2"><span className="text-neon">❯</span> <span className="text-cyan">./status.sh</span></div>
               <div className="text-green-400 pl-4">OPEN TO WORK <span className="blink">_</span></div>
             </div>

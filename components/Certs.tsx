@@ -1,14 +1,157 @@
 'use client'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import SectionHeader from './ui/SectionHeader'
-import { certs } from '@/data/index'
+
+const certs = [
+  {
+    name: 'Security+',
+    fullName: 'CompTIA Security+',
+    issuer: 'CompTIA',
+    date: 'Active Certification',
+    status: 'earned',
+    image: '/images/cert-securityplus.png',
+    verifyUrl: 'https://www.certmetrics.com/comptia/public/verification.aspx',
+    color: '#FF0000',
+    description: 'Validates baseline cybersecurity skills including threat detection, risk management, and network security fundamentals.',
+  },
+  {
+    name: 'PenTest+',
+    fullName: 'CompTIA PenTest+',
+    issuer: 'CompTIA',
+    date: 'Active Certification',
+    status: 'earned',
+    image: '/images/cert-pentest.png',
+    verifyUrl: 'https://www.certmetrics.com/comptia/public/verification.aspx',
+    color: '#FF6B00',
+    description: 'Validates penetration testing skills including planning, scoping, vulnerability scanning, and reporting.',
+  },
+  {
+    name: 'CCNA',
+    fullName: 'Cisco Certified Network Associate',
+    issuer: 'Cisco',
+    date: 'Active Certification',
+    status: 'earned',
+    image: '/images/cert-ccna.png',
+    verifyUrl: 'https://cp.certmetrics.com/cisco/en/public/verify',
+    color: '#00BCEB',
+    description: 'Validates skills in network fundamentals, IP connectivity, security fundamentals, and automation.',
+  },
+  {
+    name: 'PSAA',
+    fullName: 'Practical SOC Analyst Associate',
+    issuer: 'TCM Security',
+    date: 'March 26, 2026',
+    certNum: '#178154778',
+    status: 'earned',
+    image: '/images/cert-psaa.png',
+    verifyUrl: 'https://certifications.tcm-sec.com/verify',
+    color: '#818CF8',
+    description: 'Hands-on SOC analyst certification covering threat detection, alert triage, incident response, and SIEM operations.',
+  },
+]
+
+function CertModal({ cert, onClose }: { cert: typeof certs[0], onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9000] flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-[rgba(2,8,24,0.92)] backdrop-blur-sm" />
+
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="relative z-10 max-w-2xl w-full"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="glass-card p-6 mb-2">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <div className="font-mono text-[10px] tracking-[3px] uppercase mb-1" style={{ color: cert.color }}>
+                {cert.issuer}
+              </div>
+              <div className="font-orbitron text-2xl font-black text-[#e2eaff]">{cert.fullName}</div>
+              <div className="font-mono text-[11px] text-muted mt-1">{cert.date} {cert.certNum && `· ${cert.certNum}`}</div>
+            </div>
+            <button
+              onClick={onClose}
+              className="font-mono text-[11px] text-muted hover:text-cyan transition-colors border border-[rgba(0,212,255,0.2)] px-3 py-1.5 hover:border-cyan"
+            >
+              ESC
+            </button>
+          </div>
+          <p className="text-[13px] text-muted leading-relaxed">{cert.description}</p>
+        </div>
+
+        {/* Certificate Image */}
+        <div className="glass-card overflow-hidden">
+          <div className="terminal-bar">
+            <div className="terminal-dot bg-red-500" />
+            <div className="terminal-dot bg-yellow-400" />
+            <div className="terminal-dot bg-green-400" />
+            <span className="font-mono text-[10px] text-muted ml-2 tracking-wider">certificate.png</span>
+          </div>
+          <div className="relative bg-[#000d1a] min-h-[300px] flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={cert.image}
+              alt={cert.fullName}
+              className="w-full h-auto max-h-[400px] object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                if (target.nextSibling) (target.nextSibling as HTMLElement).style.display = 'flex'
+              }}
+            />
+            {/* Fallback */}
+            <div className="absolute inset-0 hidden items-center justify-center flex-col gap-3">
+              <div className="font-mono text-[11px] text-muted tracking-wider">Certificate image not found</div>
+              <div className="font-mono text-[10px] text-[rgba(0,212,255,0.4)]">
+                Add {cert.image} to your project
+              </div>
+            </div>
+          </div>
+          <div className="p-4 flex justify-between items-center border-t border-[rgba(0,212,255,0.08)]">
+            <span className="font-mono text-[10px] text-neon flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-neon" />
+              VERIFIED CREDENTIAL
+            </span>
+            <a
+              href={cert.verifyUrl}
+              target="_blank"
+              className="font-mono text-[10px] tracking-[2px] uppercase px-4 py-2 border border-[rgba(0,212,255,0.3)] text-cyan hover:bg-[rgba(0,212,255,0.07)] transition-colors"
+            >
+              Verify →
+            </a>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
 
 export default function Certs() {
+  const [selected, setSelected] = useState<typeof certs[0] | null>(null)
+  const [hovered, setHovered] = useState<string | null>(null)
+
   return (
     <section id="certs" className="relative z-10 py-28 px-6">
       <div className="max-w-7xl mx-auto">
         <SectionHeader label="Credentials" title="Certifi" accent="cations" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-[rgba(0,212,255,0.05)]">
+
+        <p className="font-mono text-[11px] text-muted tracking-[2px] mb-10 -mt-8">
+          Click any certificate to view the full credential
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {certs.map((cert, i) => (
             <motion.div
               key={cert.name}
@@ -16,27 +159,98 @@ export default function Certs() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className={`glass-card p-8 relative overflow-hidden flex flex-col gap-3 hover:border-[rgba(0,212,255,0.3)] transition-all ${cert.status === 'progress' ? 'opacity-60' : ''}`}
+              onClick={() => setSelected(cert)}
+              onMouseEnter={() => setHovered(cert.name)}
+              onMouseLeave={() => setHovered(null)}
+              className="glass-card cursor-pointer relative overflow-hidden group"
+              style={{
+                border: hovered === cert.name
+                  ? `1px solid ${cert.color}40`
+                  : '1px solid rgba(0,212,255,0.12)',
+                transition: 'all 0.3s',
+                transform: hovered === cert.name ? 'translateY(-4px)' : 'translateY(0)',
+              }}
             >
-              {/* Bottom shimmer line */}
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan to-transparent opacity-0 group-hover:opacity-100" />
+              {/* Top color accent */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px] transition-opacity duration-300"
+                style={{
+                  background: `linear-gradient(90deg, transparent, ${cert.color}, transparent)`,
+                  opacity: hovered === cert.name ? 1 : 0.4,
+                }}
+              />
 
-              <div className="font-mono text-[10px] tracking-[2px] uppercase text-purple2">{cert.issuer}</div>
-              <div className="font-orbitron text-lg font-bold text-[#e2eaff] leading-tight">{cert.name}</div>
-              {cert.date && <div className="font-mono text-[10px] text-muted">{cert.date}</div>}
-              {cert.certNum && <div className="font-mono text-[10px] text-muted">#{cert.certNum}</div>}
+              {/* Certificate image preview */}
+              <div className="relative h-36 bg-[#000d1a] overflow-hidden flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cert.image}
+                  alt={cert.fullName}
+                  className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity scale-105 group-hover:scale-100 transition-transform duration-500"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    if (target.nextSibling) (target.nextSibling as HTMLElement).style.display = 'flex'
+                  }}
+                />
+                {/* Fallback placeholder */}
+                <div
+                  className="absolute inset-0 hidden items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${cert.color}22, #020818)` }}
+                >
+                  <div className="text-center">
+                    <div className="font-orbitron text-3xl font-black mb-1" style={{ color: cert.color }}>
+                      {cert.name}
+                    </div>
+                    <div className="font-mono text-[9px] text-muted tracking-widest">ADD CERT IMAGE</div>
+                  </div>
+                </div>
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050e24] via-transparent to-transparent" />
 
-              <span className={`inline-flex items-center gap-1.5 font-mono text-[10px] px-3 py-1.5 w-fit mt-1 ${
-                cert.status === 'earned'
-                  ? 'bg-[rgba(0,245,212,0.08)] border border-[rgba(0,245,212,0.25)] text-neon'
-                  : 'bg-[rgba(251,191,36,0.06)] border border-[rgba(251,191,36,0.2)] text-yellow-400'
-              }`}>
-                {cert.status === 'earned' ? '✓ Earned' : '⟳ In Progress'}
-              </span>
+                {/* Click hint */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center transition-opacity duration-300"
+                  style={{ opacity: hovered === cert.name ? 1 : 0 }}
+                >
+                  <div className="font-mono text-[10px] tracking-[3px] uppercase text-white bg-[rgba(0,0,0,0.6)] px-4 py-2 border border-[rgba(255,255,255,0.2)]">
+                    View Certificate
+                  </div>
+                </div>
+              </div>
+
+              {/* Card content */}
+              <div className="p-5">
+                <div className="font-mono text-[9px] tracking-[2px] uppercase mb-1" style={{ color: cert.color }}>
+                  {cert.issuer}
+                </div>
+                <div className="font-orbitron text-base font-bold text-[#e2eaff] mb-1 leading-tight">
+                  {cert.fullName}
+                </div>
+                <div className="font-mono text-[10px] text-muted mb-3">{cert.date}</div>
+                {cert.certNum && (
+                  <div className="font-mono text-[9px] text-muted mb-3">{cert.certNum}</div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[9px] px-2.5 py-1 bg-[rgba(0,245,212,0.08)] border border-[rgba(0,245,212,0.25)] text-neon">
+                    ✓ EARNED
+                  </span>
+                  <span className="font-mono text-[9px] text-muted group-hover:text-cyan transition-colors">
+                    Click to view →
+                  </span>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
       </div>
+
+      {/* MODAL */}
+      <AnimatePresence>
+        {selected && (
+          <CertModal cert={selected} onClose={() => setSelected(null)} />
+        )}
+      </AnimatePresence>
     </section>
   )
 }
