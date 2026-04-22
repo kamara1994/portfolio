@@ -73,7 +73,7 @@ export default function HireMe() {
             ))}
             <div className="glass-card px-5 py-4 mt-2">
               <div className="font-mono text-[9px] text-muted tracking-[2px] uppercase mb-2">Resume</div>
-              <a href="/resume/Joseph_Allan_Kamara_Resume_v2.pdf" download
+              <a href="/resume/Joseph_Allan_Kamara_Resume.pdf" download
                 className="flex items-center gap-2 font-mono text-[11px] text-cyan hover:text-neon transition-colors">
                 <span>↓</span><span>Download Resume (PDF)</span>
               </a>
