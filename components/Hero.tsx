@@ -122,7 +122,7 @@ export default function Hero() {
             <a href="#projects" className="btn-hex bg-cyan text-bg font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-neon">
               View Projects
             </a>
-            <a href="/resume/Joseph_Allan_Kamara_Resume.pdf" target="_blank" className="btn-hex border border-cyan text-cyan font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,212,255,0.08)]">
+            <a href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank" className="btn-hex border border-cyan text-cyan font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,212,255,0.08)]">
               ↓ Resume
             </a>
             <a href="https://linkedin.com/in/joseph-allan-kamara" target="_blank" className="btn-hex border border-[rgba(0,212,255,0.3)] text-muted font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:border-cyan hover:text-cyan">
