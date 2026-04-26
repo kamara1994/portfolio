@@ -1,5 +1,7 @@
 'use client'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/react'
+import VisitTracker from '@/components/VisitTracker'
 import { useEffect, useRef } from 'react'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -55,6 +57,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div ref={dotRef} className="cursor-dot" />
         <div ref={ringRef} className="cursor-ring" />
         {children}
+        <Analytics />
+        <VisitTracker />
       </body>
     </html>
   )
