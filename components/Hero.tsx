@@ -6,6 +6,16 @@ const CertShowcase = dynamic(() => import('@/components/CertShowcase'), { ssr: f
 
 const roles = ['SOC Analyst', 'Security Engineer', 'AI Security Engineer', 'Cloud Security Engineer', 'Penetration Tester']
 
+const statusItems = [
+  { label: 'OPEN TO WORK', pulse: true },
+  { label: 'SECURITY+', pulse: false },
+  { label: 'PENTEST+', pulse: false },
+  { label: 'CCNA', pulse: false },
+  { label: 'PSAA', pulse: false },
+  { label: 'BLUE SOC · LAB-VALIDATED', pulse: false },
+  { label: 'FORTRESS v2 · LAB-VALIDATED', pulse: false },
+]
+
 export default function Hero() {
   const [roleIdx, setRoleIdx] = useState(0)
   const [displayed, setDisplayed] = useState('')
@@ -56,15 +66,41 @@ export default function Hero() {
   }, [])
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center pt-24 pb-16 px-6 overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex flex-col pt-24 pb-16 overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30 pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      {/* STATUS BAR */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="relative z-10 w-full border-b border-t border-[rgba(0,212,255,0.1)] bg-[rgba(0,212,255,0.03)] px-6 py-2 mb-8"
+      >
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-1">
+          {statusItems.map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              {item.pulse ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse-slow" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(0,212,255,0.4)]" />
+              )}
+              <span className="font-mono text-[9px] tracking-[2px] text-[rgba(0,212,255,0.7)] uppercase">
+                {item.label}
+              </span>
+              {i < statusItems.length - 1 && (
+                <span className="text-[rgba(0,212,255,0.2)] ml-4 font-mono text-[10px]">|</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-6">
 
         {/* LEFT */}
         <div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="flex items-center gap-3 font-mono text-[11px] text-neon tracking-[3px] uppercase mb-6"
           >
             <span className="w-8 h-px bg-neon" />
@@ -73,7 +109,7 @@ export default function Hero() {
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
             className="font-orbitron font-black leading-none tracking-tight mb-4"
             style={{ fontSize: 'clamp(44px,7vw,82px)' }}
           >
@@ -83,7 +119,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             className="font-mono text-lg text-cyan2 mb-6 h-7 flex items-center gap-1"
           >
             {displayed}
@@ -91,21 +127,19 @@ export default function Hero() {
           </motion.div>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
             className="text-muted text-[15px] leading-relaxed max-w-xl mb-8"
           >
             From <span className="text-[#ffaa00] font-semibold">Sierra Leone</span> to the global stage —
-            I architect autonomous AI systems that hunt threats, respond in seconds, and never sleep.
-            Specializing in{' '}
-            <span className="text-cyan font-semibold">AI-driven security automation</span>,{' '}
-            <span className="text-neon font-semibold">cloud defense</span>, and SOC engineering
-            at the intersection of{' '}
-            <span className="text-purple-400 font-semibold">machine intelligence</span>{' '}
-            and operational security.
+            I design and build security automation systems connecting{' '}
+            <span className="text-cyan font-semibold">SIEM detection</span>,{' '}
+            <span className="text-neon font-semibold">cloud defense</span>, and{' '}
+            <span className="text-purple-400 font-semibold">AI-assisted triage</span>{' '}
+            into structured, analyst-reviewed response workflows.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
             className="flex flex-wrap gap-2 mb-10"
           >
             {['SOC Analyst', 'Security Engineer', 'AI Security Engineer', 'Pen Tester', 'Cloud Security'].map(r => (
@@ -116,28 +150,28 @@ export default function Hero() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
             className="flex flex-wrap gap-4 mb-12"
           >
             <a href="#projects" className="btn-hex bg-cyan text-bg font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-neon">
               View Projects
             </a>
+            <a href="#briefing" className="btn-hex border border-neon text-neon font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,255,136,0.08)]">
+              Recruiter Briefing
+            </a>
             <a href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank" className="btn-hex border border-cyan text-cyan font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,212,255,0.08)]">
               ↓ Resume
-            </a>
-            <a href="https://linkedin.com/in/joseph-allan-kamara" target="_blank" className="btn-hex border border-[rgba(0,212,255,0.3)] text-muted font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:border-cyan hover:text-cyan">
-              LinkedIn
             </a>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
             className="grid grid-cols-4 border border-[rgba(0,212,255,0.12)] max-w-lg"
           >
             {[
               { num: '5', label: 'Certifications' },
               { num: '11+', label: 'Projects' },
-              { num: '99.98%', label: 'AI Accuracy' },
+              { num: '99.98%', label: 'AI Accuracy*' },
               { num: 'BS', label: 'Cybersecurity' },
             ].map((s, i) => (
               <div key={i} className={`px-4 py-4 ${i < 3 ? 'border-r border-[rgba(0,212,255,0.12)]' : ''}`}>
@@ -146,6 +180,7 @@ export default function Hero() {
               </div>
             ))}
           </motion.div>
+          <p className="font-mono text-[9px] text-muted mt-2 opacity-60">* Controlled labeled dataset — methodology documented in BLUE-X case study</p>
         </div>
 
         {/* RIGHT — Cert Showcase */}
