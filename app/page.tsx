@@ -19,7 +19,7 @@ import HireMe from '@/components/HireMe'
 import ThreatTicker from '@/components/ThreatTicker'
 import AIChat from '@/components/AIChat'
 import RecruiterBriefing from '@/components/RecruiterBriefing'
-import CurrentlyBuilding from '@/components/CurrentlyBuilding'
+import BlueSocSpotlight from '@/components/BlueSocSpotlight'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
@@ -44,13 +44,16 @@ export default function Home() {
               <ThreatTicker />
             </div>
 
-            {/* HERO */}
+            {/* 1. Hero */}
             <Hero />
 
-            {/* RECRUITER BRIEFING — immediately after hero */}
+            {/* 2. Recruiter Briefing */}
             <RecruiterBriefing />
 
-            {/* GITHUB ACTIVITY */}
+            {/* 3. BLUE SOC Flagship Spotlight */}
+            <BlueSocSpotlight />
+
+            {/* 4. GitHub Activity */}
             <section className="px-6 py-12">
               <div className="max-w-4xl mx-auto">
                 <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-4">Live Activity</div>
@@ -58,22 +61,15 @@ export default function Home() {
               </div>
             </section>
 
-            {/* PROJECTS */}
+            {/* 5. Projects + Currently Building */}
             <ProjectsFilter />
-
-            {/* CURRENTLY BUILDING */}
-            <CurrentlyBuilding />
 
             <Skills />
             <Certs />
             <Experience />
-
             <JourneyTimeline />
-
             <About />
-
             <HireMe />
-
             <Contact />
             <AIChat />
             <Footer />
