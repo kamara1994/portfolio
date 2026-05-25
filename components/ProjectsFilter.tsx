@@ -205,48 +205,105 @@ export default function ProjectsFilter() {
         </h2>
 
         {/* ── Main tabs: Built vs Building ── */}
-        <div className="flex gap-0 mb-8 border border-[rgba(0,212,255,0.15)] w-fit">
-          {([
-            { id: 'built',    label: 'BUILT',           count: projects.length },
-            { id: 'building', label: 'CURRENTLY BUILDING', count: currentBuilds.length },
-          ] as { id: MainTab; label: string; count: number }[]).map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setMainTab(tab.id)}
-              className={`font-mono text-[10px] tracking-[2px] uppercase px-6 py-3 flex items-center gap-2 transition-all duration-300 border-r border-[rgba(0,212,255,0.15)] last:border-r-0 ${
-                mainTab === tab.id && tab.id === 'building'
-                  ? 'text-neon bg-[rgba(0,245,212,0.08)]'
-                  : mainTab === tab.id
-                  ? 'bg-[rgba(0,212,255,0.1)] text-cyan'
-                  : tab.id === 'building'
-                  ? 'text-neon hover:bg-[rgba(0,245,212,0.05)]'
-                  : 'text-muted hover:text-cyan'
-              }`}
-              style={tab.id === 'building' ? {
-                boxShadow: mainTab === 'building'
-                  ? 'inset 0 0 20px rgba(0,245,212,0.08)'
-                  : undefined,
-              } : undefined}
+        <div className="flex gap-0 mb-8 border border-[rgba(0,212,255,0.15)] w-fit overflow-hidden">
+
+          {/* BUILT tab */}
+          <button
+            onClick={() => setMainTab('built')}
+            className={`font-mono text-[10px] tracking-[2px] uppercase px-6 py-3 flex items-center gap-2 transition-all duration-300 border-r border-[rgba(0,212,255,0.15)] ${
+              mainTab === 'built'
+                ? 'bg-[rgba(0,212,255,0.1)] text-cyan'
+                : 'text-muted hover:text-cyan'
+            }`}
+          >
+            BUILT
+            <span className={`font-mono text-[9px] px-1.5 py-0.5 ${
+              mainTab === 'built' ? 'bg-[rgba(0,212,255,0.2)] text-cyan' : 'bg-[rgba(255,255,255,0.05)] text-muted'
+            }`}>
+              {projects.length}
+            </span>
+          </button>
+
+          {/* CURRENTLY BUILDING tab — slow color-shift glow */}
+          <motion.button
+            onClick={() => setMainTab('building')}
+            className="font-mono text-[10px] tracking-[2px] uppercase px-6 py-3 flex items-center gap-2.5 transition-all duration-300 relative"
+            animate={{
+              color: [
+                '#00f5d4',
+                '#00d4ff',
+                '#818cf8',
+                '#a855f7',
+                '#ef4444',
+                '#f59e0b',
+                '#00f5d4',
+              ],
+              boxShadow: mainTab === 'building' ? [
+                'inset 0 0 30px rgba(0,245,212,0.12)',
+                'inset 0 0 30px rgba(0,212,255,0.12)',
+                'inset 0 0 30px rgba(129,140,248,0.12)',
+                'inset 0 0 30px rgba(168,85,247,0.12)',
+                'inset 0 0 30px rgba(239,68,68,0.12)',
+                'inset 0 0 30px rgba(245,158,11,0.12)',
+                'inset 0 0 30px rgba(0,245,212,0.12)',
+              ] : [
+                'inset 0 0 0px rgba(0,245,212,0)',
+                'inset 0 0 0px rgba(0,212,255,0)',
+                'inset 0 0 0px rgba(129,140,248,0)',
+                'inset 0 0 0px rgba(168,85,247,0)',
+                'inset 0 0 0px rgba(239,68,68,0)',
+                'inset 0 0 0px rgba(245,158,11,0)',
+                'inset 0 0 0px rgba(0,245,212,0)',
+              ],
+            }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            {/* Color-shifting dot */}
+            <motion.span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              animate={{
+                backgroundColor: [
+                  '#00f5d4',
+                  '#00d4ff',
+                  '#818cf8',
+                  '#a855f7',
+                  '#ef4444',
+                  '#f59e0b',
+                  '#00f5d4',
+                ],
+                boxShadow: [
+                  '0 0 8px 2px #00f5d4',
+                  '0 0 8px 2px #00d4ff',
+                  '0 0 8px 2px #818cf8',
+                  '0 0 8px 2px #a855f7',
+                  '0 0 8px 2px #ef4444',
+                  '0 0 8px 2px #f59e0b',
+                  '0 0 8px 2px #00f5d4',
+                ],
+                scale: [1, 1.3, 1, 1.3, 1],
+              }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            CURRENTLY BUILDING
+            <motion.span
+              className="font-mono text-[9px] px-1.5 py-0.5"
+              animate={{
+                backgroundColor: [
+                  'rgba(0,245,212,0.15)',
+                  'rgba(0,212,255,0.15)',
+                  'rgba(129,140,248,0.15)',
+                  'rgba(168,85,247,0.15)',
+                  'rgba(239,68,68,0.15)',
+                  'rgba(245,158,11,0.15)',
+                  'rgba(0,245,212,0.15)',
+                ],
+              }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {tab.id === 'building' && (
-                <motion.span
-                  className="w-2 h-2 rounded-full bg-neon shrink-0"
-                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-              )}
-              {tab.label}
-              <span className={`font-mono text-[9px] px-1.5 py-0.5 ${
-                tab.id === 'building'
-                  ? 'bg-[rgba(0,245,212,0.15)] text-neon'
-                  : mainTab === tab.id
-                  ? 'bg-[rgba(0,212,255,0.2)] text-cyan'
-                  : 'bg-[rgba(255,255,255,0.05)] text-muted'
-              }`}>
-                {tab.count}
-              </span>
-            </button>
-          ))}
+              {currentBuilds.length}
+            </motion.span>
+          </motion.button>
+
         </div>
 
         <AnimatePresence mode="wait">
