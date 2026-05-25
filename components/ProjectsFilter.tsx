@@ -224,85 +224,45 @@ export default function ProjectsFilter() {
             </span>
           </button>
 
-          {/* CURRENTLY BUILDING tab — slow color-shift glow */}
-          <motion.button
+          {/* CURRENTLY BUILDING tab — moving rainbow gradient bar */}
+          <button
             onClick={() => setMainTab('building')}
-            className="font-mono text-[10px] tracking-[2px] uppercase px-6 py-3 flex items-center gap-2.5 transition-all duration-300 relative"
-            animate={{
-              color: [
-                '#00f5d4',
-                '#00d4ff',
-                '#818cf8',
-                '#a855f7',
-                '#ef4444',
-                '#f59e0b',
-                '#00f5d4',
-              ],
-              boxShadow: mainTab === 'building' ? [
-                'inset 0 0 30px rgba(0,245,212,0.12)',
-                'inset 0 0 30px rgba(0,212,255,0.12)',
-                'inset 0 0 30px rgba(129,140,248,0.12)',
-                'inset 0 0 30px rgba(168,85,247,0.12)',
-                'inset 0 0 30px rgba(239,68,68,0.12)',
-                'inset 0 0 30px rgba(245,158,11,0.12)',
-                'inset 0 0 30px rgba(0,245,212,0.12)',
-              ] : [
-                'inset 0 0 0px rgba(0,245,212,0)',
-                'inset 0 0 0px rgba(0,212,255,0)',
-                'inset 0 0 0px rgba(129,140,248,0)',
-                'inset 0 0 0px rgba(168,85,247,0)',
-                'inset 0 0 0px rgba(239,68,68,0)',
-                'inset 0 0 0px rgba(245,158,11,0)',
-                'inset 0 0 0px rgba(0,245,212,0)',
-              ],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+            className={`font-mono text-[10px] tracking-[2px] uppercase px-6 py-3 flex flex-col items-center gap-0 transition-all duration-300 relative overflow-hidden ${
+              mainTab === 'building' ? 'text-white' : 'text-white/70 hover:text-white'
+            }`}
+            style={{ background: mainTab === 'building' ? 'rgba(255,255,255,0.04)' : 'transparent' }}
           >
-            {/* Color-shifting dot */}
-            <motion.span
-              className="w-2.5 h-2.5 rounded-full shrink-0"
-              animate={{
-                backgroundColor: [
-                  '#00f5d4',
-                  '#00d4ff',
-                  '#818cf8',
-                  '#a855f7',
-                  '#ef4444',
-                  '#f59e0b',
-                  '#00f5d4',
-                ],
-                boxShadow: [
-                  '0 0 8px 2px #00f5d4',
-                  '0 0 8px 2px #00d4ff',
-                  '0 0 8px 2px #818cf8',
-                  '0 0 8px 2px #a855f7',
-                  '0 0 8px 2px #ef4444',
-                  '0 0 8px 2px #f59e0b',
-                  '0 0 8px 2px #00f5d4',
-                ],
-                scale: [1, 1.3, 1, 1.3, 1],
-              }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            CURRENTLY BUILDING
-            <motion.span
-              className="font-mono text-[9px] px-1.5 py-0.5"
-              animate={{
-                backgroundColor: [
-                  'rgba(0,245,212,0.15)',
-                  'rgba(0,212,255,0.15)',
-                  'rgba(129,140,248,0.15)',
-                  'rgba(168,85,247,0.15)',
-                  'rgba(239,68,68,0.15)',
-                  'rgba(245,158,11,0.15)',
-                  'rgba(0,245,212,0.15)',
-                ],
-              }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              {currentBuilds.length}
-            </motion.span>
-          </motion.button>
+            {/* Label row */}
+            <div className="flex items-center gap-2.5 pb-2">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span
+                  className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
+                  style={{ background: 'linear-gradient(90deg, #ef4444, #f59e0b, #00f5d4)' }}
+                />
+                <span
+                  className="relative inline-flex rounded-full h-2.5 w-2.5"
+                  style={{ background: 'linear-gradient(90deg, #00f5d4, #818cf8, #ef4444)' }}
+                />
+              </span>
+              CURRENTLY BUILDING
+              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-white/10 text-white/80">
+                {currentBuilds.length}
+              </span>
+            </div>
+
+            {/* Moving rainbow bar at the bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-[3px] overflow-hidden">
+              <motion.div
+                className="h-full w-[200%]"
+                style={{
+                  background: 'linear-gradient(90deg, #ef4444, #f97316, #f59e0b, #84cc16, #00f5d4, #00d4ff, #818cf8, #a855f7, #ef4444, #f97316, #f59e0b, #84cc16, #00f5d4)',
+                  boxShadow: '0 0 8px 2px rgba(0,212,255,0.5)',
+                }}
+                animate={{ x: ['-50%', '0%'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              />
+            </div>
+          </button>
 
         </div>
 
