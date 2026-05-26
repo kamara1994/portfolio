@@ -1,64 +1,69 @@
-'use client'
+import type { Metadata } from 'next'
 import './globals.css'
-import { Analytics } from '@vercel/analytics/react'
-import VisitTracker from '@/components/VisitTracker'
-import { useEffect, useRef } from 'react'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const dotRef = useRef<HTMLDivElement>(null)
-  const ringRef = useRef<HTMLDivElement>(null)
+export const metadata: Metadata = {
+  title: 'Joseph Allan Kamara | Cybersecurity Engineer',
+  description: 'Cybersecurity Engineer specializing in SOC automation, AI-assisted threat detection, cloud security, and security operations. Builder of BLUE SOC, FORTRESS v2, and BLUE-X.',
+  keywords: [
+    'Cybersecurity Engineer',
+    'SOC Analyst',
+    'Security Engineer',
+    'AI Security',
+    'Cloud Security',
+    'Splunk',
+    'AWS',
+    'Terraform',
+    'BLUE SOC',
+    'Joseph Allan Kamara',
+    'Philadelphia',
+    'Security+',
+    'CCNA',
+    'PenTest+',
+  ],
+  authors: [{ name: 'Joseph Allan Kamara', url: 'https://josephkamara.vercel.app' }],
+  creator: 'Joseph Allan Kamara',
+  openGraph: {
+    type: 'website',
+    url: 'https://josephkamara.vercel.app',
+    title: 'Joseph Allan Kamara | Cybersecurity Engineer',
+    description: 'SOC automation, AI-assisted threat detection, cloud security, and incident response. Security+ · PenTest+ · CCNA · PSAA certified. Available May 2026.',
+    siteName: 'Joseph Allan Kamara Portfolio',
+    images: [
+      {
+        url: 'https://josephkamara.vercel.app/profile/joseph.jpg',
+        width: 800,
+        height: 800,
+        alt: 'Joseph Allan Kamara — Cybersecurity Engineer',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Joseph Allan Kamara | Cybersecurity Engineer',
+    description: 'SOC automation, AI-assisted threat detection, cloud security. Security+ · PenTest+ · CCNA · PSAA. Available May 2026.',
+    images: ['https://josephkamara.vercel.app/profile/joseph.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  metadataBase: new URL('https://josephkamara.vercel.app'),
+}
 
-  useEffect(() => {
-    const dot = dotRef.current
-    const ring = ringRef.current
-    if (!dot || !ring) return
-
-    let mouseX = 0, mouseY = 0
-    let ringX = 0, ringY = 0
-
-    const moveCursor = (e: MouseEvent) => {
-      mouseX = e.clientX
-      mouseY = e.clientY
-      dot.style.left = mouseX + 'px'
-      dot.style.top = mouseY + 'px'
-    }
-
-    const animateRing = () => {
-      ringX += (mouseX - ringX) * 0.12
-      ringY += (mouseY - ringY) * 0.12
-      ring.style.left = ringX + 'px'
-      ring.style.top = ringY + 'px'
-      requestAnimationFrame(animateRing)
-    }
-
-    const addHover = () => ring.classList.add('hovering')
-    const removeHover = () => ring.classList.remove('hovering')
-
-    window.addEventListener('mousemove', moveCursor)
-    document.querySelectorAll('a, button, .tilt-card').forEach(el => {
-      el.addEventListener('mouseenter', addHover)
-      el.addEventListener('mouseleave', removeHover)
-    })
-    animateRing()
-
-    return () => window.removeEventListener('mousemove', moveCursor)
-  }, [])
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <title>Joseph Allan Kamara | Cybersecurity Engineer</title>
-        <meta name="description" content="Cybersecurity Engineer & AI Security Builder — SOC Analyst, Security Engineer, AI Security Engineer" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
       </head>
-      <body className="grid-bg noise">
-        <div ref={dotRef} className="cursor-dot" />
-        <div ref={ringRef} className="cursor-ring" />
+      <body className="bg-[#020818] text-[#e2eaff] antialiased">
         {children}
-        <Analytics />
-        <VisitTracker />
       </body>
     </html>
   )

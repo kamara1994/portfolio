@@ -1,6 +1,6 @@
 'use client'
 // @ts-nocheck
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import ProjectsFilter from '@/components/ProjectsFilter'
@@ -20,6 +20,8 @@ import ThreatTicker from '@/components/ThreatTicker'
 import AIChat from '@/components/AIChat'
 import RecruiterBriefing from '@/components/RecruiterBriefing'
 import BlueSocSpotlight from '@/components/BlueSocSpotlight'
+import RoleSwitcher from '@/components/RoleSwitcher'
+import CommandPalette from '@/components/CommandPalette'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
@@ -43,6 +45,11 @@ export default function Home() {
             <div className="pt-[72px]">
               <ThreatTicker />
             </div>
+
+            {/* Role switcher — below threat ticker */}
+            <Suspense fallback={null}>
+              <RoleSwitcher />
+            </Suspense>
 
             {/* 1. Hero */}
             <Hero />
@@ -71,7 +78,11 @@ export default function Home() {
             <About />
             <HireMe />
             <Contact />
+
+            {/* Global overlays */}
             <AIChat />
+            <CommandPalette />
+
             <Footer />
           </motion.main>
         )}
