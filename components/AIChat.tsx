@@ -18,7 +18,7 @@ const QUICK_QUESTIONS = [
 export default function AIChat() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hey! I'm JAK-AI. Ask me anything about Joseph — his projects, skills, or if you're looking to hire him." }
+    { role: 'assistant', content: "Hey! I'm PWEZA. Ask me anything about Joseph — his projects, skills, or if you're looking to hire him." }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -82,7 +82,7 @@ export default function AIChat() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse" />
               <span className="font-mono text-[9px] text-cyan tracking-[2px] uppercase whitespace-nowrap">
-                Ask JAK-AI
+                Ask PWEZA
               </span>
             </motion.div>
           )}
@@ -153,7 +153,7 @@ export default function AIChat() {
                 🤖
               </div>
               <div>
-                <p className="font-mono text-[11px] font-bold text-cyan tracking-wider">JAK-AI</p>
+                <p className="font-mono text-[11px] font-bold text-cyan tracking-wider">PWEZA</p>
                 <p className="font-mono text-[9px] text-muted">Powered by Claude · Ask me anything</p>
               </div>
               <div className="ml-auto flex items-center gap-1.5">

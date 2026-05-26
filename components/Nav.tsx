@@ -12,6 +12,9 @@ const links = [
   { label: 'Contact', href: '#contact' },
 ]
 
+// Wave color animation for Incident Lab text
+const waveColors = ['#00f5d4', '#00d4ff', '#818cf8', '#a855f7', '#ef4444', '#f59e0b', '#00f5d4']
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [active, setActive] = useState('')
@@ -114,33 +117,52 @@ export default function Nav() {
                       className="absolute top-1 right-1 w-1 h-1 rounded-full bg-neon transition-opacity duration-200"
                       style={{ opacity: active === id ? 1 : 0 }}
                     />
-                    <span className="relative z-10">{link.label}</span>
+                    <span className="relative z-10 font-bold tracking-[2px]">{link.label}</span>
                   </a>
                 </li>
               )
             })}
 
-            {/* INCIDENT REPLAY LAB — glowing nav link */}
+            {/* INCIDENT REPLAY LAB — wave color effect like Kamara */}
             <li>
               <Link
                 href="/incident-replay"
                 onMouseEnter={() => setHovered('lab')}
                 onMouseLeave={() => setHovered(null)}
-                className="relative px-3 py-2 flex items-center gap-2 font-mono text-[10px] tracking-[1.5px] uppercase transition-all duration-200 border ml-2"
+                className="relative px-3 py-2 flex items-center gap-2 font-mono text-[10px] font-bold tracking-[2px] uppercase transition-all duration-200 border ml-2 overflow-hidden"
                 style={{
                   borderColor: labPulse || hovered === 'lab' ? 'rgba(0,245,212,0.6)' : 'rgba(0,245,212,0.25)',
-                  color: hovered === 'lab' ? '#00f5d4' : '#00c4a8',
                   background: labPulse || hovered === 'lab' ? 'rgba(0,245,212,0.08)' : 'rgba(0,245,212,0.03)',
                   boxShadow: labPulse ? '0 0 20px rgba(0,245,212,0.3)' : 'none',
                   transition: 'all 0.3s',
                 }}
               >
-                <motion.span
-                  className="w-1.5 h-1.5 rounded-full bg-neon shrink-0"
-                  animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                {/* Moving rainbow wave bar at bottom — like Kamara effect */}
+                <motion.div
+                  className="absolute bottom-0 left-0 h-[2px] w-[200%]"
+                  style={{
+                    background: 'linear-gradient(90deg, #00f5d4, #00d4ff, #818cf8, #a855f7, #ef4444, #f59e0b, #00f5d4, #00d4ff, #818cf8)',
+                    boxShadow: '0 0 6px rgba(0,212,255,0.6)',
+                  }}
+                  animate={{ x: ['-50%', '0%'] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
                 />
-                Incident Lab
+                {/* Wave color text */}
+                <motion.span
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  animate={{
+                    backgroundColor: waveColors,
+                    boxShadow: waveColors.map(c => `0 0 6px ${c}`),
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.span
+                  animate={{ color: waveColors }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="font-bold"
+                >
+                  Incident Lab
+                </motion.span>
               </Link>
             </li>
           </ul>

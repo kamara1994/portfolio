@@ -4,31 +4,62 @@ import { motion } from 'framer-motion'
 interface SectionHeaderProps {
   label: string
   title: string
-  accent?: string
-  center?: boolean
+  accent: string
 }
 
-export default function SectionHeader({ label, title, accent, center }: SectionHeaderProps) {
-  const parts = accent ? title.split(accent) : [title]
+const waveColors = [
+  '#00f5d4', '#00d4ff', '#818cf8', '#a855f7',
+  '#ef4444', '#f59e0b', '#00f5d4',
+]
 
+export default function SectionHeader({ label, title, accent }: SectionHeaderProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className={center ? 'text-center' : ''}
-    >
-      <div className={`flex items-center gap-3 mb-3 font-mono text-[11px] text-neon tracking-[4px] uppercase ${center ? 'justify-center' : ''}`}>
-        {!center && <span className="block w-10 h-px bg-neon" />}
-        {label}
-        {center && <span className="block w-10 h-px bg-neon" />}
+    <div className="mb-12">
+      {/* Label with wave dot */}
+      <div className="flex items-center gap-3 font-mono text-[10px] tracking-[4px] uppercase mb-3">
+        <motion.span
+          className="w-8 h-px"
+          animate={{ backgroundColor: waveColors }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.span
+          animate={{ color: waveColors }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {label}
+        </motion.span>
+        <motion.span
+          className="w-2 h-2 rounded-full"
+          animate={{
+            backgroundColor: waveColors,
+            boxShadow: waveColors.map(c => `0 0 8px ${c}, 0 0 16px ${c}50`),
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
       </div>
-      <h2 className="font-orbitron text-4xl md:text-5xl font-black tracking-tight mb-14 text-[#e2eaff]">
-        {parts[0]}
-        {accent && <span className="text-cyan">{accent}</span>}
-        {parts[1]}
+
+      {/* Title with bold + wave accent word */}
+      <h2 className="font-orbitron font-black text-3xl text-[#e2eaff] mb-2 flex items-baseline gap-0 flex-wrap">
+        <span className="font-black">{title}</span>
+        <motion.span
+          className="font-black relative"
+          animate={{ color: waveColors }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {accent}
+          {/* Moving wave underline */}
+          <span className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden">
+            <motion.span
+              className="absolute top-0 left-0 h-full w-[200%]"
+              style={{
+                background: 'linear-gradient(90deg, #00f5d4, #00d4ff, #818cf8, #a855f7, #ef4444, #f59e0b, #00f5d4, #00d4ff)',
+              }}
+              animate={{ x: ['-50%', '0%'] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+            />
+          </span>
+        </motion.span>
       </h2>
-    </motion.div>
+    </div>
   )
 }
