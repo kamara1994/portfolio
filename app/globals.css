@@ -22,36 +22,68 @@ body {
   color: #e2eaff;
   font-family: 'Outfit', sans-serif;
   overflow-x: hidden;
-  cursor: none;
+  /* FIXED: removed cursor:none — was hiding mouse completely */
+  cursor: auto;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-/* CUSTOM CURSOR */
-.cursor-dot {
-  width: 6px; height: 6px;
-  background: var(--cyan);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: transform 0.1s;
-  box-shadow: 0 0 10px var(--cyan);
+/* CUSTOM CURSOR — only on desktop, keeps real cursor visible on scroll */
+@media (pointer: fine) {
+  body { cursor: none; }
+
+  .cursor-dot {
+    width: 8px; height: 8px;
+    background: var(--cyan);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99999;
+    top: 0; left: 0;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 12px var(--cyan), 0 0 24px rgba(0,212,255,0.4);
+    transition: width 0.15s, height 0.15s, background 0.15s;
+    will-change: transform;
+  }
+
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(0,212,255,0.6);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99998;
+    top: 0; left: 0;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, border-color 0.2s, background 0.2s;
+    will-change: transform;
+  }
+
+  .cursor-ring.hovering {
+    width: 52px; height: 52px;
+    border-color: var(--neon);
+    background: rgba(0,245,212,0.05);
+  }
 }
-.cursor-ring {
-  width: 32px; height: 32px;
-  border: 1px solid rgba(0,212,255,0.5);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9998;
-  transform: translate(-50%, -50%);
-  transition: all 0.12s ease-out;
+
+/* GLOBAL FONT SIZE INCREASE */
+p, span, div {
+  font-size: inherit;
 }
-.cursor-ring.hovering {
-  width: 48px; height: 48px;
-  border-color: var(--neon);
-  background: rgba(0,245,212,0.05);
+
+/* Base text sizes — increased from tiny to readable */
+.font-mono {
+  font-family: 'Share Tech Mono', monospace;
 }
+
+/* Increase all the tiny mono text sizes site-wide */
+.text-\[9px\]  { font-size: 11px !important; }
+.text-\[10px\] { font-size: 12px !important; }
+.text-\[11px\] { font-size: 13px !important; }
+.text-\[12px\] { font-size: 14px !important; }
+.text-\[13px\] { font-size: 15px !important; }
+.text-\[14px\] { font-size: 15px !important; }
+.text-\[15px\] { font-size: 16px !important; }
 
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 3px; }
@@ -190,8 +222,6 @@ body {
 }
 .project-card-inner:hover::before { transform: scaleX(1); }
 
-/* SECTION FADE UP - handled by framer motion in components */
-
 /* NAV BLUR */
 .nav-blur {
   background: rgba(2,8,24,0.75);
@@ -244,4 +274,19 @@ body {
 .terminal-dot {
   width: 10px; height: 10px;
   border-radius: 50%;
+}
+
+/* PULSE SLOW ANIMATION */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2.5s ease-in-out infinite;
+}
+
+/* SCAN ANIMATION */
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
 }
