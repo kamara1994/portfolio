@@ -10,7 +10,6 @@ export default function CustomCursor() {
     const ring = ringRef.current
     if (!dot || !ring) return
 
-    // Use raw coordinates — NOT affected by scroll
     let mouseX = window.innerWidth / 2
     let mouseY = window.innerHeight / 2
     let ringX  = mouseX
@@ -23,26 +22,20 @@ export default function CustomCursor() {
     }
 
     const animate = () => {
-      // Dot follows instantly
       dot.style.left  = `${mouseX}px`
       dot.style.top   = `${mouseY}px`
-
-      // Ring follows with smooth lag
       ringX += (mouseX - ringX) * 0.12
       ringY += (mouseY - ringY) * 0.12
       ring.style.left = `${ringX}px`
       ring.style.top  = `${ringY}px`
-
       rafId = requestAnimationFrame(animate)
     }
 
     const handleHoverEnter = () => ring.classList.add('hovering')
     const handleHoverLeave = () => ring.classList.remove('hovering')
 
-    // Add hover effect to interactive elements
     const addHoverListeners = () => {
-      const els = document.querySelectorAll('a, button, [role="button"], input, textarea')
-      els.forEach(el => {
+      document.querySelectorAll('a, button, [role="button"], input, textarea').forEach(el => {
         el.addEventListener('mouseenter', handleHoverEnter)
         el.addEventListener('mouseleave', handleHoverLeave)
       })
@@ -52,7 +45,6 @@ export default function CustomCursor() {
     rafId = requestAnimationFrame(animate)
     addHoverListeners()
 
-    // Re-add listeners when DOM changes (new elements)
     const observer = new MutationObserver(addHoverListeners)
     observer.observe(document.body, { childList: true, subtree: true })
 
