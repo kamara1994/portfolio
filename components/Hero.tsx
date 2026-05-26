@@ -156,10 +156,15 @@ export default function Hero() {
             <a href="#projects" className="btn-hex bg-cyan text-bg font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-neon">
               View Projects
             </a>
-            <a href="#briefing" className="btn-hex border border-neon text-neon font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,255,136,0.08)]">
+            <a href="/incident-replay" className="btn-hex font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 flex items-center gap-2 border border-[rgba(0,245,212,0.5)] text-neon hover:bg-[rgba(0,245,212,0.08)] transition-colors"
+              style={{ boxShadow: '0 0 20px rgba(0,245,212,0.15)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse shrink-0" />
+              Incident Lab
+            </a>
+            <a href="#briefing" className="btn-hex border border-[rgba(0,212,255,0.3)] text-cyan font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,212,255,0.08)]">
               Recruiter Briefing
             </a>
-            <a href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank" className="btn-hex border border-cyan text-cyan font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,212,255,0.08)]">
+            <a href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank" className="btn-hex border border-[rgba(0,212,255,0.2)] text-muted font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:border-cyan hover:text-cyan">
               ↓ Resume
             </a>
           </motion.div>

@@ -1,22 +1,24 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
 
 const links = [
-  { label: 'Projects', href: 'projects' },
-  { label: 'Skills', href: 'skills' },
-  { label: 'Certs', href: 'certs' },
-  { label: 'Experience', href: 'experience' },
-  { label: 'About', href: 'about' },
-  { label: 'Contact', href: 'contact' },
+  { label: 'Projects', href: '#projects' },
+  { label: 'Skills', href: '#skills' },
+  { label: 'Certs', href: '#certs' },
+  { label: 'Experience', href: '#experience' },
+  { label: 'About', href: '#about' },
+  { label: 'Contact', href: '#contact' },
 ]
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [active, setActive] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [hovered, setHovered] = useState(null)
+  const [hovered, setHovered] = useState<string | null>(null)
   const [time, setTime] = useState('')
+  const [labPulse, setLabPulse] = useState(false)
 
   useEffect(() => {
     const tick = () => {
@@ -28,10 +30,23 @@ export default function Nav() {
     return () => clearInterval(id)
   }, [])
 
+  // Pulse the LAB button periodically to draw attention
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLabPulse(true)
+      setTimeout(() => setLabPulse(false), 1500)
+    }, 10000)
+    const initial = setTimeout(() => {
+      setLabPulse(true)
+      setTimeout(() => setLabPulse(false), 1500)
+    }, 4000)
+    return () => { clearInterval(interval); clearTimeout(initial) }
+  }, [])
+
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 40)
-      const sections = links.map(l => l.href)
+      const sections = ['projects', 'skills', 'certs', 'experience', 'about', 'contact']
       for (const s of [...sections].reverse()) {
         const el = document.getElementById(s)
         if (el && window.scrollY >= el.offsetTop - 150) {
@@ -59,7 +74,7 @@ export default function Nav() {
       >
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan to-transparent opacity-60" />
 
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
           {/* LOGO */}
           <a href="#" className="flex items-center gap-3 group shrink-0">
@@ -77,34 +92,61 @@ export default function Nav() {
 
           {/* DESKTOP LINKS */}
           <ul className="hidden lg:flex items-center gap-1">
-            {links.map(link => (
-              <li key={link.href}>
-                <a
-                  href={`#${link.href}`}
-                  onMouseEnter={() => setHovered(link.href)}
-                  onMouseLeave={() => setHovered(null)}
-                  className="relative px-4 py-2 block font-mono text-[11px] tracking-[1.5px] uppercase transition-all duration-200"
-                  style={{ color: active === link.href ? '#00d4ff' : hovered === link.href ? '#e2eaff' : '#8899bb' }}
-                >
-                  {active === link.href && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 border border-[rgba(0,212,255,0.3)] bg-[rgba(0,212,255,0.05)]"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            {links.map(link => {
+              const id = link.href.replace('#', '')
+              return (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    onMouseEnter={() => setHovered(id)}
+                    onMouseLeave={() => setHovered(null)}
+                    className="relative px-4 py-2 block font-mono text-[11px] tracking-[1.5px] uppercase transition-all duration-200"
+                    style={{ color: active === id ? '#00d4ff' : hovered === id ? '#e2eaff' : '#8899bb' }}
+                  >
+                    {active === id && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 border border-[rgba(0,212,255,0.3)] bg-[rgba(0,212,255,0.05)]"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <span
+                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-neon transition-opacity duration-200"
+                      style={{ opacity: active === id ? 1 : 0 }}
                     />
-                  )}
-                  <span
-                    className="absolute top-1 right-1 w-1 h-1 rounded-full bg-neon transition-opacity duration-200"
-                    style={{ opacity: active === link.href ? 1 : 0 }}
-                  />
-                  <span className="relative z-10">{link.label}</span>
-                </a>
-              </li>
-            ))}
+                    <span className="relative z-10">{link.label}</span>
+                  </a>
+                </li>
+              )
+            })}
+
+            {/* INCIDENT REPLAY LAB — glowing nav link */}
+            <li>
+              <Link
+                href="/incident-replay"
+                onMouseEnter={() => setHovered('lab')}
+                onMouseLeave={() => setHovered(null)}
+                className="relative px-3 py-2 flex items-center gap-2 font-mono text-[10px] tracking-[1.5px] uppercase transition-all duration-200 border ml-2"
+                style={{
+                  borderColor: labPulse || hovered === 'lab' ? 'rgba(0,245,212,0.6)' : 'rgba(0,245,212,0.25)',
+                  color: hovered === 'lab' ? '#00f5d4' : '#00c4a8',
+                  background: labPulse || hovered === 'lab' ? 'rgba(0,245,212,0.08)' : 'rgba(0,245,212,0.03)',
+                  boxShadow: labPulse ? '0 0 20px rgba(0,245,212,0.3)' : 'none',
+                  transition: 'all 0.3s',
+                }}
+              >
+                <motion.span
+                  className="w-1.5 h-1.5 rounded-full bg-neon shrink-0"
+                  animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                Incident Lab
+              </Link>
+            </li>
           </ul>
 
           {/* RIGHT SIDE */}
-          <div className="hidden lg:flex items-center gap-4 shrink-0">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             <div className="font-mono text-[10px] text-muted tracking-wider border border-[rgba(0,212,255,0.1)] px-3 py-1.5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse-slow" />
               {time}
@@ -165,10 +207,11 @@ export default function Nav() {
                 Navigation
                 <span className="w-8 h-px bg-[rgba(0,212,255,0.3)]" />
               </div>
+
               {links.map((link, i) => (
                 <motion.a
                   key={link.href}
-                  href={`#${link.href}`}
+                  href={link.href}
                   onClick={() => setMenuOpen(false)}
                   initial={{ opacity: 0, x: -40 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -181,17 +224,42 @@ export default function Nav() {
                   <span className="font-mono text-[10px] text-muted group-hover:text-neon transition-colors">→</span>
                 </motion.a>
               ))}
+
+              {/* Incident Replay Lab in mobile menu */}
+              <motion.div
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: links.length * 0.07, duration: 0.4 }}
+                className="w-full"
+              >
+                <Link
+                  href="/incident-replay"
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full border px-6 py-4 flex items-center justify-between group transition-all"
+                  style={{ borderColor: 'rgba(0,245,212,0.3)', background: 'rgba(0,245,212,0.03)' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-neon animate-pulse" />
+                    <span className="font-orbitron text-lg font-bold text-neon uppercase tracking-wide">
+                      Incident Lab
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10px] text-neon">→</span>
+                </Link>
+              </motion.div>
+
               <motion.a
                 href="mailto:kamarajosephallan@gmail.com"
                 onClick={() => setMenuOpen(false)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.55 }}
                 className="mt-6 w-full text-center font-mono text-[12px] tracking-[3px] uppercase px-10 py-4 bg-cyan text-bg hover:bg-neon transition-colors"
                 style={{ clipPath: 'polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)' }}
               >
                 Hire Me
               </motion.a>
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

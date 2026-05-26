@@ -99,6 +99,14 @@ export default function RecruiterBriefing() {
                 Explore BLUE SOC
               </a>
               <a
+                href="/incident-replay"
+                className="btn-hex font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 flex items-center gap-2 border border-[rgba(0,245,212,0.4)] text-neon hover:bg-[rgba(0,245,212,0.06)] transition-colors"
+                style={{ boxShadow: '0 0 15px rgba(0,245,212,0.1)' }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse shrink-0" />
+                Incident Lab
+              </a>
+              <a
                 href="https://github.com/kamara1994"
                 target="_blank"
                 className="btn-hex border border-[rgba(0,212,255,0.3)] text-muted font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 hover:border-cyan hover:text-cyan"
@@ -119,6 +127,3 @@ export default function RecruiterBriefing() {
     </section>
   )
 }
-
-
-
