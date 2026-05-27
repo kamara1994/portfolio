@@ -6,19 +6,30 @@ export default function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Disable entirely on touch devices
+    if (window.matchMedia('(pointer: coarse)').matches) return
+
     const dot  = dotRef.current
     const ring = ringRef.current
     if (!dot || !ring) return
 
-    let mouseX = -100
-    let mouseY = -100
-    let ringX  = -100
-    let ringY  = -100
+    let mouseX = -100, mouseY = -100
+    let ringX  = -100, ringY  = -100
     let rafId  = 0
+    let isOnScreen = false
 
     const moveCursor = (e: MouseEvent) => {
       mouseX = e.clientX
       mouseY = e.clientY
+      isOnScreen = true
+      dot.style.opacity  = '1'
+      ring.style.opacity = '1'
+    }
+
+    const hideCursor = () => {
+      isOnScreen = false
+      dot.style.opacity  = '0'
+      ring.style.opacity = '0'
     }
 
     const animate = () => {
@@ -31,25 +42,27 @@ export default function CustomCursor() {
       rafId = requestAnimationFrame(animate)
     }
 
-    const handleHoverEnter = () => ring.classList.add('hovering')
-    const handleHoverLeave = () => ring.classList.remove('hovering')
+    const handleEnter = () => ring.classList.add('hovering')
+    const handleLeave = () => ring.classList.remove('hovering')
 
-    const addHoverListeners = () => {
+    const addListeners = () => {
       document.querySelectorAll('a, button, [role="button"], input, textarea').forEach(el => {
-        el.addEventListener('mouseenter', handleHoverEnter)
-        el.addEventListener('mouseleave', handleHoverLeave)
+        el.addEventListener('mouseenter', handleEnter)
+        el.addEventListener('mouseleave', handleLeave)
       })
     }
 
     window.addEventListener('mousemove', moveCursor, { passive: true })
+    window.addEventListener('mouseleave', hideCursor)
     rafId = requestAnimationFrame(animate)
-    addHoverListeners()
+    addListeners()
 
-    const observer = new MutationObserver(addHoverListeners)
+    const observer = new MutationObserver(addListeners)
     observer.observe(document.body, { childList: true, subtree: true })
 
     return () => {
       window.removeEventListener('mousemove', moveCursor)
+      window.removeEventListener('mouseleave', hideCursor)
       cancelAnimationFrame(rafId)
       observer.disconnect()
     }
@@ -57,8 +70,8 @@ export default function CustomCursor() {
 
   return (
     <>
-      <div ref={dotRef}  className="cursor-dot"  />
-      <div ref={ringRef} className="cursor-ring" />
+      <div ref={dotRef}  className="cursor-dot"  style={{ opacity: 0 }} />
+      <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} />
     </>
   )
 }
