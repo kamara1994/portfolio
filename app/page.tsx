@@ -20,6 +20,7 @@ import ThreatTicker from '@/components/ThreatTicker'
 import AIChat from '@/components/AIChat'
 import RecruiterBriefing from '@/components/RecruiterBriefing'
 import BlueSocSpotlight from '@/components/BlueSocSpotlight'
+import BlueSocDemo from '@/components/BlueSocDemo'
 import RoleSwitcher from '@/components/RoleSwitcher'
 import CommandPalette from '@/components/CommandPalette'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -46,21 +47,15 @@ export default function Home() {
               <ThreatTicker />
             </div>
 
-            {/* Role switcher — below threat ticker */}
             <Suspense fallback={null}>
               <RoleSwitcher />
             </Suspense>
 
-            {/* 1. Hero */}
             <Hero />
-
-            {/* 2. Recruiter Briefing */}
             <RecruiterBriefing />
-
-            {/* 3. BLUE SOC Flagship Spotlight */}
             <BlueSocSpotlight />
+            <BlueSocDemo />
 
-            {/* 4. GitHub Activity */}
             <section className="px-6 py-12">
               <div className="max-w-4xl mx-auto">
                 <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-4">Live Activity</div>
@@ -68,9 +63,7 @@ export default function Home() {
               </div>
             </section>
 
-            {/* 5. Projects + Currently Building */}
             <ProjectsFilter />
-
             <Skills />
             <Certs />
             <Experience />
@@ -78,11 +71,8 @@ export default function Home() {
             <About />
             <HireMe />
             <Contact />
-
-            {/* Global overlays */}
             <AIChat />
             <CommandPalette />
-
             <Footer />
           </motion.main>
         )}
