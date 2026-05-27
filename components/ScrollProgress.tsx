@@ -57,7 +57,7 @@ export default function ScrollProgress() {
             <span
               className="font-mono text-[9px] tracking-[2px] transition-all duration-200"
               style={{
-                color: section === s ? '#00d4ff' : 'rgba(136,153,187,0.4)',
+                color: '#00d4ff',
                 opacity: section === s ? 1 : 0,
               }}
             >
@@ -70,7 +70,7 @@ export default function ScrollProgress() {
                 height: '4px',
                 background: section === s
                   ? 'linear-gradient(90deg, #00d4ff, #00f5d4)'
-                  : 'rgba(136,153,187,0.3)',
+                  : 'rgba(136,153,187,0.08)',
                 boxShadow: section === s ? '0 0 8px rgba(0,212,255,0.6)' : 'none',
               }}
             />
