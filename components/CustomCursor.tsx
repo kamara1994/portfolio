@@ -10,10 +10,10 @@ export default function CustomCursor() {
     const ring = ringRef.current
     if (!dot || !ring) return
 
-    let mouseX = window.innerWidth / 2
-    let mouseY = window.innerHeight / 2
-    let ringX  = mouseX
-    let ringY  = mouseY
+    let mouseX = -100
+    let mouseY = -100
+    let ringX  = -100
+    let ringY  = -100
     let rafId  = 0
 
     const moveCursor = (e: MouseEvent) => {
