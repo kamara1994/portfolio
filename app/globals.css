@@ -285,11 +285,7 @@ p, span, div {
   animation: pulse-slow 2.5s ease-in-out infinite;
 }
 
-/* SCAN ANIMATION */
-@keyframes scan {
-  0% { top: 0; }
-  100% { top: 100%; }
-}
+
 
 /* FONT SIZE INCREASE — make all tiny text more readable */
 .text-\[9px\]  { font-size: 11px !important; }
