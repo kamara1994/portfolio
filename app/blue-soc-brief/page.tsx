@@ -45,18 +45,27 @@ export default function Home() {
             <GlowOrbs />
             <ScrollProgress />
             <Nav />
-            <div className="pt-[72px]"><ThreatTicker /></div>
-            <Suspense fallback={null}><RoleSwitcher /></Suspense>
+
+            <div className="pt-[72px]">
+              <ThreatTicker />
+            </div>
+
+            <Suspense fallback={null}>
+              <RoleSwitcher />
+            </Suspense>
+
             <SafeSection name="Hero"><Hero /></SafeSection>
             <SafeSection name="RecruiterBriefing"><RecruiterBriefing /></SafeSection>
             <SafeSection name="BlueSocSpotlight"><BlueSocSpotlight /></SafeSection>
             <SafeSection name="BlueSocDemo"><BlueSocDemo /></SafeSection>
+
             <section className="px-6 py-12">
               <div className="max-w-4xl mx-auto">
                 <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-4">Live Activity</div>
                 <SafeSection name="GitHubFeed"><GitHubFeed /></SafeSection>
               </div>
             </section>
+
             <SafeSection name="GitHubHeatmap"><GitHubHeatmap /></SafeSection>
             <SafeSection name="ProjectsFilter"><ProjectsFilter /></SafeSection>
             <SafeSection name="Skills"><Skills /></SafeSection>
