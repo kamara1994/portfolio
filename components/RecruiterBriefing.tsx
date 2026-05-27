@@ -86,11 +86,18 @@ export default function RecruiterBriefing() {
             {/* CTA row */}
             <div className="flex flex-wrap gap-3 mt-10 pt-6 border-t border-[rgba(0,212,255,0.1)]">
               <a
-                href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf"
+                href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank"
                 target="_blank"
                 className="btn-hex bg-cyan text-bg font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 hover:bg-neon"
               >
                 ↓ Download Resume
+              </a>
+              
+                href="/blue-soc-brief"
+                target="_blank"
+                className="btn-hex border border-[rgba(129,140,248,0.4)] text-purple-400 font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 hover:bg-[rgba(129,140,248,0.08)]"
+              >
+                ↓ BLUE SOC Brief
               </a>
               <a
                 href="#projects"
