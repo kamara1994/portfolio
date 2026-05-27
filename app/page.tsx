@@ -23,6 +23,7 @@ import BlueSocSpotlight from '@/components/BlueSocSpotlight'
 import BlueSocDemo from '@/components/BlueSocDemo'
 import RoleSwitcher from '@/components/RoleSwitcher'
 import CommandPalette from '@/components/CommandPalette'
+import SkillsQuiz from '@/components/SkillsQuiz'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
@@ -68,6 +69,7 @@ export default function Home() {
             <Certs />
             <Experience />
             <JourneyTimeline />
+            <SkillsQuiz />
             <About />
             <HireMe />
             <Contact />
