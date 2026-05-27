@@ -50,34 +50,6 @@ export default function ScrollProgress() {
         />
       </div>
 
-      {/* SIDE SECTION INDICATORS */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col items-end gap-3">
-        {['HERO', 'PROJECTS', 'SKILLS', 'CERTS', 'EXPERIENCE', 'ABOUT', 'CONTACT'].map(s => (
-          <a key={s} href={`#${s.toLowerCase()}`} className="flex items-center gap-2 group">
-            <span
-              className="font-mono text-[9px] tracking-[2px] transition-all duration-200"
-              style={{
-                color: '#00d4ff',
-                opacity: section === s ? 1 : 0,
-              }}
-            >
-              {s}
-            </span>
-            <div
-              className="transition-all duration-200 rounded-full"
-              style={{
-                width: section === s ? '24px' : '4px',
-                height: '4px',
-                background: section === s
-                  ? 'linear-gradient(90deg, #00d4ff, #00f5d4)'
-                  : 'rgba(136,153,187,0.08)',
-                boxShadow: section === s ? '0 0 8px rgba(0,212,255,0.6)' : 'none',
-              }}
-            />
-          </a>
-        ))}
-      </div>
-
       {/* BOTTOM PERCENTAGE */}
       <div
         className="fixed bottom-6 right-6 z-50 font-mono text-[10px] tracking-[2px] hidden lg:block"
