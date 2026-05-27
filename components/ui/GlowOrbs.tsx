@@ -37,7 +37,7 @@ export default function GlowOrbs() {
         style={{
           height: 1,
           background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent)',
-          animation: 'scan 10s linear infinite',
+          animation: 'none',
           top: 0,
         }}
       />
