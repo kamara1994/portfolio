@@ -120,7 +120,7 @@ export default function GitHubHeatmap() {
   })
 
   return (
-    <section className="px-6 py-16 border-t border-[rgba(0,212,255,0.08)]">
+    <section className="px-6 py-16">
       <div className="max-w-6xl mx-auto">
 
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
