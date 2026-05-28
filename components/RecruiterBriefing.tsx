@@ -40,7 +40,6 @@ export default function RecruiterBriefing() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          {/* Header */}
           <div className="flex items-center gap-3 font-mono text-[10px] text-neon tracking-[4px] uppercase mb-3">
             <span className="w-8 h-px bg-neon" />
             Recruiter Briefing
@@ -48,13 +47,11 @@ export default function RecruiterBriefing() {
           <h2 className="font-orbitron font-bold text-2xl text-[#e2eaff] mb-2">
             Why Joseph for a Security Role?
           </h2>
-          <p className="font-mono text-[11px] text-muted tracking-[2px] uppercase mb-10 opacity-60">
+          <p className="font-mono text-[11px] text-muted tracking-[2px] mb-10 opacity-60 uppercase">
             CANDIDATE BRIEF // UNCLASSIFIED // 30-SECOND OVERVIEW
           </p>
 
-          {/* Brief card */}
           <div className="border border-[rgba(0,212,255,0.15)] bg-[rgba(0,212,255,0.02)] p-8 relative">
-            {/* Corner accents */}
             <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-cyan opacity-60" />
             <span className="absolute top-0 right-0 w-4 h-4 border-t border-r border-cyan opacity-60" />
             <span className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-cyan opacity-60" />
@@ -83,16 +80,15 @@ export default function RecruiterBriefing() {
               ))}
             </div>
 
-            {/* CTA row */}
             <div className="flex flex-wrap gap-3 mt-10 pt-6 border-t border-[rgba(0,212,255,0.1)]">
               <a
-                href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank"
+                href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf"
                 target="_blank"
                 className="btn-hex bg-cyan text-bg font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 hover:bg-neon"
               >
                 ↓ Download Resume
               </a>
-              
+              <a
                 href="/blue-soc-brief"
                 target="_blank"
                 className="btn-hex border border-[rgba(129,140,248,0.4)] text-purple-400 font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 hover:bg-[rgba(129,140,248,0.08)]"
@@ -108,7 +104,6 @@ export default function RecruiterBriefing() {
               <a
                 href="/incident-replay"
                 className="btn-hex font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 flex items-center gap-2 border border-[rgba(0,245,212,0.4)] text-neon hover:bg-[rgba(0,245,212,0.06)] transition-colors"
-                style={{ boxShadow: '0 0 15px rgba(0,245,212,0.1)' }}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse shrink-0" />
                 Incident Lab
