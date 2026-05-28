@@ -11,7 +11,6 @@ import About from '@/components/About'
 import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 import GlowOrbs from '@/components/ui/GlowOrbs'
-import BootScreen from '@/components/BootScreen'
 import ScrollProgress from '@/components/ScrollProgress'
 import GitHubFeed from '@/components/GitHubFeed'
 import GitHubHeatmap from '@/components/GitHubHeatmap'
@@ -29,11 +28,10 @@ import SafeSection from '@/components/ErrorBoundary'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
-  const [booted, setBooted] = useState(false)
+  const [booted, setBooted] = useState(true)
 
   return (
     <>
-      <BootScreen onComplete={() => setBooted(true)} />
       <AnimatePresence>
         {booted && (
           <motion.main
