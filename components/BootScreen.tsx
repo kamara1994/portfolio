@@ -45,6 +45,7 @@ export default function BootScreen({ onComplete }: BootScreenProps) {
       setTimeout(() => {
         setExit(true)
         sessionStorage.setItem('jak-booted', 'true')
+        window.scrollTo(0, 0)
         setTimeout(onComplete, 500)
       }, 400)
     }, 2200)
