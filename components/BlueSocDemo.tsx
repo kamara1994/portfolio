@@ -83,7 +83,7 @@ export default function BlueSocDemo() {
   }, [])
 
   useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [liveLogs, visibleLogs])
 
   const addLog = (text: string, color = '#8899bb') => {
