@@ -111,7 +111,9 @@ export default function AIChat() {
       const data  = await response.json()
       const reply = data.content || data.error || 'Sorry, could not process that.'
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-      speak(reply)
+      // Always speak response for natural conversation flow
+      if (speaking) stopSpeaking()
+      setTimeout(() => speak(reply), 100)
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Please try again.' }])
     } finally {
@@ -251,21 +253,25 @@ export default function AIChat() {
                 placeholder={listening ? '🎤 Listening...' : 'Ask about Joseph...'}
                 className="flex-1 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] px-3 py-2 text-[11px] text-white placeholder-[#334155] outline-none focus:border-[rgba(0,212,255,0.3)] font-mono transition-colors"
               />
-              {voiceSupported && (
-                <motion.button
-                  onClick={listening ? stopListening : startListening}
-                  disabled={loading}
-                  className="px-3 py-2 border transition-all disabled:opacity-40"
+              <motion.button
+                  onClick={voiceSupported ? (listening ? stopListening : startListening) : undefined}
+                  disabled={loading || !voiceSupported}
+                  className="px-3 py-2 border transition-all relative"
                   style={{
-                    borderColor: listening ? 'rgba(239,68,68,0.5)' : 'rgba(0,212,255,0.2)',
-                    background: listening ? 'rgba(239,68,68,0.1)' : 'rgba(0,212,255,0.05)',
+                    borderColor: listening ? 'rgba(239,68,68,0.6)' : voiceSupported ? 'rgba(0,245,212,0.5)' : 'rgba(0,212,255,0.1)',
+                    background: listening ? 'rgba(239,68,68,0.15)' : voiceSupported ? 'rgba(0,245,212,0.08)' : 'transparent',
+                    boxShadow: listening ? '0 0 12px rgba(239,68,68,0.4)' : voiceSupported ? '0 0 8px rgba(0,245,212,0.3)' : 'none',
+                    opacity: voiceSupported ? 1 : 0.3,
                   }}
-                  animate={listening ? { scale: [1, 1.1, 1] } : {}}
-                  transition={{ duration: 0.8, repeat: listening ? Infinity : 0 }}
+                  animate={listening ? { scale: [1, 1.15, 1] } : voiceSupported ? { boxShadow: ['0 0 8px rgba(0,245,212,0.2)', '0 0 16px rgba(0,245,212,0.5)', '0 0 8px rgba(0,245,212,0.2)'] } : {}}
+                  transition={{ duration: listening ? 0.6 : 2, repeat: Infinity }}
+                  title={voiceSupported ? (listening ? 'Stop listening' : 'Speak to PWEZA') : 'Voice not supported in this browser'}
                 >
-                  <span className="text-sm">{listening ? '⏹' : '🎤'}</span>
+                  <span className="text-base">{listening ? '⏹' : '🎤'}</span>
+                  {listening && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                  )}
                 </motion.button>
-              )}
               <button onClick={() => send()} disabled={loading || !input.trim()}
                 className="px-3 py-2 bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.2)] hover:bg-[rgba(0,212,255,0.2)] transition-all disabled:opacity-40">
                 <span className="text-cyan text-sm">→</span>
