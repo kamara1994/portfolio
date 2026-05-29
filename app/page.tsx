@@ -1,6 +1,6 @@
 'use client'
 // @ts-nocheck
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import ProjectsFilter from '@/components/ProjectsFilter'
@@ -25,10 +25,16 @@ import RoleSwitcher from '@/components/RoleSwitcher'
 import CommandPalette from '@/components/CommandPalette'
 import SkillsQuiz from '@/components/SkillsQuiz'
 import SafeSection from '@/components/ErrorBoundary'
+import LiveThreatCounter from '@/components/LiveThreatCounter'
+import EasterEggTerminal from '@/components/EasterEggTerminal'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
   const [booted, setBooted] = useState(true)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [])
 
   return (
     <>
@@ -43,18 +49,26 @@ export default function Home() {
             <GlowOrbs />
             <ScrollProgress />
             <Nav />
-            <div className="pt-[72px]"><ThreatTicker /></div>
+
+            <div className="pt-[72px]">
+              <ThreatTicker />
+              <LiveThreatCounter />
+            </div>
+
             <Suspense fallback={null}><RoleSwitcher /></Suspense>
+
             <SafeSection name="Hero"><Hero /></SafeSection>
             <SafeSection name="RecruiterBriefing"><RecruiterBriefing /></SafeSection>
             <SafeSection name="BlueSocSpotlight"><BlueSocSpotlight /></SafeSection>
             <SafeSection name="BlueSocDemo"><BlueSocDemo /></SafeSection>
+
             <section className="px-6 py-12">
               <div className="max-w-4xl mx-auto">
                 <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-4">Live Activity</div>
                 <SafeSection name="GitHubFeed"><GitHubFeed /></SafeSection>
               </div>
             </section>
+
             <SafeSection name="GitHubHeatmap"><GitHubHeatmap /></SafeSection>
             <SafeSection name="ProjectsFilter"><ProjectsFilter /></SafeSection>
             <SafeSection name="Skills"><Skills /></SafeSection>
@@ -65,8 +79,10 @@ export default function Home() {
             <SafeSection name="About"><About /></SafeSection>
             <SafeSection name="HireMe"><HireMe /></SafeSection>
             <SafeSection name="Contact"><Contact /></SafeSection>
+
             <AIChat />
             <CommandPalette />
+            <EasterEggTerminal />
             <Footer />
           </motion.main>
         )}
