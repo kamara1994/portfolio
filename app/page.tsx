@@ -3,7 +3,7 @@
 import { useState, Suspense, useEffect } from 'react'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
-import ProjectsFilter from '@/components/ProjectsFilter'
+import ProjectsSection from '@/components/ProjectsSection'
 import Skills from '@/components/Skills'
 import Certs from '@/components/Certs'
 import Experience from '@/components/Experience'
@@ -16,7 +16,6 @@ import GitHubFeed from '@/components/GitHubFeed'
 import GitHubHeatmap from '@/components/GitHubHeatmap'
 import JourneyTimeline from '@/components/JourneyTimeline'
 import HireMe from '@/components/HireMe'
-import ThreatTicker from '@/components/ThreatTicker'
 import AIChat from '@/components/AIChat'
 import RecruiterBriefing from '@/components/RecruiterBriefing'
 import BlueSocSpotlight from '@/components/BlueSocSpotlight'
@@ -25,17 +24,14 @@ import RoleSwitcher from '@/components/RoleSwitcher'
 import CommandPalette from '@/components/CommandPalette'
 import SkillsQuiz from '@/components/SkillsQuiz'
 import SafeSection from '@/components/ErrorBoundary'
-import LiveThreatCounter from '@/components/LiveThreatCounter'
 import EasterEggTerminal from '@/components/EasterEggTerminal'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
   const [booted, setBooted] = useState(true)
-
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [])
-
   return (
     <>
       <AnimatePresence>
@@ -49,28 +45,21 @@ export default function Home() {
             <GlowOrbs />
             <ScrollProgress />
             <Nav />
-
-            <div className="pt-[72px]">
-              <ThreatTicker />
-              <LiveThreatCounter />
-            </div>
-
+            {/* Spacer for fixed nav — no more distracting threat banners above the hero */}
+            <div className="pt-[72px]" />
             <Suspense fallback={null}><RoleSwitcher /></Suspense>
-
             <SafeSection name="Hero"><Hero /></SafeSection>
             <SafeSection name="RecruiterBriefing"><RecruiterBriefing /></SafeSection>
             <SafeSection name="BlueSocSpotlight"><BlueSocSpotlight /></SafeSection>
             <SafeSection name="BlueSocDemo"><BlueSocDemo /></SafeSection>
-
             <section className="px-6 py-12">
               <div className="max-w-4xl mx-auto">
                 <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-4">Live Activity</div>
                 <SafeSection name="GitHubFeed"><GitHubFeed /></SafeSection>
               </div>
             </section>
-
             <SafeSection name="GitHubHeatmap"><GitHubHeatmap /></SafeSection>
-            <SafeSection name="ProjectsFilter"><ProjectsFilter /></SafeSection>
+            <SafeSection name="Projects"><ProjectsSection /></SafeSection>
             <SafeSection name="Skills"><Skills /></SafeSection>
             <SafeSection name="Certs"><Certs /></SafeSection>
             <SafeSection name="Experience"><Experience /></SafeSection>
@@ -79,7 +68,6 @@ export default function Home() {
             <SafeSection name="About"><About /></SafeSection>
             <SafeSection name="HireMe"><HireMe /></SafeSection>
             <SafeSection name="Contact"><Contact /></SafeSection>
-
             <AIChat />
             <CommandPalette />
             <EasterEggTerminal />

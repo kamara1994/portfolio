@@ -1,12 +1,13 @@
 'use client'
+// @ts-nocheck
 import { motion } from 'framer-motion'
 
 const milestones = [
   {
     year: '2019',
     title: 'Freetown, Sierra Leone',
-    subtitle: 'Where it started',
-    desc: 'Born and raised in Freetown. Fascinated by technology from an early age — taking apart computers, learning how networks work, and dreaming of building something that matters.',
+    subtitle: 'Where it all started',
+    desc: 'Born and raised in Freetown. Fascinated by technology from an early age — taking apart computers, learning how networks work, dreaming of building something that matters.',
     color: '#ffaa00',
     icon: '🌍',
     tag: 'ORIGIN',
@@ -79,91 +80,175 @@ const milestones = [
     title: 'Philadelphia, PA — Ready',
     subtitle: 'B.S. Cybersecurity · BYU-Idaho',
     desc: 'Graduating with a B.S. in Cybersecurity. Based in Philadelphia. Targeting SOC Analyst, Security Engineer, and Cloud Security roles. Ready to contribute from day one.',
-    color: '#ffaa00',
+    color: '#00f5d4',
     icon: '🚀',
     tag: 'NOW',
+    isNow: true,
   },
 ]
 
 const tagColors: Record<string, string> = {
-  ORIGIN: '#ffaa00',
-  EDUCATION: '#00d4ff',
-  CERTIFICATION: '#00f5d4',
-  EXPERIENCE: '#a855f7',
-  PROJECT: '#38bdf8',
-  NOW: '#ef4444',
+  ORIGIN:      '#ffaa00',
+  EDUCATION:   '#00d4ff',
+  CERTIFICATION:'#00f5d4',
+  EXPERIENCE:  '#a855f7',
+  PROJECT:     '#38bdf8',
+  NOW:         '#00f5d4',
 }
 
 export default function JourneyTimeline() {
   return (
-    <section className="px-6 py-24">
+    <section className="px-6 py-24 relative overflow-hidden">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 font-mono text-[10px] text-neon tracking-[4px] uppercase mb-3">
-          <span className="w-8 h-px bg-neon" />
-          My Story
-        </div>
-        <h2 className="font-orbitron text-3xl font-black text-[#e2eaff] mb-4">
-          The <span className="text-cyan">Journey</span>
-        </h2>
-        <p className="font-mono text-[12px] text-muted max-w-2xl leading-relaxed mb-14">
-          From Freetown, Sierra Leone to building AI-powered security systems in Philadelphia.
-          Every milestone earned, every certification tested, every project built from scratch.
-        </p>
 
+        {/* Section header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-14"
+        >
+          <div className="flex items-center gap-3 font-mono text-neon tracking-[4px] uppercase mb-3" style={{ fontSize: 10 }}>
+            <span className="w-8 h-px bg-neon" />
+            My Story
+          </div>
+          <h2 className="font-orbitron text-3xl font-black text-[#e2eaff] mb-4">
+            The <span className="text-cyan">Journey</span>
+          </h2>
+          <p className="font-mono text-muted max-w-2xl leading-relaxed" style={{ fontSize: 12 }}>
+            From Freetown, Sierra Leone to building AI-powered security systems in Philadelphia.
+            Every milestone earned, every certification tested, every project built from scratch.
+          </p>
+        </motion.div>
+
+        {/* Timeline */}
         <div className="relative">
-          {/* Vertical line */}
-          <div className="absolute left-[19px] top-2 bottom-2 w-px"
-            style={{ background: 'linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.1) 80%, transparent)' }} />
 
-          <div className="space-y-6">
+          {/* Laser beam line */}
+          <div
+            className="absolute top-2 bottom-2 pointer-events-none"
+            style={{ left: 19, width: 2 }}
+          >
+            {/* Gradient line */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(180deg, rgba(0,212,255,0.8) 0%, rgba(0,245,212,0.6) 60%, rgba(0,212,255,0.1) 100%)' }}
+            />
+            {/* Glow */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'rgba(0,212,255,0.3)', filter: 'blur(4px)', transform: 'scaleX(3)' }}
+            />
+            {/* Traveling data packets */}
+            {[0, 1.2, 2.5, 3.8].map((delay, i) => (
+              <div
+                key={i}
+                className="absolute -left-[3px] rounded-full"
+                style={{
+                  width: 8,
+                  height: 8,
+                  background: i % 2 === 0 ? '#00d4ff' : '#00f5d4',
+                  boxShadow: `0 0 10px ${i % 2 === 0 ? '#00d4ff' : '#00f5d4'}`,
+                  animation: `jtPacket 4.5s linear infinite ${delay}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="space-y-5">
             {milestones.map((m, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, x: -30 }}
+                initial={{ opacity: 0, x: -24 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07, duration: 0.5 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
                 className="flex gap-6 items-start group"
               >
                 {/* Icon node */}
                 <div className="relative shrink-0 z-10">
                   <motion.div
-                    whileInView={{ boxShadow: [`0 0 0px ${m.color}00`, `0 0 20px ${m.color}66`, `0 0 10px ${m.color}33`] }}
+                    whileInView={{
+                      boxShadow: [
+                        `0 0 0px ${m.color}00`,
+                        `0 0 22px ${m.color}80`,
+                        `0 0 12px ${m.color}40`,
+                      ],
+                    }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.07 + 0.3, duration: 0.8 }}
-                    className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-lg bg-[#020818]"
+                    transition={{ delay: i * 0.06 + 0.3, duration: 0.7 }}
+                    className="relative w-10 h-10 rounded-full border-2 flex items-center justify-center text-lg bg-[#020818]"
                     style={{ borderColor: m.color }}
                   >
                     {m.icon}
+                    {/* Extra rings for NOW node */}
+                    {m.isNow && [1.6, 2.1].map((s, ri) => (
+                      <div
+                        key={ri}
+                        className="absolute inset-0 rounded-full border pointer-events-none"
+                        style={{
+                          borderColor: m.color,
+                          transform: `scale(${s})`,
+                          opacity: 0.2,
+                          animation: `jtNowPulse ${2 + ri * 0.6}s ease-in-out infinite ${ri * 0.4}s`,
+                        }}
+                      />
+                    ))}
                   </motion.div>
-                  {/* Connecting dot on line */}
-                  <div className="absolute top-1/2 -translate-y-1/2 -left-[1px] w-1 h-1 rounded-full"
-                    style={{ background: m.color }} />
                 </div>
 
                 {/* Card */}
-                <div className="flex-1 border border-[rgba(0,212,255,0.08)] p-5 hover:border-[rgba(0,212,255,0.2)] transition-colors duration-300 relative overflow-hidden"
-                  style={{ background: '#010c1e' }}>
-                  {/* Top accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: `linear-gradient(90deg, transparent, ${m.color}60, transparent)` }} />
+                <div
+                  className="flex-1 relative overflow-hidden transition-all duration-300 group-hover:translate-x-1"
+                  style={{
+                    border: `1px solid ${m.isNow ? m.color + '50' : 'rgba(0,212,255,0.1)'}`,
+                    background: m.isNow ? `${m.color}06` : '#010c1e',
+                    borderLeft: `2px solid ${m.color}`,
+                  }}
+                >
+                  {/* Top shimmer on hover */}
+                  <div
+                    className="absolute top-0 left-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-400"
+                    style={{ background: `linear-gradient(90deg, transparent, ${m.color}80, transparent)` }}
+                  />
 
-                  <div className="flex flex-wrap items-center gap-3 mb-2">
-                    {/* Year */}
-                    <span className="font-mono text-[10px] px-2 py-0.5 border font-bold"
-                      style={{ color: m.color, borderColor: `${m.color}40`, background: `${m.color}10` }}>
-                      {m.year}
-                    </span>
-                    {/* Tag */}
-                    <span className="font-mono text-[8px] px-2 py-0.5 tracking-[2px] uppercase"
-                      style={{ color: tagColors[m.tag] || '#8899bb', background: `${tagColors[m.tag]}15` }}>
-                      {m.tag}
-                    </span>
+                  <div className="p-5">
+                    {/* Year + tag */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <span
+                        className="font-mono font-bold px-2 py-0.5 border"
+                        style={{ fontSize: 10, color: m.color, borderColor: `${m.color}40`, background: `${m.color}12` }}
+                      >
+                        {m.year}
+                      </span>
+                      <span
+                        className="font-mono tracking-[2px] uppercase px-2 py-0.5"
+                        style={{
+                          fontSize: 8,
+                          color: tagColors[m.tag] || '#8899bb',
+                          background: `${tagColors[m.tag] || '#8899bb'}15`,
+                        }}
+                      >
+                        {m.tag}
+                      </span>
+                      {m.isNow && (
+                        <span className="flex items-center gap-1.5 font-mono tracking-[2px] uppercase" style={{ fontSize: 8, color: '#00f5d4' }}>
+                          <span className="w-1 h-1 rounded-full bg-neon animate-pulse" />
+                          LIVE
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="font-orbitron font-bold text-[#e2eaff] mb-0.5 leading-tight" style={{ fontSize: 13 }}>
+                      {m.title}
+                    </h3>
+                    <div className="font-mono mb-3" style={{ fontSize: 10, color: m.color }}>
+                      {m.subtitle}
+                    </div>
+                    <p className="font-mono text-muted leading-relaxed" style={{ fontSize: 11 }}>
+                      {m.desc}
+                    </p>
                   </div>
-
-                  <h3 className="font-orbitron text-[13px] font-bold text-[#e2eaff] mb-0.5">{m.title}</h3>
-                  <div className="font-mono text-[10px] mb-3" style={{ color: m.color }}>{m.subtitle}</div>
-                  <p className="font-mono text-[11px] text-muted leading-relaxed">{m.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -175,18 +260,40 @@ export default function JourneyTimeline() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-12 p-6 border border-[rgba(0,212,255,0.15)] bg-[rgba(0,212,255,0.02)] text-center"
+          className="mt-12 p-6 border border-[rgba(0,212,255,0.15)] bg-[rgba(0,212,255,0.02)] text-center relative overflow-hidden"
         >
-          <div className="font-mono text-[10px] text-neon tracking-[3px] uppercase mb-2">What comes next</div>
-          <p className="font-mono text-[12px] text-muted mb-4">
+          <div
+            className="absolute inset-x-0 bottom-0 h-[1px]"
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent)' }}
+          />
+          <div className="font-mono text-neon tracking-[3px] uppercase mb-2" style={{ fontSize: 10 }}>
+            What comes next
+          </div>
+          <p className="font-mono text-muted mb-5" style={{ fontSize: 12 }}>
             First role in cybersecurity. Contributing from day one. Building the next chapter.
           </p>
-          <a href="mailto:kamarajosephallan@gmail.com"
-            className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[2px] uppercase px-6 py-2.5 bg-cyan text-bg hover:bg-neon transition-colors">
+          <a
+            href="mailto:kamarajosephallan@gmail.com"
+            className="inline-flex items-center gap-2 font-mono tracking-[2px] uppercase px-7 py-3 bg-cyan text-bg hover:bg-neon transition-colors"
+            style={{ fontSize: 11 }}
+          >
             Let's Talk →
           </a>
         </motion.div>
       </div>
+
+      <style>{`
+        @keyframes jtPacket {
+          0%   { top: -8px; opacity: 0; }
+          5%   { opacity: 1; }
+          92%  { opacity: 0.9; }
+          100% { top: 100%; opacity: 0; }
+        }
+        @keyframes jtNowPulse {
+          0%, 100% { opacity: 0.15; }
+          50%       { opacity: 0.45; }
+        }
+      `}</style>
     </section>
   )
 }

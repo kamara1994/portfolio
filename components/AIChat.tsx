@@ -1,166 +1,290 @@
 'use client'
+// @ts-nocheck
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
+interface Message { role: 'user' | 'assistant'; content: string }
 
 const QUICK_QUESTIONS = [
   'What projects has Joseph built?',
   'Is Joseph available to hire?',
   'What are his top skills?',
-  'Tell me about BLUE SOC',
-  'What certs does he have?',
 ]
 
+const GREETING = "Hi, I'm PWEZA, Joseph's AI assistant. Ask me anything about him, or we can just chat. What's up?"
+
+// How long (ms) to keep the mic OFF after PWEZA stops talking, so the dying
+// echo of its own voice on speakers can't get captured and answered.
+const SPEECH_COOLDOWN = 800
+
 export default function AIChat() {
-  const [open, setOpen]         = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hey! I'm PWEZA. Ask me anything about Joseph — his projects, skills, or if you're looking to hire him. You can type or tap the mic to speak." }
-  ])
-  const [input, setInput]       = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [pulse, setPulse]       = useState(false)
-  const [listening, setListening]   = useState(false)
-  const [speaking, setSpeaking]     = useState(false)
+  const [open, setOpen]                     = useState(false)
+  const [messages, setMessages]             = useState<Message[]>([{ role: 'assistant', content: GREETING }])
+  const [input, setInput]                   = useState('')
+  const [loading, setLoading]               = useState(false)
+  const [pulse, setPulse]                   = useState(false)
+  const [listening, setListening]           = useState(false)
+  const [speaking, setSpeaking]             = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
-  const bottomRef      = useRef<HTMLDivElement>(null)
-  const recognitionRef = useRef<any>(null)
+  const [voiceMode, setVoiceMode]           = useState<'voice' | 'text'>('voice')
+  const [greeted, setGreeted]               = useState(false)
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  const bottomRef        = useRef<HTMLDivElement>(null)
+  const recognitionRef   = useRef<any>(null)
+  const voiceModeRef     = useRef<'voice' | 'text'>('voice')
+  const audioRef         = useRef<HTMLAudioElement | null>(null)
+  const speakingRef      = useRef(false)
+  const loadingRef       = useRef(false)
+  const listeningRef     = useRef(false)
+  const lastSpeechEndRef = useRef(0)      // timestamp of when PWEZA last stopped talking
+  const openRef          = useRef(false)  // is the chat panel open? gates the whole voice loop
 
+  useEffect(() => { voiceModeRef.current = voiceMode }, [voiceMode])
+  useEffect(() => { speakingRef.current  = speaking },  [speaking])
+  useEffect(() => { loadingRef.current   = loading },   [loading])
+  useEffect(() => { listeningRef.current = listening }, [listening])
+  useEffect(() => { openRef.current      = open },      [open])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
   useEffect(() => {
-    const supported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
+    const supported = typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
     setVoiceSupported(supported)
   }, [])
 
   useEffect(() => {
     if (open) return
-    const interval = setInterval(() => {
-      setPulse(true)
-      setTimeout(() => setPulse(false), 2000)
-    }, 8000)
-    const initial = setTimeout(() => {
-      setPulse(true)
-      setTimeout(() => setPulse(false), 2000)
-    }, 3000)
+    const interval = setInterval(() => { setPulse(true); setTimeout(() => setPulse(false), 2000) }, 8000)
+    const initial  = setTimeout(() => { setPulse(true); setTimeout(() => setPulse(false), 2000) }, 3000)
     return () => { clearInterval(interval); clearTimeout(initial) }
   }, [open])
 
-  const speak = (text: string) => {
-    if (!('speechSynthesis' in window)) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.rate = 1.0
-    utterance.pitch = 1.1
-    utterance.volume = 0.9
-    const voices = window.speechSynthesis.getVoices()
-    const preferred = voices.find(v =>
-      v.name.includes('Samantha') || v.name.includes('Karen') ||
-      v.name.includes('Daniel')   || v.name.includes('Google') ||
-      v.lang === 'en-US'
-    )
-    if (preferred) utterance.voice = preferred
-    utterance.onstart = () => setSpeaking(true)
-    utterance.onend   = () => setSpeaking(false)
-    utterance.onerror = () => setSpeaking(false)
-    window.speechSynthesis.speak(utterance)
+  const stopSpeaking = () => {
+    if (audioRef.current) { try { audioRef.current.pause() } catch {} ; audioRef.current = null }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel()
+    speakingRef.current = false
+    setSpeaking(false)
+    lastSpeechEndRef.current = Date.now()   // start the cooldown so the mic doesn't grab the cut-off tail
   }
 
-  const stopSpeaking = () => { window.speechSynthesis.cancel(); setSpeaking(false) }
-
-  const startListening = () => {
-    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
-    if (!SpeechRecognition) return
-    const recognition = new SpeechRecognition()
-    recognition.continuous    = false
-    recognition.interimResults = false
-    recognition.lang = 'en-US'
-    recognition.onstart  = () => setListening(true)
-    recognition.onend    = () => setListening(false)
-    recognition.onerror  = () => setListening(false)
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript
-      setInput(transcript)
-      setTimeout(() => send(transcript), 100)
-    }
-    recognition.start()
-    recognitionRef.current = recognition
-  }
-
-  const stopListening = () => { recognitionRef.current?.stop(); setListening(false) }
-
-  const send = async (text?: string) => {
-    const msg = text || input.trim()
-    if (!msg || loading) return
-    const newMessages: Message[] = [...messages, { role: 'user', content: msg }]
-    setMessages(newMessages)
-    setInput('')
-    setLoading(true)
+  const speak = (text: string, audioDataUrl?: string | null, onEnd?: () => void) => {
     stopSpeaking()
+
+    // Mic is OFF the whole time PWEZA talks - it literally cannot hear itself.
+    const begin  = () => { speakingRef.current = true;  setSpeaking(true);  stopListening() }
+    const finish = () => {
+      speakingRef.current = false; setSpeaking(false)
+      lastSpeechEndRef.current = Date.now()
+      onEnd?.()
+    }
+
+    if (audioDataUrl) {
+      try {
+        const audio = new Audio(audioDataUrl)
+        audio.onplay  = begin
+        audio.onended = finish
+        audio.onerror = finish
+        audio.play().catch(finish)
+        audioRef.current = audio
+        return
+      } catch { /* fall through to browser TTS */ }
+    }
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) { onEnd?.(); return }
+    const u = new SpeechSynthesisUtterance(text)
+    u.rate = 1.02; u.pitch = 1.05; u.volume = 0.95
+    const voices = window.speechSynthesis.getVoices()
+    const v = voices.find(x => x.name.includes('Samantha') || x.name.includes('Karen') || x.name.includes('Google US') || x.lang === 'en-US')
+    if (v) u.voice = v
+    u.onstart = begin
+    u.onend   = finish
+    u.onerror = finish
+    window.speechSynthesis.speak(u)
+  }
+
+  const fetchTTS = async (text: string): Promise<string | null> => {
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) })
+      if (!res.ok) return null
+      const data = await res.json()
+      return data.audio || null
+    } catch { return null }
+  }
+
+  /* -- listening: ONLY runs when PWEZA is silent and past the cooldown -- */
+  const startListening = () => {
+    if (typeof window === 'undefined') return
+    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
+    if (!SR) return
+    if (!openRef.current) return             // panel closed - never listen
+    if (voiceModeRef.current !== 'voice') return
+    if (speakingRef.current) return          // never listen while audio is playing
+    if (loadingRef.current) return           // never listen while waiting on a reply
+    if (listeningRef.current) return         // already running
+
+    // If PWEZA only just finished, wait out the cooldown before opening the mic.
+    const since = Date.now() - lastSpeechEndRef.current
+    if (since < SPEECH_COOLDOWN) { setTimeout(() => startListening(), SPEECH_COOLDOWN - since + 50); return }
+
+    try { recognitionRef.current?.stop() } catch {}
+
+    const r = new SR()
+    let gotResult = false
+    r.continuous     = false
+    r.interimResults = false
+    r.lang           = 'en-US'
+
+    r.onstart  = () => { listeningRef.current = true; setListening(true) }
+    r.onresult = (e: any) => {
+      gotResult = true
+      const transcript = (e.results[0][0].transcript || '').trim()
+      if (!transcript) return
+      // Final safety net: drop anything captured inside the cooldown window
+      // (that's almost always PWEZA's own echo, not you).
+      if (Date.now() - lastSpeechEndRef.current < SPEECH_COOLDOWN) return
+      send(transcript, 'voice')
+    }
+    r.onerror  = () => {
+      listeningRef.current = false; setListening(false)
+      if (openRef.current && voiceModeRef.current === 'voice' && !loadingRef.current && !speakingRef.current) setTimeout(() => startListening(), 350)
+    }
+    r.onend    = () => {
+      listeningRef.current = false; setListening(false)
+      if (openRef.current && voiceModeRef.current === 'voice' && !loadingRef.current && !speakingRef.current) setTimeout(() => startListening(), 350)
+    }
+
+    try { r.start(); recognitionRef.current = r } catch {}
+  }
+
+  const stopListening = () => { try { recognitionRef.current?.stop() } catch {}; listeningRef.current = false; setListening(false) }
+
+  const send = async (text?: string, mode: 'voice' | 'text' = voiceModeRef.current) => {
+    const msg = (text ?? input).trim()
+    if (!msg || loadingRef.current) return
+
+    setVoiceMode(mode); voiceModeRef.current = mode
+    stopSpeaking()
+    stopListening()
+    loadingRef.current = true
+
+    const newMessages: Message[] = [...messages, { role: 'user', content: msg }]
+    setMessages(newMessages); setInput(''); setLoading(true)
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages.map(m => ({ role: m.role, content: m.content })) })
       })
-      const data  = await response.json()
-      const reply = data.content || data.error || 'Sorry, could not process that.'
+      const data = await res.json()
+      const reply = (data.content || data.error || 'Sorry, I had trouble with that.').trim()
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-      // Always speak response for natural conversation flow
-      if (speaking) stopSpeaking()
-      setTimeout(() => speak(reply), 100)
+
+      if (mode === 'voice') {
+        speak(reply, data.audio, () => {
+          if (voiceModeRef.current === 'voice') setTimeout(() => startListening(), 350)
+        })
+      }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Please try again.' }])
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error - try again?' }])
     } finally {
+      loadingRef.current = false
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    if (!open || greeted) return
+    setGreeted(true)
+    ;(async () => {
+      const audioUrl = '/pweza-greeting.mp3'
+      speak(GREETING, audioUrl, () => {
+        if (voiceModeRef.current === 'voice') setTimeout(() => startListening(), 350)
+      })
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  const handleInputChange = (e: any) => {
+    const v = e.target.value
+    setInput(v)
+    if (v.length > 0 && voiceModeRef.current === 'voice') {
+      setVoiceMode('text'); voiceModeRef.current = 'text'
+      stopSpeaking(); stopListening()
+    }
+  }
+
+  const toggleOpen = () => {
+    if (open) { openRef.current = false; stopSpeaking(); stopListening() }
+    else { openRef.current = true }
+    setOpen(o => !o)
+  }
+
+  const handleMicClick = () => {
+    if (!voiceSupported) return
+    if (listening) { stopListening(); return }
+    setVoiceMode('voice'); voiceModeRef.current = 'voice'
+    startListening()
+  }
+
+  // "Cut in" - interrupt PWEZA mid-reply, then reopen the mic after the cooldown.
+  const cutIn = () => {
+    stopSpeaking()
+    setVoiceMode('voice'); voiceModeRef.current = 'voice'
+    setTimeout(() => startListening(), SPEECH_COOLDOWN + 50)
+  }
+
+  const replayMessage = async (text: string) => {
+    const audioUrl = await fetchTTS(text)
+    speak(text, audioUrl)
+  }
+
   return (
     <>
-      <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-2">
+      <div style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 999999, isolation: 'isolate' }}
+        className="flex flex-col items-start gap-2">
         <AnimatePresence>
           {!open && (
-            <motion.div
+            <motion.button
+              type="button" onClick={toggleOpen}
               initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-              className="flex items-center gap-2 px-3 py-1.5 border border-[rgba(0,212,255,0.3)] bg-[rgba(2,8,24,0.9)] backdrop-blur-sm"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse" />
-              <span className="font-mono text-[9px] font-bold text-cyan tracking-[2px] uppercase whitespace-nowrap">
-                Ask PWEZA
-              </span>
-              {voiceSupported && <span className="font-mono text-[8px] text-muted">🎤</span>}
-            </motion.div>
+              whileHover={{ scale: 1.04 }}
+              className="flex items-center gap-2 font-mono"
+              style={{
+                fontSize: 9, padding: '6px 11px', letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700,
+                color: '#00d4ff', cursor: 'pointer', outline: 'none',
+                background: 'rgba(2,8,24,0.85)',
+                backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(0,212,255,0.3)', borderRadius: 6, pointerEvents: 'auto',
+              }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 6px #00f5d4', animation: 'pwezaPulse 2s ease-in-out infinite', pointerEvents: 'none' }} />
+              <span style={{ pointerEvents: 'none' }}>Ask PWEZA</span>
+              {voiceSupported && <span style={{ pointerEvents: 'none', fontSize: 10 }}>🎤</span>}
+            </motion.button>
           )}
         </AnimatePresence>
 
         <motion.button
-          onClick={() => setOpen(o => !o)}
-          className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+          type="button" onClick={toggleOpen}
+          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
+          animate={pulse && !open
+            ? { boxShadow: ['0 0 25px rgba(0,212,255,0.4)', '0 0 60px rgba(0,245,212,0.8)', '0 0 25px rgba(0,212,255,0.4)'], scale: [1, 1.1, 1] }
+            : {}}
+          transition={{ duration: 1.4, ease: 'easeInOut' }}
+          aria-label="Open PWEZA chat"
           style={{
+            position: 'relative', width: 64, height: 64, borderRadius: 16,
             background: 'linear-gradient(135deg, #00d4ff, #00f5d4)',
             boxShadow: open ? '0 0 40px rgba(0,212,255,0.6)' : '0 0 25px rgba(0,212,255,0.4)',
-          }}
-          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
-          animate={pulse && !open ? {
-            boxShadow: ['0 0 25px rgba(0,212,255,0.4)', '0 0 60px rgba(0,245,212,0.8)', '0 0 25px rgba(0,212,255,0.4)'],
-            scale: [1, 1.12, 1],
-          } : {}}
-          transition={{ duration: 1.2, ease: 'easeInOut' }}
-        >
+            cursor: 'pointer', outline: 'none', border: 'none', padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto',
+          }}>
           {!open && (
-            <motion.div className="absolute inset-0 rounded-2xl"
-              animate={{ boxShadow: ['0 0 0 0px rgba(0,212,255,0.4)', '0 0 0 8px rgba(0,212,255,0)'] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
-            />
+            <span style={{
+              position: 'absolute', inset: 0, borderRadius: 16, pointerEvents: 'none',
+              animation: 'pwezaRipple 2s ease-out infinite',
+              boxShadow: '0 0 0 0 rgba(0,212,255,0.4)',
+            }} />
           )}
-          {open ? <span className="text-[#020818] font-bold text-xl">✕</span>
-                : <span className="text-[#020818] text-2xl">🤖</span>}
+          <span style={{ pointerEvents: 'none', fontSize: open ? 22 : 28, color: '#020818', fontWeight: 900 }}>
+            {open ? '✕' : '🤖'}
+          </span>
         </motion.button>
       </div>
 
@@ -170,60 +294,81 @@ export default function AIChat() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-28 left-6 z-50 w-80 sm:w-96 overflow-hidden border border-[rgba(0,212,255,0.25)]"
-            style={{ background: 'rgba(3,10,25,0.98)', backdropFilter: 'blur(30px)', boxShadow: '0 0 60px rgba(0,212,255,0.15)' }}
-          >
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-[rgba(0,212,255,0.1)] flex items-center gap-3" style={{ background: 'rgba(0,212,255,0.04)' }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
-                style={{ background: 'linear-gradient(135deg, rgba(0,212,255,0.3), rgba(0,245,212,0.3))' }}>
-                🤖
-              </div>
-              <div>
-                <p className="font-mono text-[11px] font-bold text-cyan tracking-wider">PWEZA</p>
-                <p className="font-mono text-[9px] text-muted">
-                  {voiceSupported ? '🎤 Voice enabled · Powered by Groq' : 'Powered by Groq · Type to chat'}
+            transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+            style={{
+              position: 'fixed', bottom: 112, left: 24, width: 360, maxWidth: 'calc(100vw - 48px)',
+              zIndex: 999998,
+              background: 'rgba(3,10,25,0.98)',
+              backdropFilter: 'blur(30px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+              border: '1px solid rgba(0,212,255,0.25)', borderRadius: 12,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 50px rgba(0,212,255,0.15)',
+              overflow: 'hidden',
+            }}>
+            <motion.div
+              animate={{ backgroundPositionX: ['0%', '200%'] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+              style={{
+                position: 'absolute', top: 0, left: '8%', right: '8%', height: 1.4,
+                background: 'linear-gradient(90deg, transparent, #00d4ff, #fff, #00f5d4, #00d4ff, transparent)',
+                backgroundSize: '200% 100%',
+                boxShadow: '0 0 6px #00d4ff, 0 0 14px rgba(0,212,255,0.4)',
+                pointerEvents: 'none', borderRadius: 1,
+              }}
+            />
+
+            <div className="flex items-center gap-3" style={{ padding: '12px 14px', borderBottom: '1px solid rgba(0,212,255,0.1)', background: 'rgba(0,212,255,0.04)' }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: 'linear-gradient(135deg, rgba(0,212,255,0.4), rgba(0,245,212,0.4))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+              }}>🤖</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p className="font-mono font-bold tracking-wider" style={{ fontSize: 11, color: '#00d4ff', margin: 0 }}>PWEZA</p>
+                <p className="font-mono" style={{ fontSize: 9, color: '#62788f', margin: 0 }}>
+                  {speaking ? '🔊 Speaking — tap “Cut in” to talk' : listening ? '🎤 Listening…' : voiceMode === 'voice' && voiceSupported ? "Voice mode · Joseph's voice" : 'Text mode'}
                 </p>
               </div>
-              <div className="ml-auto flex items-center gap-2">
-                {speaking && (
-                  <motion.button onClick={stopSpeaking}
-                    className="font-mono text-[8px] text-[#f59e0b] border border-[rgba(245,158,11,0.3)] px-2 py-0.5"
-                    animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1, repeat: Infinity }}>
-                    🔊 Stop
-                  </motion.button>
-                )}
-                <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse" />
-                <span className="font-mono text-[9px] text-neon">ONLINE</span>
-              </div>
+              {speaking && (
+                <button type="button" onClick={cutIn}
+                  className="font-mono"
+                  style={{ fontSize: 8.5, color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)', padding: '3px 7px', borderRadius: 5, background: 'rgba(245,158,11,0.1)', cursor: 'pointer' }}>
+                  🎤 Cut in
+                </button>
+              )}
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 8px #00f5d4', animation: 'pwezaPulse 2s ease-in-out infinite' }} />
+              <span className="font-mono font-bold" style={{ fontSize: 9, color: '#00f5d4', letterSpacing: 1 }}>ONLINE</span>
             </div>
 
-            {/* Messages */}
-            <div className="h-64 overflow-y-auto p-3 space-y-3">
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] px-3 py-2 text-[11px] leading-relaxed font-mono ${
-                    m.role === 'user'
-                      ? 'bg-[rgba(0,212,255,0.08)] text-cyan border border-[rgba(0,212,255,0.15)]'
-                      : 'bg-[rgba(255,255,255,0.02)] text-[#8899aa] border border-[rgba(255,255,255,0.05)]'
-                  }`}>
-                    {m.content}
-                    {m.role === 'assistant' && i === messages.length - 1 && !loading && (
-                      <button onClick={() => speak(m.content)}
-                        className="ml-2 text-[9px] text-muted hover:text-cyan transition-colors" title="Speak">
-                        🔊
-                      </button>
-                    )}
+            <div className="overflow-y-auto" style={{ height: 268, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {messages.map((m, i) => {
+                const isUser = m.role === 'user'
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+                    <div className="font-mono" style={{
+                      maxWidth: '86%', padding: '9px 12px', fontSize: 11, lineHeight: 1.55,
+                      color: isUser ? '#bff5ff' : '#9fb5cc',
+                      background: isUser ? 'rgba(0,212,255,0.10)' : 'rgba(255,255,255,0.03)',
+                      border: '1px solid ' + (isUser ? 'rgba(0,212,255,0.25)' : 'rgba(255,255,255,0.06)'),
+                      borderRadius: isUser ? '11px 11px 3px 11px' : '11px 11px 11px 3px',
+                    }}>
+                      {m.content}
+                      {m.role === 'assistant' && i === messages.length - 1 && !loading && (
+                        <button type="button" onClick={() => replayMessage(m.content)} title="Replay"
+                          style={{ marginLeft: 6, color: '#62788f', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 11 }}>
+                          🔊
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               {loading && (
-                <div className="flex justify-start">
-                  <div className="px-3 py-2 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]">
-                    <div className="flex gap-1">
-                      {[0,1,2].map(i => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan animate-bounce"
-                          style={{ animationDelay: `${i * 0.15}s` }} />
+                <div style={{ display: 'flex' }}>
+                  <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 11 }}>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {[0, 1, 2].map(i => (
+                        <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#00d4ff', boxShadow: '0 0 6px #00d4ff', animation: 'pwezaBounce 0.9s ease-in-out ' + (i * 0.15) + 's infinite' }} />
                       ))}
                     </div>
                   </div>
@@ -232,54 +377,71 @@ export default function AIChat() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Quick questions */}
-            {messages.length === 1 && (
-              <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-                {QUICK_QUESTIONS.slice(0, 3).map(q => (
-                  <button key={q} onClick={() => send(q)}
-                    className="font-mono text-[9px] px-2 py-1 border border-[rgba(0,212,255,0.2)] text-cyan hover:border-[rgba(0,212,255,0.5)] hover:bg-[rgba(0,212,255,0.05)] transition-all">
+            {messages.length === 1 && !loading && (
+              <div style={{ padding: '0 12px 8px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {QUICK_QUESTIONS.map(q => (
+                  <button key={q} type="button" onClick={() => send(q, 'text')}
+                    className="font-mono"
+                    style={{
+                      fontSize: 9, padding: '4px 9px', color: '#00d4ff',
+                      background: 'rgba(0,212,255,0.05)',
+                      border: '1px solid rgba(0,212,255,0.2)', borderRadius: 5, cursor: 'pointer',
+                    }}>
                     {q}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Input */}
-            <div className="p-3 border-t border-[rgba(0,212,255,0.08)] flex gap-2">
+            <div style={{ padding: 11, borderTop: '1px solid rgba(0,212,255,0.08)', display: 'flex', gap: 7, alignItems: 'center', background: 'rgba(0,212,255,0.02)' }}>
               <input
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && send()}
-                placeholder={listening ? '🎤 Listening...' : 'Ask about Joseph...'}
-                className="flex-1 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] px-3 py-2 text-[11px] text-white placeholder-[#334155] outline-none focus:border-[rgba(0,212,255,0.3)] font-mono transition-colors"
+                onChange={handleInputChange}
+                onKeyDown={e => e.key === 'Enter' && send(undefined, 'text')}
+                placeholder={listening ? 'Listening…' : 'Type or tap mic'}
+                className="font-mono"
+                style={{ flex: 1, fontSize: 11, color: '#fff', padding: '8px 11px',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, outline: 'none' }}
               />
-              <motion.button
-                  onClick={voiceSupported ? (listening ? stopListening : startListening) : undefined}
-                  disabled={loading || !voiceSupported}
-                  className="px-3 py-2 border transition-all relative"
-                  style={{
-                    borderColor: listening ? 'rgba(239,68,68,0.6)' : voiceSupported ? 'rgba(0,245,212,0.5)' : 'rgba(0,212,255,0.1)',
-                    background: listening ? 'rgba(239,68,68,0.15)' : voiceSupported ? 'rgba(0,245,212,0.08)' : 'transparent',
-                    boxShadow: listening ? '0 0 12px rgba(239,68,68,0.4)' : voiceSupported ? '0 0 8px rgba(0,245,212,0.3)' : 'none',
-                    opacity: voiceSupported ? 1 : 0.3,
-                  }}
-                  animate={listening ? { scale: [1, 1.15, 1] } : voiceSupported ? { boxShadow: ['0 0 8px rgba(0,245,212,0.2)', '0 0 16px rgba(0,245,212,0.5)', '0 0 8px rgba(0,245,212,0.2)'] } : {}}
-                  transition={{ duration: listening ? 0.6 : 2, repeat: Infinity }}
-                  title={voiceSupported ? (listening ? 'Stop listening' : 'Speak to PWEZA') : 'Voice not supported in this browser'}
-                >
-                  <span className="text-base">{listening ? '⏹' : '🎤'}</span>
-                  {listening && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                  )}
-                </motion.button>
-              <button onClick={() => send()} disabled={loading || !input.trim()}
-                className="px-3 py-2 bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.2)] hover:bg-[rgba(0,212,255,0.2)] transition-all disabled:opacity-40">
-                <span className="text-cyan text-sm">→</span>
+              <button type="button" onClick={handleMicClick}
+                disabled={loading || !voiceSupported}
+                style={{
+                  position: 'relative',
+                  width: 34, height: 34, borderRadius: 6,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+                  color: listening ? '#ef4444' : voiceSupported ? '#00f5d4' : '#33485c',
+                  background: listening ? 'rgba(239,68,68,0.15)' : voiceSupported ? 'rgba(0,245,212,0.1)' : 'transparent',
+                  border: '1px solid ' + (listening ? 'rgba(239,68,68,0.5)' : voiceSupported ? 'rgba(0,245,212,0.4)' : 'rgba(255,255,255,0.08)'),
+                  cursor: voiceSupported ? 'pointer' : 'not-allowed',
+                  opacity: voiceSupported ? 1 : 0.4,
+                  animation: listening ? 'pwezaListen 0.7s ease-in-out infinite' : 'none',
+                }}>
+                {listening ? '⏹' : '🎤'}
+                {listening && <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 6px #ef4444', animation: 'pwezaPulse 1s ease-in-out infinite' }} />}
               </button>
+              <button type="button" onClick={() => send(undefined, 'text')}
+                disabled={loading || !input.trim()}
+                style={{
+                  width: 34, height: 34, borderRadius: 6,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+                  color: '#00d4ff',
+                  background: 'rgba(0,212,255,0.1)',
+                  border: '1px solid rgba(0,212,255,0.3)',
+                  cursor: (loading || !input.trim()) ? 'not-allowed' : 'pointer',
+                  opacity: (loading || !input.trim()) ? 0.4 : 1,
+                }}>→</button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <style>{`
+        @keyframes pwezaPulse  { 0%, 100% { opacity: 0.55 } 50% { opacity: 1 } }
+        @keyframes pwezaRipple { 0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4) } 100% { box-shadow: 0 0 0 8px rgba(0,212,255,0) } }
+        @keyframes pwezaBounce { 0%, 100% { transform: translateY(0); opacity: 0.5 } 50% { transform: translateY(-6px); opacity: 1 } }
+        @keyframes pwezaListen { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.1) } }
+      `}</style>
     </>
   )
 }

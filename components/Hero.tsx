@@ -1,30 +1,152 @@
 'use client'
+// @ts-nocheck
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-const CertShowcase = dynamic(() => import('@/components/CertShowcase'), { ssr: false })
+const CertOrbit = dynamic(() => import('@/components/CertOrbit'), { ssr: false })
 
 const roles = ['SOC Analyst', 'Security Engineer', 'AI Security Engineer', 'Cloud Security Engineer', 'Penetration Tester']
 
 const statusItems = [
-  { label: 'OPEN TO WORK', pulse: true },
-  { label: 'SECURITY+', pulse: false },
-  { label: 'PENTEST+', pulse: false },
-  { label: 'CCNA', pulse: false },
-  { label: 'PSAA', pulse: false },
-  { label: 'BLUE SOC · LAB-VALIDATED', pulse: false },
-  { label: 'FORTRESS v2 · LAB-VALIDATED', pulse: false },
+  { label: 'OPEN TO WORK',              color: '#00f5d4', pulse: true  },
+  { label: 'SECURITY+',                 color: '#00d4ff', pulse: false },
+  { label: 'PENTEST+',                  color: '#a855f7', pulse: false },
+  { label: 'CCNA',                      color: '#00d4ff', pulse: false },
+  { label: 'PSAA',                      color: '#818cf8', pulse: false },
+  { label: 'BLUE SOC · LAB-VALIDATED',  color: '#00f5d4', pulse: false },
+  { label: 'FORTRESS v2 · LAB-VALIDATED', color: '#ffaa00', pulse: false },
 ]
 
-export default function Hero() {
-  const [roleIdx, setRoleIdx] = useState(0)
-  const [displayed, setDisplayed] = useState('')
-  const [deleting, setDeleting] = useState(false)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+/* ── LED edge ── */
+function LedEdge({ position = 'top', colors = ['#00d4ff', '#00f5d4', '#818cf8'], width = 80, speed = 6, blur = 2.5 }) {
+  const isTop = position === 'top'
+  const inset = `${(100 - width) / 2}%`
+  return (
+    <>
+      <div style={{
+        position: 'absolute', [isTop ? 'top' : 'bottom']: -2, left: inset, right: inset, height: 5,
+        background: `linear-gradient(90deg, transparent 0%, ${colors[0]} 25%, ${colors[1]} 50%, ${colors[2]} 75%, transparent 100%)`,
+        filter: `blur(${blur}px)`, opacity: 0.65, pointerEvents: 'none', zIndex: 1,
+      }} />
+      <motion.div
+        animate={{ backgroundPositionX: ['0%', '200%'] }}
+        transition={{ duration: speed, repeat: Infinity, ease: 'linear' }}
+        style={{
+          position: 'absolute', [isTop ? 'top' : 'bottom']: 0, left: inset, right: inset, height: 1.2,
+          background: `linear-gradient(90deg, transparent, ${colors[0]}, ${colors[1]}, ${colors[2]}, ${colors[0]}, ${colors[1]}, transparent)`,
+          backgroundSize: '200% 100%',
+          boxShadow: `0 0 5px ${colors[0]}, 0 0 12px ${colors[0]}55`,
+          pointerEvents: 'none', borderRadius: 1, zIndex: 2,
+        }}
+      />
+    </>
+  )
+}
 
+/* ── Glass status pill ── */
+function StatusPill({ item, idx }) {
+  const tilt = idx % 2 === 0 ? -2 : 2
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0, rotateY: tilt, rotateX: 1.5 }}
+      whileHover={{ rotateY: 0, rotateX: 0, scale: 1.08, y: -3 }}
+      transition={{ delay: 0.1 + idx * 0.05, type: 'spring', stiffness: 280, damping: 22 }}
+      className="relative overflow-hidden font-mono font-bold flex items-center gap-1.5 shrink-0"
+      style={{
+        transformStyle: 'preserve-3d',
+        fontSize: 8.5, padding: '6px 11px', letterSpacing: 1.5, textTransform: 'uppercase',
+        color: item.color,
+        background: `linear-gradient(135deg, ${item.color}1f 0%, ${item.color}06 60%, rgba(0,0,0,0.25) 100%)`,
+        backdropFilter: 'blur(14px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(14px) saturate(180%)',
+        border: `1px solid ${item.color}55`,
+        borderRadius: 8,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.3), 0 6px 16px rgba(0,0,0,0.4), 0 0 14px ${item.color}22`,
+      }}
+    >
+      <LedEdge position="top" colors={[item.color, item.color, item.color]} width={70} speed={6} blur={2} />
+      <span style={{
+        width: 5, height: 5, borderRadius: '50%', background: item.color,
+        boxShadow: `0 0 6px ${item.color}`,
+        animation: item.pulse ? 'heroPulse 2s ease-in-out infinite' : 'none',
+      }} />
+      <span className="relative" style={{ zIndex: 3 }}>{item.label}</span>
+    </motion.div>
+  )
+}
+
+/* ── Glass action button ── */
+function GlassActionBtn({ href, target, primary, accent = '#00d4ff', accent2 = '#00f5d4', pulse, children, idx = 0 }) {
+  return (
+    <motion.a
+      href={href} target={target}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0, rotateY: -3, rotateX: 2 }}
+      whileHover={{ rotateY: 0, rotateX: 0, scale: 1.07, y: -4 }}
+      transition={{ delay: 0.8 + idx * 0.05, type: 'spring', stiffness: 260, damping: 22 }}
+      className="relative overflow-hidden font-mono font-black inline-flex items-center gap-2 cursor-pointer"
+      style={{
+        transformStyle: 'preserve-3d',
+        fontSize: 11, letterSpacing: 2.5, textTransform: 'uppercase',
+        padding: '12px 22px', color: primary ? '#02101f' : '#fff',
+        background: primary
+          ? `linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`
+          : `linear-gradient(135deg, ${accent}26 0%, ${accent2}10 50%, rgba(0,0,0,0.25) 100%)`,
+        backdropFilter: 'blur(16px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(200%)',
+        border: `1.4px solid ${primary ? accent2 : accent + '66'}`,
+        borderRadius: 10,
+        boxShadow: primary
+          ? `inset 0 1.5px 0 rgba(255,255,255,0.55), 0 12px 26px rgba(0,0,0,0.45), 0 0 32px ${accent}55`
+          : `inset 0 1.5px 0 rgba(255,255,255,0.32), 0 10px 22px rgba(0,0,0,0.4), 0 0 16px ${accent}33`,
+      }}
+    >
+      <LedEdge position="top"    colors={[accent, '#fff', accent2]} width={80} speed={3.5} blur={3} />
+      <LedEdge position="bottom" colors={[accent2, accent, accent]} width={80} speed={4.5} blur={3} />
+      {pulse && <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent2, boxShadow: `0 0 8px ${accent2}`, animation: 'heroPulse 1.5s ease-in-out infinite' }} />}
+      <span className="relative" style={{ zIndex: 3 }}>{children}</span>
+    </motion.a>
+  )
+}
+
+/* ── Glass stat cell ── */
+function StatCell({ num, label, color, idx }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1, rotateY: idx % 2 === 0 ? -3 : 3 }}
+      whileHover={{ rotateY: 0, rotateX: 0, scale: 1.06, y: -3 }}
+      transition={{ delay: 0.9 + idx * 0.06, type: 'spring', stiffness: 280, damping: 22 }}
+      className="relative overflow-hidden"
+      style={{
+        transformStyle: 'preserve-3d',
+        padding: '14px 16px',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.3) 100%)',
+        backdropFilter: 'blur(14px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(14px) saturate(180%)',
+        border: `1px solid ${color}33`,
+        borderRadius: 10,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 18px rgba(0,0,0,0.35), 0 0 14px ${color}1c`,
+      }}
+    >
+      <LedEdge position="top" colors={[color, color, color]} width={70} speed={6} blur={2} />
+      <div className="font-mono relative" style={{ fontSize: 22, color, lineHeight: 1, marginBottom: 4, zIndex: 3, textShadow: `0 0 8px ${color}66` }}>{num}</div>
+      <div className="font-mono relative" style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', letterSpacing: 1, textTransform: 'uppercase', zIndex: 3 }}>{label}</div>
+    </motion.div>
+  )
+}
+
+export default function Hero() {
+  const [roleIdx, setRoleIdx]     = useState(0)
+  const [displayed, setDisplayed] = useState('')
+  const [deleting, setDeleting]   = useState(false)
+  const canvasRef                 = useRef<HTMLCanvasElement>(null)
+
+  /* typing effect */
   useEffect(() => {
     const target = roles[roleIdx]
-    let timer: NodeJS.Timeout
+    let timer
     if (!deleting && displayed.length < target.length) {
       timer = setTimeout(() => setDisplayed(target.slice(0, displayed.length + 1)), 80)
     } else if (!deleting && displayed.length === target.length) {
@@ -38,6 +160,7 @@ export default function Hero() {
     return () => clearTimeout(timer)
   }, [displayed, deleting, roleIdx])
 
+  /* matrix canvas */
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -48,7 +171,7 @@ export default function Hero() {
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01ABCDEF</>{}[]'
     const fontSize = 13
     const cols = Math.floor(canvas.width / fontSize)
-    const drops: number[] = Array(cols).fill(1)
+    const drops = Array(cols).fill(1)
     const draw = () => {
       ctx.fillStyle = 'rgba(2,8,24,0.06)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -69,31 +192,12 @@ export default function Hero() {
     <section id="hero" className="relative min-h-screen flex flex-col pt-24 pb-16 overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30 pointer-events-none" />
 
-      {/* STATUS BAR */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="relative z-10 w-full border-b border-t border-[rgba(0,212,255,0.1)] bg-[rgba(0,212,255,0.03)] px-6 py-2 mb-8"
-      >
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-1">
-          {statusItems.map((item, i) => (
-            <div key={i} className="flex items-center gap-2">
-              {item.pulse ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse-slow" />
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(0,212,255,0.4)]" />
-              )}
-              <span className="font-mono text-[9px] tracking-[2px] text-[rgba(0,212,255,0.7)] uppercase">
-                {item.label}
-              </span>
-              {i < statusItems.length - 1 && (
-                <span className="text-[rgba(0,212,255,0.2)] ml-4 font-mono text-[10px]">|</span>
-              )}
-            </div>
-          ))}
+      {/* STATUS BAR — each item is a floating glass pill */}
+      <div className="relative z-10 w-full px-6 mb-10" style={{ perspective: 1000 }}>
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2.5">
+          {statusItems.map((item, i) => <StatusPill key={i} item={item} idx={i} />)}
         </div>
-      </motion.div>
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-6">
 
@@ -143,73 +247,40 @@ export default function Hero() {
             className="flex flex-wrap gap-2 mb-10"
           >
             {['SOC Analyst', 'Security Engineer', 'AI Security Engineer', 'Pen Tester', 'Cloud Security'].map(r => (
-              <span key={r} className="font-mono text-[10px] tracking-[1.5px] uppercase px-3 py-1.5 border border-[rgba(129,140,248,0.25)] text-purple2 bg-[rgba(129,140,248,0.05)]">
-                {r}
-              </span>
+              <span key={r} className="font-mono text-[10px] tracking-[1.5px] uppercase px-3 py-1.5 border border-[rgba(129,140,248,0.25)] text-purple2 bg-[rgba(129,140,248,0.05)]">{r}</span>
             ))}
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
-            className="flex flex-wrap gap-4 mb-12"
-          >
-            <a href="#projects" className="btn-hex bg-cyan text-bg font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-neon">
-              View Projects
-            </a>
-            <a href="/incident-replay" className="btn-hex font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 flex items-center gap-2 border border-[rgba(0,245,212,0.5)] text-neon hover:bg-[rgba(0,245,212,0.08)] transition-colors"
-              style={{ boxShadow: '0 0 20px rgba(0,245,212,0.15)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse shrink-0" />
-              Incident Lab
-            </a>
-            <a href="#briefing" className="btn-hex border border-[rgba(0,212,255,0.3)] text-cyan font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:bg-[rgba(0,212,255,0.08)]">
-              Recruiter Briefing
-            </a>
-            <a href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank" className="btn-hex border border-[rgba(0,212,255,0.2)] text-muted font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 hover:border-cyan hover:text-cyan">
-              ↓ Resume
-            </a>
-          </motion.div>
+          {/* ACTION BUTTONS — all floating glass */}
+          <div className="flex flex-wrap gap-4 mb-12" style={{ perspective: 1200 }}>
+            <GlassActionBtn href="#projects"          primary  accent="#00d4ff" accent2="#00f5d4" idx={0}>View Projects</GlassActionBtn>
+            <GlassActionBtn href="/incident-replay"            accent="#00f5d4" accent2="#a855f7" pulse idx={1}>Incident Lab</GlassActionBtn>
+            <GlassActionBtn href="#briefing"                   accent="#00d4ff" accent2="#818cf8" idx={2}>Recruiter Briefing</GlassActionBtn>
+            <GlassActionBtn href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank" accent="#ffaa00" accent2="#00d4ff" idx={3}>↓ Resume</GlassActionBtn>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
-            className="grid grid-cols-4 border border-[rgba(0,212,255,0.12)] max-w-lg"
-          >
-            {[
-              { num: '5', label: 'Certifications' },
-              { num: '11+', label: 'Projects' },
-              { num: '99.98%', label: 'AI Accuracy*' },
-              { num: 'BS', label: 'Cybersecurity' },
-            ].map((s, i) => (
-              <div key={i} className={`px-4 py-4 ${i < 3 ? 'border-r border-[rgba(0,212,255,0.12)]' : ''}`}>
-                <div className="font-mono text-xl text-cyan leading-none mb-1">{s.num}</div>
-                <div className="font-mono text-[9px] text-muted uppercase tracking-[1px]">{s.label}</div>
-              </div>
-            ))}
-          </motion.div>
+          {/* STATS GRID — glass cells */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg" style={{ perspective: 1200 }}>
+            <StatCell num="5"      label="Certifications" color="#00d4ff" idx={0} />
+            <StatCell num="11+"    label="Projects"       color="#00f5d4" idx={1} />
+            <StatCell num="99.98%" label="AI Accuracy*"   color="#a855f7" idx={2} />
+            <StatCell num="BS"     label="Cybersecurity"  color="#ffaa00" idx={3} />
+          </div>
           <p className="font-mono text-[9px] text-muted mt-2 opacity-60">* Controlled labeled dataset — methodology documented in BLUE-X case study</p>
         </div>
 
-        {/* RIGHT — Cert Showcase */}
+        {/* RIGHT — Cert orbit */}
         <motion.div
           initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
-          className="flex flex-col items-center gap-8"
+          className="flex flex-col items-center"
         >
-          <div className="profile-frame">
-            <div className="w-48 h-48 rounded-full overflow-hidden border-2 border-[rgba(0,212,255,0.2)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/profile/joseph.jpg"
-                alt="Joseph Allan Kamara"
-                className="w-full h-full object-cover object-top"
-              />
-            </div>
-          </div>
-
-          <div className="w-full max-w-md">
-            <CertShowcase />
-          </div>
+          <CertOrbit />
         </motion.div>
-
       </div>
+
+      <style>{`
+        @keyframes heroPulse { 0%, 100% { opacity: 0.5 } 50% { opacity: 1 } }
+      `}</style>
     </section>
   )
 }
