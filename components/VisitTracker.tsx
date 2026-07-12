@@ -1,80 +1,40 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 
-const TARGET_COMPANIES = [
-  'boozallen', 'booz-allen', 'bah.com',
-  'anthropic', 'openai', 'google', 'deepmind',
-  'microsoft', 'amazon', 'aws',
-  'crowdstrike', 'mandiant', 'palo alto', 'paloaltonetworks',
-  'wiz.io', 'lakera', 'snyk', 'lacework',
-  'deloitte', 'ey.com', 'pwc', 'kpmg', 'accenture',
-  'jobyaviation', 'gtlic', 'gi-de', 'situsamc',
-  'honeywell', 'lockheedmartin', 'rtx', 'northrop',
-  'hackerone', 'bugcrowd',
-]
-
+// Thin client: just reports page + referrer + device hints. All geolocation,
+// company matching, and enrichment happen server-side from the real request IP
+// (see app/api/track/route.ts) — so ad-blockers can't defeat it and the client
+// can't spoof the location.
 export default function VisitTracker() {
   const pathname = usePathname()
+  const lastSent = useRef<string>('')
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (window.location.hostname === 'localhost') return
-    if (window.location.hostname.startsWith('127.')) return
+    const host = window.location.hostname
+    if (host === 'localhost' || host.startsWith('127.') || host === '0.0.0.0') return
 
-    const trackVisit = async () => {
-      try {
-        const referrer = document.referrer || 'direct'
-        const screenSize = `${window.screen.width}x${window.screen.height}`
-        const language = navigator.language
-        const timestamp = new Date().toISOString()
+    // avoid duplicate fires for the same path within a session render cycle
+    if (lastSent.current === pathname) return
+    lastSent.current = pathname
 
-        const referrerLower = referrer.toLowerCase()
-        let matchedCompany = TARGET_COMPANIES.find(c => referrerLower.includes(c)) || ''
-
-        let location = 'Unknown'
-        let companyHint = ''
-        try {
-          const geoRes = await fetch('https://ipapi.co/json/')
-          const geo = await geoRes.json()
-          location = `${geo.city || '?'}, ${geo.region || '?'}, ${geo.country_name || '?'}`
-          companyHint = geo.org || ''
-          if (!matchedCompany) {
-            const orgLower = companyHint.toLowerCase()
-            matchedCompany = TARGET_COMPANIES.find(c => orgLower.includes(c)) || ''
-          }
-        } catch {}
-
-        const isPriority = !!matchedCompany
-
-        await fetch('/api/track', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: isPriority ? '🔥 PRIORITY VISIT' : '👀 Portfolio visit',
-            description: [
-              `📄 Page: ${pathname}`,
-              `📍 Location: ${location}`,
-              companyHint ? `🏢 ISP/Org: ${companyHint}` : null,
-              matchedCompany ? `🎯 Match: ${matchedCompany}` : null,
-              `🔗 Referrer: ${referrer}`,
-              `📱 Device: ${screenSize} | ${language}`,
-              `🕐 Time: ${timestamp}`,
-            ].filter(Boolean).join('\n'),
-            icon: isPriority ? '🔥' : '👀',
-            notify: true,
-            tags: {
-              page: pathname,
-              priority: isPriority ? 'high' : 'normal',
-              ...(matchedCompany ? { company: matchedCompany } : {}),
-            },
-          }),
-        })
-      } catch {}
+    const track = () => {
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          page: pathname,
+          referrer: document.referrer || 'direct',
+          screen: `${window.screen.width}x${window.screen.height}`,
+          language: navigator.language,
+        }),
+      }).catch(() => {})
     }
 
-    const timer = setTimeout(trackVisit, 1000)
+    const timer = setTimeout(track, 900)
     return () => clearTimeout(timer)
   }, [pathname])
 

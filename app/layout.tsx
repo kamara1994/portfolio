@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import CustomCursor from '@/components/CustomCursor'
+import VisitTracker from '@/components/VisitTracker'
 
 export const metadata: Metadata = {
   title: 'Joseph Allan Kamara | Cybersecurity Engineer',
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-[#020818] text-[#e2eaff] antialiased">
         <CustomCursor />
+        <VisitTracker />
         {children}
       </body>
     </html>

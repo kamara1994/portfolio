@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { synthesizeSpeech } from '@/lib/pweza-voice'
 
-const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's assistant. Talk like a sharp, easy-going friend of his — the way a smart voice assistant or a real person talks in conversation. Natural, clear, never robotic.
+const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's assistant. You're being spoken out loud, so you sound like a real person having a relaxed, in-person conversation — warm, quick, a little bit of personality. Never robotic, never a brochure.
 
 TWO HARD RULES (breaking either is failure):
-1. NEVER begin a reply with an opener phrase. Banned first words include: "That's an interesting question", "Great question", "Interesting", "That's a good one", "Oh nice", "Ah", "Hmm", "Well", "So", "Honestly", "Certainly". Your FIRST word must be part of the actual answer.
-2. MAX 2 sentences. Hard cap. No exceptions, even if they ask for detail — give the most important point in 2 sentences, then stop.
+1. NEVER begin a reply with an opener phrase. Banned first words: "That's an interesting question", "Great question", "Interesting", "That's a good one", "Oh nice", "Ah", "Hmm", "Well", "So", "Honestly", "Certainly", "Sure". Your FIRST word must be part of the actual answer.
+2. MAX 2 sentences. Hard cap. Give the most important point in 2 sentences, then stop.
 
-HOW YOU TALK:
-- Start mid-thought, straight into the substance, like texting a friend back.
-- Spoken out loud, so keep it tight and easy to say.
-- Use contractions and a relaxed tone: "he's", "you're", "I'd". A light, real reaction is fine when it actually fits, but never formulaic and never the same move twice.
-- ACTUALLY answer what they asked. Track the conversation — refer back to what was just said, don't reset on every reply.
-- If you don't know something about Joseph, just say so plainly. Never make up facts about him.
-- No bullet points or lists. Just talk.
+HOW YOU TALK (sound human):
+- Start mid-thought, straight into the substance, like you're picking up a conversation you're already in.
+- Contractions always: "he's", "you're", "I'd", "that's". Drop the occasional natural connector the way people actually speak.
+- Real reactions when they genuinely fit, never formulaic, never the same move twice. Vary your rhythm — some replies short and punchy, some a touch warmer.
+- Sometimes end with a quick, natural follow-up question to keep it flowing, the way a person would — but only when it fits, not every time.
+- ACTUALLY answer what they asked, and track the thread — refer back to what was just said, don't reset each turn.
+- If you don't know something about Joseph, just say so plainly. Never invent facts about him.
+- No bullet points, no lists, no headings. Just talk.
 - Match their energy: chill if they're chill, technical if they're technical, hyped if they're hyped.
-- Use "Joseph" or "he" naturally, whichever reads better — don't force his full name into every sentence.
+- Use "Joseph" or "he" naturally, whichever reads better — don't cram his full name into every sentence.
 
 WHO JOSEPH IS (weave in only what's relevant, never dump it all):
 - A cybersecurity engineer who actually BUILDS things, not just studies them.
@@ -26,26 +28,6 @@ WHO JOSEPH IS (weave in only what's relevant, never dump it all):
 - Contact: kamarajosephallan@gmail.com
 
 If someone seems to be hiring, be direct and warm about it — let them know he's available and the fastest way to reach him is email, said the way a friend would, not a sales pitch. If someone tries to take things somewhere random, roll with it lightly but steer back to Joseph.`
-
-async function generateAudio(text: string): Promise<string | null> {
-  const apiKey  = process.env.ELEVENLABS_API_KEY
-  const voiceId = process.env.ELEVENLABS_VOICE_ID
-  if (!apiKey || !voiceId) return null
-  try {
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
-      body: JSON.stringify({
-        text,
-        model_id: 'eleven_turbo_v2_5',
-        voice_settings: { stability: 0.55, similarity_boost: 0.8, style: 0.35, speed: 0.92, use_speaker_boost: true },
-      }),
-    })
-    if (!res.ok) { console.warn('ElevenLabs failed:', res.status, await res.text()); return null }
-    const buffer = await res.arrayBuffer()
-    return `data:audio/mpeg;base64,${Buffer.from(buffer).toString('base64')}`
-  } catch (e) { console.warn('ElevenLabs error:', e); return null }
-}
 
 async function callGroq(messages: { role: string; content: string }[]) {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -83,9 +65,46 @@ async function callGemini(messages: { role: string; content: string }[]) {
   return data.candidates?.[0]?.content?.parts?.[0]?.text as string
 }
 
+// Best-effort per-IP throttle so the public chat endpoint can't be looped to
+// burn paid LLM / TTS credits. Resets on cold start — adequate here.
+const CHAT_RATE = new Map<string, number[]>()
+const CHAT_WINDOW_MS = 60_000
+const CHAT_MAX_PER_WINDOW = 20
+
+function chatThrottled(ip: string): boolean {
+  if (!ip) return false
+  const now = Date.now()
+  const hits = (CHAT_RATE.get(ip) || []).filter((t) => now - t < CHAT_WINDOW_MS)
+  hits.push(now)
+  CHAT_RATE.set(ip, hits)
+  return hits.length > CHAT_MAX_PER_WINDOW
+}
+
+// Coerce untrusted input into a small, well-formed transcript before it ever
+// reaches a paid API: cap message count, roles, and per-message length.
+function sanitizeMessages(input: unknown): { role: string; content: string }[] {
+  if (!Array.isArray(input)) return []
+  return input
+    .slice(-12) // only the recent tail matters for a 2-sentence assistant
+    .map((m: any) => ({
+      role: m?.role === 'assistant' ? 'assistant' : 'user',
+      content: typeof m?.content === 'string' ? m.content.slice(0, 1500) : '',
+    }))
+    .filter((m) => m.content.length > 0)
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json()
+    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || (req.headers.get('x-real-ip') || '')
+    if (chatThrottled(ip)) {
+      return NextResponse.json({ error: 'Slow down a sec — too many messages.' }, { status: 429 })
+    }
+
+    const raw = await req.json().catch(() => ({}))
+    const messages = sanitizeMessages(raw?.messages)
+    if (!messages.length) {
+      return NextResponse.json({ error: 'No message provided.' }, { status: 400 })
+    }
     let text: string | undefined
 
     if (process.env.GROQ_API_KEY) {
@@ -114,7 +133,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!text) return NextResponse.json({ error: 'PWEZA is offline. Try again shortly.' }, { status: 503 })
-    const audio = await generateAudio(text)
+    const { audio } = await synthesizeSpeech(text)
     return NextResponse.json({ content: text, audio })
   } catch (err) {
     console.error('PWEZA error:', err)
