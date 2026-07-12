@@ -4,11 +4,11 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import ProjectsFilter from '@/components/ProjectsFilter'
 
-// 4D scene is client + WebGL only — never server-render it.
-const Portfolio4D = dynamic(() => import('@/components/Portfolio4D'), { ssr: false })
+// 3D scene is client + WebGL only — never server-render it.
+const ProjectNexus = dynamic(() => import('@/components/ProjectNexus'), { ssr: false })
 
 export default function ProjectsSection() {
-  const [view, setView] = useState('4d') // '4d' | 'grid' — 4D is the default
+  const [view, setView] = useState('3d') // '3d' | 'grid' — the 3D Nexus is the default
 
   const tab = (active) => ({
     fontFamily: 'ui-monospace, monospace',
@@ -33,8 +33,8 @@ export default function ProjectsSection() {
           <button type="button" style={tab(view === 'grid')} onClick={() => setView('grid')}>
             ▦ Grid
           </button>
-          <button type="button" style={tab(view === '4d')} onClick={() => setView('4d')}>
-            ◇ 4D View
+          <button type="button" style={tab(view === '3d')} onClick={() => setView('3d')}>
+            ◇ 3D Nexus
           </button>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function ProjectsSection() {
         <ProjectsFilter />
       ) : (
         <div style={{ marginTop: 16 }}>
-          <Portfolio4D />
+          <ProjectNexus />
           <p
             style={{
               textAlign: 'center',
@@ -54,7 +54,7 @@ export default function ProjectsSection() {
               marginTop: 8,
             }}
           >
-            drag to orbit · scrub the timeline · click a node to enter
+            drag to orbit · filter by domain · click a node to enter
           </p>
         </div>
       )}
