@@ -465,6 +465,38 @@ export default function ProjectNexus() {
             className="absolute top-1/2 -translate-y-1/2 right-6 w-[340px] max-h-[82vh] overflow-y-auto p-5 backdrop-blur-md z-20"
             style={{ background: 'rgba(8,12,20,0.82)', border: `1px solid ${focused!.color}55` }}
           >
+            {/* real project media — video if present, otherwise the screenshot */}
+            {p.video ? (
+              <div className="mb-3 rounded-md overflow-hidden" style={{ border: `1px solid ${focused!.color}44` }}>
+                <video
+                  src={p.video}
+                  poster={p.screenshot}
+                  controls
+                  playsInline
+                  className="w-full block"
+                  style={{ aspectRatio: '16 / 10', objectFit: 'cover', background: '#05070d' }}
+                />
+              </div>
+            ) : p.screenshot ? (
+              <a
+                href={p.demo || `/projects/${p.id}`}
+                target={p.demo ? '_blank' : undefined}
+                rel="noopener noreferrer"
+                className="block mb-3 rounded-md overflow-hidden group relative"
+                style={{ border: `1px solid ${focused!.color}44` }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.screenshot}
+                  alt={`${p.title} — screenshot`}
+                  loading="lazy"
+                  className="w-full block transition-transform duration-500 group-hover:scale-[1.04]"
+                  style={{ aspectRatio: '16 / 10', objectFit: 'cover', objectPosition: 'top' }}
+                  onError={(e) => { const el = e.currentTarget.parentElement as HTMLElement; if (el) el.style.display = 'none' }}
+                />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,7,13,0.55), transparent 55%)' }} />
+              </a>
+            ) : null}
             <div className="flex items-center gap-2 mb-2">
               <span className="font-mono uppercase tracking-[0.2em] text-[10px]" style={{ color: focused!.color }}>{p.category}</span>
               {p.status && <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border" style={{ color: focused!.color, borderColor: `${focused!.color}55` }}>{p.status}</span>}

@@ -137,6 +137,29 @@ p, span, div {
 @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
 .blink { animation: blink 1s step-end infinite; }
 
+/* HERO — pulse, portrait scan sweep, CTAs (kept in the stylesheet, not inline,
+   to avoid SSR/client hydration mismatches on the <style> text content) */
+@keyframes heroPulse { 0%,100% { opacity: 0.5 } 50% { opacity: 1 } }
+@keyframes heroScan  { 0% { transform: translateY(0) } 100% { transform: translateY(360px) } }
+.hero-cta {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 13px 24px; border-radius: 11px; display: inline-flex; align-items: center;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+.hero-cta-primary {
+  color: #02101f; font-weight: 700;
+  background: linear-gradient(135deg, #00d4ff, #00f5d4);
+  box-shadow: 0 12px 30px -8px rgba(0,212,255,0.5), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.hero-cta-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -8px rgba(0,212,255,0.7), inset 0 1px 0 rgba(255,255,255,0.6); }
+.hero-cta-ghost {
+  color: #cfe6ff; font-weight: 500;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(0,212,255,0.28);
+}
+.hero-cta-ghost:hover { transform: translateY(-3px); border-color: rgba(0,212,255,0.6); background: rgba(0,212,255,0.08); }
+
 /* HOLOGRAPHIC SHIMMER */
 @keyframes shimmer {
   0% { background-position: -200% center; }

@@ -275,11 +275,11 @@ export default function CertOrbit() {
         <div
           className="absolute pointer-events-none"
           style={{
-            width:     132,
-            height:    132,
+            width:     190,
+            height:    190,
             left:      '50%',
             top:       '50%',
-            transform: 'translate(-66px, -66px)',
+            transform: 'translate(-95px, -95px)',
           }}
         >
           {/* Pulsing outer rings */}
