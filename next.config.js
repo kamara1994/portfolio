@@ -13,6 +13,11 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  // msedge-tts and its ws stack must stay external — webpack-bundling ws
+  // breaks its frame masking on Vercel ("t.mask is not a function").
+  experimental: {
+    serverComponentsExternalPackages: ['msedge-tts', 'ws', 'isomorphic-ws'],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
