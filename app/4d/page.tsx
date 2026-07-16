@@ -1,3 +1,3 @@
 import dynamic from 'next/dynamic'
 const ProjectNexus = dynamic(() => import('@/components/ProjectNexus'), { ssr: false })
-export default function Page() { return <ProjectNexus /> }
+export default function Page() { return <ProjectNexus standalone /> }

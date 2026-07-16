@@ -1,533 +1,581 @@
 'use client'
-// =============================================================================
-// PROJECT NEXUS — a cinematic 3D constellation of Joseph's real projects.
-// Each node is a glowing crystalline core, color-coded by domain, clustered in
-// 3D space and wired by a living neural network with traveling light pulses.
-// Hover to light a node + its links; click to fly in and open the case study.
-// Built only on primitives already proven in this project (no postprocessing
-// dependency) — bloom is faked with additive glow sprites + emissive shells.
-// =============================================================================
-import { useReducer, useRef, useMemo, useState, useEffect } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, Html, Billboard } from '@react-three/drei'
-import * as THREE from 'three'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  NEXUS_NODES, NEXUS_EDGES, CATEGORY_COLORS, NEXUS_CATEGORIES,
-  CORE_COLOR, BG, type NexusNode,
-} from '@/lib/nexus/graph'
 
-/* ─────────────────────────── radial glow texture ─────────────────────────── */
-// A soft additive halo — the whole "bloom" look is built from these.
-function makeGlowTexture(): THREE.Texture {
-  const s = 128
-  const cv = document.createElement('canvas')
-  cv.width = cv.height = s
-  const ctx = cv.getContext('2d')!
-  const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2)
-  g.addColorStop(0, 'rgba(255,255,255,1)')
-  g.addColorStop(0.18, 'rgba(255,255,255,0.85)')
-  g.addColorStop(0.45, 'rgba(255,255,255,0.28)')
-  g.addColorStop(1, 'rgba(255,255,255,0)')
-  ctx.fillStyle = g
-  ctx.fillRect(0, 0, s, s)
-  const tex = new THREE.CanvasTexture(cv)
-  tex.needsUpdate = true
-  return tex
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { ContactShadows, Html, useProgress, useTexture } from '@react-three/drei'
+import * as THREE from 'three'
+import { projects, type Project } from '@/data/projects'
+
+const FEATURED = projects.filter((project) => project.featured)
+
+const ACCENTS: Record<string, string> = {
+  'blue-soc-p8': '#21c7e8',
+  'fortress-v2': '#f2aa4c',
+  'blue-x': '#42d392',
 }
 
-/* ─────────────────────────── drifting starfield ─────────────────────────── */
-function Starfield({ glow, count = 1400 }: { glow: THREE.Texture; count?: number }) {
-  const ref = useRef<THREE.Points>(null)
-  const geo = useMemo(() => {
-    const pos = new Float32Array(count * 3)
-    const col = new Float32Array(count * 3)
-    const c = new THREE.Color()
-    for (let i = 0; i < count; i++) {
-      // shell of stars around the scene
-      const r = 24 + Math.random() * 40
-      const th = Math.random() * Math.PI * 2
-      const ph = Math.acos(2 * Math.random() - 1)
-      pos[i * 3] = r * Math.sin(ph) * Math.cos(th)
-      pos[i * 3 + 1] = r * Math.cos(ph)
-      pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th)
-      c.setHSL(0.55 + Math.random() * 0.12, 0.6, 0.55 + Math.random() * 0.35)
-      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b
-    }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3))
-    return g
-  }, [count])
+const PROOF_METRICS: Record<string, Array<{ value: string; label: string }>> = {
+  'blue-soc-p8': [
+    { value: '5-stage', label: 'response pipeline' },
+    { value: '7', label: 'integrated tools' },
+    { value: 'Human', label: 'containment approval' },
+  ],
+  'fortress-v2': [
+    { value: '20+', label: 'AWS resources' },
+    { value: '6', label: 'Terraform modules' },
+    { value: '5', label: 'attack simulations' },
+  ],
+  'blue-x': [
+    { value: '99.98%', label: 'model accuracy' },
+    { value: '50k', label: 'traffic samples' },
+    { value: '5', label: 'traffic classes' },
+  ],
+}
 
-  useFrame((_, dt) => { if (ref.current) ref.current.rotation.y += dt * 0.012 })
+function projectAccent(project: Project) {
+  return ACCENTS[project.id] || '#9aa7b2'
+}
+
+function makeFortressTexture() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1600
+  canvas.height = 1000
+  const context = canvas.getContext('2d')!
+
+  context.fillStyle = '#091015'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+
+  context.fillStyle = '#f2aa4c'
+  context.fillRect(80, 78, 10, 112)
+  context.font = '700 58px ui-monospace, monospace'
+  context.fillText('FORTRESS v2', 125, 135)
+  context.fillStyle = '#91a0a8'
+  context.font = '24px ui-monospace, monospace'
+  context.fillText('AWS DEFENSE ARCHITECTURE / TERRAFORM DEPLOYED', 127, 180)
+
+  const columns = [
+    { x: 110, title: 'TELEMETRY', items: ['CloudTrail', 'GuardDuty', 'WAF'] },
+    { x: 610, title: 'DETECTION', items: ['EventBridge', 'Security Hub', 'CloudWatch'] },
+    { x: 1110, title: 'RESPONSE', items: ['Lambda isolation', 'SNS alerting', 'Analyst review'] },
+  ]
+
+  columns.forEach((column, columnIndex) => {
+    context.fillStyle = columnIndex === 1 ? '#f2aa4c' : '#dce6e9'
+    context.font = '700 25px ui-monospace, monospace'
+    context.fillText(column.title, column.x, 325)
+
+    column.items.forEach((item, itemIndex) => {
+      const y = 385 + itemIndex * 112
+      context.fillStyle = '#101b22'
+      context.strokeStyle = columnIndex === 1 ? '#8a632e' : '#33464f'
+      context.lineWidth = 2
+      context.fillRect(column.x, y, 350, 74)
+      context.strokeRect(column.x, y, 350, 74)
+      context.fillStyle = '#dce6e9'
+      context.font = '25px ui-monospace, monospace'
+      context.fillText(item, column.x + 28, y + 47)
+    })
+
+    if (columnIndex < columns.length - 1) {
+      context.strokeStyle = '#f2aa4c'
+      context.lineWidth = 3
+      context.beginPath()
+      context.moveTo(column.x + 370, 498)
+      context.lineTo(column.x + 465, 498)
+      context.lineTo(column.x + 445, 485)
+      context.moveTo(column.x + 465, 498)
+      context.lineTo(column.x + 445, 511)
+      context.stroke()
+    }
+  })
+
+  context.fillStyle = '#0f171c'
+  context.fillRect(80, 820, 1440, 100)
+  context.fillStyle = '#f2aa4c'
+  context.font = '700 28px ui-monospace, monospace'
+  context.fillText('20+ AWS RESOURCES', 120, 880)
+  context.fillStyle = '#dce6e9'
+  context.fillText('6 TERRAFORM MODULES', 610, 880)
+  context.fillText('5 ATTACK SIMULATIONS', 1110, 880)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 4
+  texture.needsUpdate = true
+  return texture
+}
+
+function ScreenshotSurface({ src }: { src: string }) {
+  const texture = useTexture(src)
+  useEffect(() => {
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.anisotropy = 4
+    texture.needsUpdate = true
+  }, [texture])
+
+  return <meshBasicMaterial map={texture} toneMapped={false} />
+}
+
+function FortressSurface() {
+  const texture = useMemo(makeFortressTexture, [])
+  useEffect(() => () => texture.dispose(), [texture])
+  return <meshBasicMaterial map={texture} toneMapped={false} />
+}
+
+function SignalField({ reduced }: { reduced: boolean }) {
+  const ref = useRef<THREE.Points>(null)
+  const geometry = useMemo(() => {
+    const count = reduced ? 90 : 240
+    const positions = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 26
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 12
+      positions[i * 3 + 2] = -4 - Math.random() * 12
+    }
+    const value = new THREE.BufferGeometry()
+    value.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    return value
+  }, [reduced])
+
+  useFrame((_, delta) => {
+    if (!reduced && ref.current) ref.current.rotation.y += delta * 0.008
+  })
 
   return (
-    <points ref={ref} geometry={geo}>
-      <pointsMaterial
-        size={0.5} map={glow} vertexColors transparent opacity={0.85}
-        sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending}
-      />
+    <points ref={ref} geometry={geometry}>
+      <pointsMaterial color="#8fa9b7" size={0.035} transparent opacity={0.5} depthWrite={false} />
     </points>
   )
 }
 
-/* ─────────────────────────── central core ─────────────────────────── */
-function Core({ glow }: { glow: THREE.Texture }) {
-  const shell = useRef<THREE.Mesh>(null)
-  const inner = useRef<THREE.Mesh>(null)
-  useFrame((state, dt) => {
-    const t = state.clock.elapsedTime
-    if (shell.current) { shell.current.rotation.y += dt * 0.25; shell.current.rotation.x += dt * 0.08 }
-    if (inner.current) {
-      const s = 1 + Math.sin(t * 1.6) * 0.06
-      inner.current.scale.setScalar(s)
-    }
-  })
-  return (
-    <group>
-      <mesh ref={inner}>
-        <icosahedronGeometry args={[0.55, 1]} />
-        <meshBasicMaterial color={CORE_COLOR} />
-      </mesh>
-      <mesh ref={shell}>
-        <icosahedronGeometry args={[1.15, 1]} />
-        <meshBasicMaterial color={CORE_COLOR} wireframe transparent opacity={0.35} />
-      </mesh>
-      <Billboard>
-        <mesh>
-          <planeGeometry args={[6, 6]} />
-          <meshBasicMaterial map={glow} color={CORE_COLOR} transparent opacity={0.5} depthWrite={false} blending={THREE.AdditiveBlending} />
-        </mesh>
-      </Billboard>
-    </group>
-  )
-}
-
-/* ─────────────────────────── a single project node ─────────────────────────── */
-function NexusNodeMesh({
-  node, glow, focused, dim, hovered, onHover, onOut, onClick,
+function EvidenceFrame({
+  project,
+  index,
+  activeIndex,
+  reduced,
+  onSelect,
 }: {
-  node: NexusNode; glow: THREE.Texture
-  focused: boolean; dim: number; hovered: boolean
-  onHover: () => void; onOut: () => void; onClick: () => void
+  project: Project
+  index: number
+  activeIndex: number
+  reduced: boolean
+  onSelect: () => void
 }) {
   const group = useRef<THREE.Group>(null)
-  const shell = useRef<THREE.Mesh>(null)
-  const halo = useRef<THREE.Mesh>(null)
-  const ring = useRef<THREE.Group>(null)
-  const color = useMemo(() => new THREE.Color(node.color), [node.color])
-  const hoverV = useRef(0)
-  const dimV = useRef(0)
+  const [hovered, setHovered] = useState(false)
+  const accent = projectAccent(project)
 
-  useFrame((state, dt) => {
-    const t = state.clock.elapsedTime
-    hoverV.current = THREE.MathUtils.lerp(hoverV.current, hovered || focused ? 1 : 0, 0.15)
-    dimV.current = THREE.MathUtils.lerp(dimV.current, dim, 0.12)
+  useFrame((state, delta) => {
+    if (!group.current) return
 
-    if (group.current) {
-      const drift = Math.sin(t * 0.6 + node.position[0]) * 0.06
-      group.current.position.set(node.position[0], node.position[1] + drift, node.position[2])
-      const lift = 1 + hoverV.current * 0.28
-      const shrink = 1 - 0.35 * dimV.current
-      group.current.scale.setScalar(node.baseScale * lift * shrink)
-    }
-    if (shell.current) shell.current.rotation.y += dt * (0.3 + node.activity * 0.5)
-    if (halo.current) {
-      const pulse = 0.55 + Math.sin(t * (1 + node.activity * 2) + node.position[2]) * 0.18 * node.activity
-      const mat = halo.current.material as THREE.MeshBasicMaterial
-      mat.opacity = (pulse + hoverV.current * 0.5) * (1 - dimV.current * 0.7)
-      const hs = 1 + hoverV.current * 0.5
-      halo.current.scale.setScalar(hs)
-    }
-    if (ring.current) ring.current.rotation.z += dt * 0.6
+    let offset = index - activeIndex
+    if (offset > FEATURED.length / 2) offset -= FEATURED.length
+    if (offset < -FEATURED.length / 2) offset += FEATURED.length
+
+    const active = offset === 0
+    const targetX = offset * 5.25
+    const targetY = active ? 0.25 : -0.3
+    const targetZ = active ? 0 : -2.2
+    const targetRotation = active ? 0 : offset > 0 ? -0.3 : 0.3
+    const targetScale = (active ? 1 : 0.76) + (hovered ? 0.035 : 0)
+    const ease = reduced ? 1 : 1 - Math.pow(0.0008, delta)
+
+    group.current.position.x = THREE.MathUtils.lerp(group.current.position.x, targetX, ease)
+    group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, targetY, ease)
+    group.current.position.z = THREE.MathUtils.lerp(group.current.position.z, targetZ, ease)
+    group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, targetRotation, ease)
+    group.current.rotation.x = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.45 + index) * 0.012
+    group.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), ease)
   })
 
   return (
     <group ref={group}>
-      {/* bright emissive core */}
-      <mesh>
-        <sphereGeometry args={[0.34, 24, 24]} />
-        <meshBasicMaterial color={color} />
+      <mesh position={[0, 0, -0.1]} castShadow>
+        <boxGeometry args={[4.9, 3.25, 0.18]} />
+        <meshStandardMaterial color="#11171c" metalness={0.72} roughness={0.34} />
       </mesh>
-      {/* rotating crystalline shell */}
-      <mesh ref={shell}>
-        <icosahedronGeometry args={[0.62, 0]} />
-        <meshBasicMaterial color={color} wireframe transparent opacity={0.55} />
-      </mesh>
-      {/* additive glow halo (the bloom) */}
-      <Billboard>
-        <mesh ref={halo}>
-          <planeGeometry args={[2.9, 2.9]} />
-          <meshBasicMaterial map={glow} color={color} transparent opacity={0.55} depthWrite={false} blending={THREE.AdditiveBlending} />
-        </mesh>
-      </Billboard>
-      {/* featured projects get an orbiting particle ring */}
-      {node.project.featured && (
-        <group ref={ring} rotation={[Math.PI / 2.4, 0, 0]}>
-          <mesh>
-            <torusGeometry args={[0.95, 0.012, 8, 64]} />
-            <meshBasicMaterial color={color} transparent opacity={0.5} blending={THREE.AdditiveBlending} depthWrite={false} />
-          </mesh>
-        </group>
-      )}
-      {/* generous invisible hit area so nodes are easy to click */}
+
       <mesh
-        onPointerOver={(e) => { e.stopPropagation(); onHover() }}
-        onPointerOut={onOut}
-        onClick={(e) => { e.stopPropagation(); onClick() }}
+        position={[0, 0, 0.01]}
+        onClick={(event) => { event.stopPropagation(); onSelect() }}
+        onPointerOver={(event) => {
+          event.stopPropagation()
+          setHovered(true)
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={() => {
+          setHovered(false)
+          document.body.style.cursor = 'default'
+        }}
       >
-        <sphereGeometry args={[1.1, 12, 12]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        <planeGeometry args={[4.62, 2.98]} />
+        {project.id === 'fortress-v2'
+          ? <FortressSurface />
+          : <ScreenshotSurface src={project.screenshot || '/screenshots/blue-soc.png'} />}
       </mesh>
-      {/* label */}
-      <Html position={[0, -1.0, 0]} center distanceFactor={12} zIndexRange={[10, 0]}>
-        <div style={{
-          pointerEvents: 'none', whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace',
-          fontSize: 10, letterSpacing: 2, textTransform: 'uppercase',
-          color: hovered || focused ? '#ffffff' : 'rgba(220,235,245,0.7)',
-          textShadow: '0 0 10px rgba(0,0,0,0.95)',
-          opacity: 1 - dim * 0.65, transition: 'color 0.2s',
-        }}>
-          {node.project.title}
-        </div>
-      </Html>
+
+      <mesh position={[0, 1.69, 0.03]}>
+        <boxGeometry args={[4.9, 0.035, 0.035]} />
+        <meshBasicMaterial color={accent} />
+      </mesh>
+
+      {index === activeIndex && (
+        <Html position={[-2.35, -1.92, 0]} transform distanceFactor={8} style={{ pointerEvents: 'none' }}>
+          <div style={{
+            color: accent,
+            fontFamily: 'Share Tech Mono, monospace',
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          }}>
+            Evidence {project.num}
+          </div>
+        </Html>
+      )}
     </group>
   )
 }
 
-/* ─────────────────────────── neural links ─────────────────────────── */
-function Links({ activeId, filter }: { activeId: string | null; filter: string | null }) {
-  const edgeGeo = useRef<THREE.BufferGeometry>(null)
-  const pulseGeo = useRef<THREE.BufferGeometry>(null)
-  const pos = useMemo(() => {
-    const m: Record<string, THREE.Vector3> = {}
-    NEXUS_NODES.forEach((n) => { m[n.id] = new THREE.Vector3(...n.position) })
-    return m
-  }, [])
-
-  // static line positions
-  const linePositions = useMemo(() => {
-    const arr = new Float32Array(NEXUS_EDGES.length * 6)
-    let i = 0
-    NEXUS_EDGES.forEach(([a, b]) => {
-      const A = pos[a], B = pos[b]
-      arr[i++] = A.x; arr[i++] = A.y; arr[i++] = A.z
-      arr[i++] = B.x; arr[i++] = B.y; arr[i++] = B.z
-    })
-    return arr
-  }, [pos])
-
-  useFrame((state) => {
-    if (!pulseGeo.current || !NEXUS_EDGES.length) return
-    const t = state.clock.elapsedTime
-    const arr = pulseGeo.current.attributes.position.array as Float32Array
-    let j = 0
-    NEXUS_EDGES.forEach(([a, b], idx) => {
-      const A = pos[a], B = pos[b]
-      const ph = (t * 0.22 + idx * 0.137) % 1
-      arr[j++] = A.x + (B.x - A.x) * ph
-      arr[j++] = A.y + (B.y - A.y) * ph
-      arr[j++] = A.z + (B.z - A.z) * ph
-    })
-    pulseGeo.current.attributes.position.needsUpdate = true
-  })
-
-  // opacity emphasis when a node is active / category filtered
-  const nodeById = useMemo(() => Object.fromEntries(NEXUS_NODES.map((n) => [n.id, n])), [])
-  const highlighted = !!activeId || !!filter
-  const lineOpacity = highlighted ? 0.06 : 0.16
-
-  return (
-    <group>
-      <lineSegments>
-        <bufferGeometry ref={edgeGeo}>
-          <bufferAttribute attach="attributes-position" count={NEXUS_EDGES.length * 2} array={linePositions} itemSize={3} />
-        </bufferGeometry>
-        <lineBasicMaterial color={CORE_COLOR} transparent opacity={lineOpacity} depthWrite={false} />
-      </lineSegments>
-      <points>
-        <bufferGeometry ref={pulseGeo}>
-          <bufferAttribute attach="attributes-position" count={NEXUS_EDGES.length} array={new Float32Array(NEXUS_EDGES.length * 3)} itemSize={3} />
-        </bufferGeometry>
-        <pointsMaterial color={'#dff6ff'} size={0.13} sizeAttenuation transparent opacity={highlighted ? 0.4 : 0.95} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </points>
-    </group>
-  )
-}
-
-/* ─────────────────────────── FSM ─────────────────────────── */
-type State = { mode: 'idle' | 'focusing' | 'focused' | 'returning'; focusId: string | null }
-type Event =
-  | { type: 'FOCUS'; id: string }
-  | { type: 'ARRIVED' }
-  | { type: 'RETURN' }
-  | { type: 'RETURNED' }
-const initial: State = { mode: 'idle', focusId: null }
-function reducer(s: State, e: Event): State {
-  switch (e.type) {
-    case 'FOCUS': return { mode: 'focusing', focusId: e.id }
-    case 'ARRIVED': return s.mode === 'focusing' ? { ...s, mode: 'focused' } : s
-    case 'RETURN': return { ...s, mode: 'returning' }
-    case 'RETURNED': return { mode: 'idle', focusId: null }
-    default: return s
-  }
-}
-
-/* ─────────────────────────── scene graph ─────────────────────────── */
-function Scene({
-  engine, dispatch, hoverId, setHoverId, filter, reduced, onIntro,
+function GalleryScene({
+  activeIndex,
+  reduced,
+  onSelect,
 }: {
-  engine: State; dispatch: React.Dispatch<Event>
-  hoverId: string | null; setHoverId: (id: string | null) => void
-  filter: string | null; reduced: boolean; onIntro: () => void
+  activeIndex: number
+  reduced: boolean
+  onSelect: (index: number) => void
 }) {
-  const { camera, controls } = useThree() as any
-  const glow = useMemo(makeGlowTexture, [])
-  const pos = useMemo(() => {
-    const m: Record<string, THREE.Vector3> = {}
-    NEXUS_NODES.forEach((n) => { m[n.id] = new THREE.Vector3(...n.position) })
-    return m
-  }, [])
-  const introDone = useRef(reduced)
-  const introStart = useRef<number | null>(null)
-  const desired = useRef(new THREE.Vector3())
-
-  useFrame((state, dt) => {
-    const t = state.clock.elapsedTime
-    const k = 1 - Math.pow(0.0016, dt)
-
-    // cinematic intro fly-in
-    if (!introDone.current) {
-      if (introStart.current === null) introStart.current = t
-      const tt = Math.min((t - introStart.current) / 2.4, 1)
-      const e = 1 - Math.pow(1 - tt, 3)
-      camera.position.set(
-        Math.sin(tt * 0.6) * 2,
-        THREE.MathUtils.lerp(9, 3, e),
-        THREE.MathUtils.lerp(52, 20, e),
-      )
-      if (controls) { controls.target.set(0, 0, 0); controls.update() }
-      if (tt >= 1) { introDone.current = true; onIntro() }
-      return
-    }
-
-    // fly-to focus / return
-    if (engine.mode === 'focusing' || engine.mode === 'focused') {
-      const target = engine.focusId ? pos[engine.focusId] : null
-      if (target) {
-        desired.current.copy(target).add(new THREE.Vector3(2.4, 1.4, 3.6))
-        camera.position.lerp(desired.current, k)
-        if (controls) { controls.target.lerp(target, k); controls.update() }
-        if (engine.mode === 'focusing' && camera.position.distanceTo(desired.current) < 0.2) dispatch({ type: 'ARRIVED' })
-      }
-    } else if (engine.mode === 'returning') {
-      desired.current.set(0, 3, 20)
-      camera.position.lerp(desired.current, k)
-      if (controls) { controls.target.lerp(new THREE.Vector3(0, 0, 0), k); controls.update() }
-      if (camera.position.distanceTo(desired.current) < 0.4) dispatch({ type: 'RETURNED' })
-    }
+  useFrame((state, delta) => {
+    if (reduced) return
+    const targetX = state.pointer.x * 0.32
+    const targetY = 0.2 + state.pointer.y * 0.18
+    state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, targetX, delta * 1.8)
+    state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, delta * 1.8)
+    state.camera.lookAt(0, 0, 0)
   })
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 12, 10]} intensity={60} color={CORE_COLOR} />
-      <Starfield glow={glow} count={reduced ? 500 : 1400} />
-      <Core glow={glow} />
-      <Links activeId={engine.focusId} filter={filter} />
-      {NEXUS_NODES.map((n) => {
-        const filteredOut = filter ? n.project.category !== filter : false
-        const focusDim = engine.focusId && engine.focusId !== n.id ? 1 : 0
-        const dim = Math.max(focusDim, filteredOut ? 0.85 : 0)
-        return (
-          <NexusNodeMesh
-            key={n.id}
-            node={n}
-            glow={glow}
-            focused={engine.focusId === n.id}
-            hovered={hoverId === n.id}
-            dim={dim}
-            onHover={() => { setHoverId(n.id); document.body.style.cursor = 'pointer' }}
-            onOut={() => { setHoverId(null); document.body.style.cursor = 'default' }}
-            onClick={() => dispatch({ type: 'FOCUS', id: n.id })}
-          />
-        )
-      })}
+      <ambientLight intensity={1.4} />
+      <directionalLight position={[4, 8, 7]} intensity={2.4} color="#d7edf1" castShadow />
+      <pointLight position={[-7, -2, 5]} intensity={22} color="#21c7e8" />
+      <pointLight position={[7, 2, 3]} intensity={18} color="#f2aa4c" />
+      <SignalField reduced={reduced} />
+
+      {FEATURED.map((project, index) => (
+        <EvidenceFrame
+          key={project.id}
+          project={project}
+          index={index}
+          activeIndex={activeIndex}
+          reduced={reduced}
+          onSelect={() => onSelect(index)}
+        />
+      ))}
+
+      <ContactShadows position={[0, -2.05, 0]} opacity={0.42} scale={18} blur={2.8} far={8} color="#000000" />
+      <gridHelper args={[32, 32, '#28404a', '#111a1f']} position={[0, -2.08, 0]} />
     </>
   )
 }
 
-/* ─────────────────────────── live signal (focus panel) ─────────────────────────── */
-function useSignal(active: boolean) {
-  const [v, setV] = useState(0)
-  useEffect(() => {
-    if (!active) return
-    const id = setInterval(() => setV(38 + Math.round((Math.sin(Date.now() / 1400) + 1) * 26) + Math.floor(Math.random() * 8)), 420)
-    return () => clearInterval(id)
-  }, [active])
-  return v
+function LoadingProgress() {
+  const { active, progress } = useProgress()
+  if (!active && progress >= 100) return null
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#07090c]" role="status" aria-live="polite">
+      <div className="w-48">
+        <div className="mb-3 flex items-center justify-between font-mono text-[9px] uppercase text-white/45" style={{ letterSpacing: 2 }}>
+          <span>Loading evidence</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="h-px bg-white/10">
+          <div className="h-px transition-[width] duration-300" style={{ width: `${progress}%`, background: '#21c7e8' }} />
+        </div>
+      </div>
+    </div>
+  )
 }
 
-/* ─────────────────────────── root + HUD ─────────────────────────── */
-const lbl = 'font-mono uppercase tracking-[0.25em] text-[10px] text-white/40'
+function StaticEvidence({ project }: { project: Project }) {
+  if (project.id === 'fortress-v2') {
+    const columns = [
+      ['Telemetry', 'CloudTrail', 'GuardDuty', 'WAF'],
+      ['Detection', 'EventBridge', 'Security Hub', 'CloudWatch'],
+      ['Response', 'Lambda isolation', 'SNS alerting', 'Analyst review'],
+    ]
 
-export default function ProjectNexus() {
-  const [engine, dispatch] = useReducer(reducer, initial)
-  const [hoverId, setHoverId] = useState<string | null>(null)
-  const [filter, setFilter] = useState<string | null>(null)
-  const [, setIntroDone] = useState(false)
-  const focused = engine.focusId ? NEXUS_NODES.find((n) => n.id === engine.focusId)! : null
-  const signal = useSignal(engine.mode === 'focused')
+    return (
+      <div className="absolute inset-0 flex items-center justify-center px-5 pt-24 pb-20">
+        <div className="w-full max-w-3xl border border-[#f2aa4c]/40 bg-[#091015] p-5 md:p-8">
+          <p className="font-mono text-sm font-bold text-[#f2aa4c] md:text-xl">FORTRESS v2</p>
+          <p className="mt-1 font-mono text-[8px] uppercase text-white/45 md:text-[10px]" style={{ letterSpacing: 1 }}>AWS defense architecture / Terraform deployed</p>
+          <div className="mt-5 grid grid-cols-3 gap-2 md:gap-4">
+            {columns.map(([title, ...items]) => (
+              <div key={title}>
+                <p className="mb-2 font-mono text-[8px] uppercase text-[#f2aa4c] md:text-[10px]">{title}</p>
+                {items.map((item) => <p key={item} className="mb-2 border border-white/10 p-2 font-mono text-[7px] text-white/70 md:text-[9px]">{item}</p>)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
+  return (
+    <div className="absolute inset-0 flex items-center justify-center px-5 pt-24 pb-20">
+      <img src={project.screenshot} alt={`${project.title} project interface`} className="max-h-full w-full max-w-3xl border border-white/15 object-contain" />
+    </div>
+  )
+}
+
+export default function ProjectNexus({ standalone = false }: { standalone?: boolean }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null)
+  const [deepLinkReady, setDeepLinkReady] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
   const reduced = useMemo(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     []
   )
+  const active = FEATURED[activeIndex]
+  const accent = projectAccent(active)
+  const metrics = PROOF_METRICS[active.id] || []
 
-  const p = focused?.project
+  useEffect(() => {
+    const canvas = document.createElement('canvas')
+    setWebglAvailable(Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl')))
+
+    if (standalone) {
+      const requested = new URLSearchParams(window.location.search).get('project')
+      const requestedIndex = FEATURED.findIndex((project) => project.id === requested)
+      if (requestedIndex >= 0) setActiveIndex(requestedIndex)
+    }
+    setDeepLinkReady(true)
+  }, [standalone])
+
+  useEffect(() => {
+    if (!standalone || !deepLinkReady) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('project', active.id)
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+  }, [active.id, deepLinkReady, standalone])
+
+  const move = (direction: number) => {
+    setActiveIndex((current) => (current + direction + FEATURED.length) % FEATURED.length)
+  }
+
+  const copyProjectLink = async () => {
+    const url = new URL('/4d', window.location.origin)
+    url.searchParams.set('project', active.id)
+    try {
+      await navigator.clipboard.writeText(url.toString())
+    } catch {
+      const input = document.createElement('textarea')
+      input.value = url.toString()
+      input.style.position = 'fixed'
+      input.style.opacity = '0'
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      input.remove()
+    }
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1800)
+  }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden" style={{ background: BG, color: '#dcebf5' }}>
-      <Canvas
-        camera={{ position: [0, 9, 52], fov: 55 }}
-        dpr={[1, 1.8]}
-        gl={{ antialias: true, powerPreference: 'high-performance' }}
-        onPointerMissed={() => { if (engine.mode === 'focused' || engine.mode === 'focusing') dispatch({ type: 'RETURN' }) }}
-      >
-        <color attach="background" args={[BG]} />
-        <fog attach="fog" args={[BG, 22, 60]} />
-        <Scene
-          engine={engine} dispatch={dispatch}
-          hoverId={hoverId} setHoverId={setHoverId}
-          filter={filter} reduced={reduced}
-          onIntro={() => setIntroDone(true)}
-        />
-        <OrbitControls
-          makeDefault enablePan={false}
-          enableZoom={engine.mode === 'focused'}
-          autoRotate={engine.mode === 'idle' && !reduced}
-          autoRotateSpeed={0.35}
-          minDistance={4} maxDistance={44}
-          enableDamping dampingFactor={0.08}
-        />
-      </Canvas>
-
-      {/* cinematic framing */}
-      <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 46%, rgba(3,6,15,0.72) 100%)' }} />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ background: 'repeating-linear-gradient(to bottom, rgba(255,255,255,0.5) 0px, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 3px)' }} />
-
-      {/* title */}
-      <div className="pointer-events-none absolute top-6 left-6 select-none">
-        <div className={lbl}>Interactive Constellation</div>
-        <div className="font-mono text-lg tracking-[0.2em] mt-1" style={{ color: '#eaf6ff' }}>PROJECT NEXUS</div>
-        <div className={lbl + ' mt-3'}>{NEXUS_NODES.length} projects · drag to orbit · click a node</div>
-      </div>
-
-      {/* overview button */}
-      <AnimatePresence>
-        {engine.mode !== 'idle' && (
-          <motion.button
-            initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-            onClick={() => dispatch({ type: 'RETURN' })}
-            className="absolute top-6 right-6 font-mono uppercase tracking-[0.2em] text-[10px] px-4 py-2 border border-white/15 hover:border-white/40 transition-colors z-20"
-            style={{ background: 'rgba(255,255,255,0.02)' }}
-          >
-            ← overview
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* category legend / filter */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-wrap justify-center gap-x-4 gap-y-2 max-w-[92vw] px-4">
-        {NEXUS_CATEGORIES.map((c) => {
-          const active = filter === c
-          return (
-            <button
-              key={c}
-              onClick={() => setFilter(active ? null : c)}
-              className="flex items-center gap-1.5 font-mono uppercase tracking-[0.15em] text-[9px] transition-opacity"
-              style={{ color: active ? '#ffffff' : 'rgba(220,235,245,0.5)', opacity: filter && !active ? 0.4 : 1 }}
-            >
-              <span style={{ width: 8, height: 8, borderRadius: 9, background: CATEGORY_COLORS[c], boxShadow: `0 0 8px ${CATEGORY_COLORS[c]}` }} />
-              {c}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* focus detail panel */}
-      <AnimatePresence>
-        {engine.mode === 'focused' && p && (
-          <motion.aside
-            initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-            className="absolute top-1/2 -translate-y-1/2 right-6 w-[340px] max-h-[82vh] overflow-y-auto p-5 backdrop-blur-md z-20"
-            style={{ background: 'rgba(8,12,20,0.82)', border: `1px solid ${focused!.color}55` }}
-          >
-            {/* real project media — video if present, otherwise the screenshot */}
-            {p.video ? (
-              <div className="mb-3 rounded-md overflow-hidden" style={{ border: `1px solid ${focused!.color}44` }}>
-                <video
-                  src={p.video}
-                  poster={p.screenshot}
-                  controls
-                  playsInline
-                  className="w-full block"
-                  style={{ aspectRatio: '16 / 10', objectFit: 'cover', background: '#05070d' }}
-                />
-              </div>
-            ) : p.screenshot ? (
-              <a
-                href={p.demo || `/projects/${p.id}`}
-                target={p.demo ? '_blank' : undefined}
-                rel="noopener noreferrer"
-                className="block mb-3 rounded-md overflow-hidden group relative"
-                style={{ border: `1px solid ${focused!.color}44` }}
+    <section
+      aria-label="Featured project evidence gallery"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault()
+          move(event.key === 'ArrowLeft' ? -1 : 1)
+        }
+      }}
+      onTouchStart={(event) => {
+        const touch = event.changedTouches[0]
+        touchStart.current = { x: touch.clientX, y: touch.clientY }
+      }}
+      onTouchEnd={(event) => {
+        if (!touchStart.current) return
+        const touch = event.changedTouches[0]
+        const deltaX = touch.clientX - touchStart.current.x
+        const deltaY = touch.clientY - touchStart.current.y
+        touchStart.current = null
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) move(deltaX > 0 ? -1 : 1)
+      }}
+      className={standalone
+        ? 'relative min-h-screen overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/35 lg:h-screen'
+        : 'relative min-h-[940px] overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/35 lg:h-[720px] lg:min-h-[680px]'}
+      style={{ background: '#07090c', color: '#edf3f5', borderTop: '1px solid rgba(255,255,255,0.09)', borderBottom: '1px solid rgba(255,255,255,0.09)' }}
+    >
+      <div className="grid min-h-[inherit] lg:h-full lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="relative h-[430px] min-h-[430px] overflow-hidden lg:h-auto lg:min-h-0">
+          {webglAvailable !== false ? (
+            <>
+              <Canvas
+                camera={{ position: [0, 0.2, 10.5], fov: 44 }}
+                dpr={[1, 1.65]}
+                gl={{ antialias: true, powerPreference: 'high-performance' }}
+                shadows
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.screenshot}
-                  alt={`${p.title} — screenshot`}
-                  loading="lazy"
-                  className="w-full block transition-transform duration-500 group-hover:scale-[1.04]"
-                  style={{ aspectRatio: '16 / 10', objectFit: 'cover', objectPosition: 'top' }}
-                  onError={(e) => { const el = e.currentTarget.parentElement as HTMLElement; if (el) el.style.display = 'none' }}
-                />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,7,13,0.55), transparent 55%)' }} />
+                <color attach="background" args={['#07090c']} />
+                <fog attach="fog" args={['#07090c', 10, 24]} />
+                <Suspense fallback={null}>
+                  <GalleryScene activeIndex={activeIndex} reduced={reduced} onSelect={setActiveIndex} />
+                </Suspense>
+              </Canvas>
+              <LoadingProgress />
+            </>
+          ) : (
+            <StaticEvidence project={active} />
+          )}
+
+          <div className="pointer-events-none absolute left-5 top-5 md:left-7 md:top-7">
+            {standalone && (
+              <a href="/#projects" className="pointer-events-auto mb-5 inline-block font-mono text-[10px] uppercase text-white/55 hover:text-white">
+                ← Portfolio
               </a>
-            ) : null}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="font-mono uppercase tracking-[0.2em] text-[10px]" style={{ color: focused!.color }}>{p.category}</span>
-              {p.status && <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 py-0.5 border" style={{ color: focused!.color, borderColor: `${focused!.color}55` }}>{p.status}</span>}
-            </div>
-            <div className="font-mono text-base tracking-[0.12em] mb-0.5">{p.title}</div>
-            <div className="text-[11px] text-white/45 mb-3">{p.subtitle}</div>
-            <p className="text-[11px] leading-relaxed text-white/65 mb-3">{p.description}</p>
-            <div className="border-l-2 pl-3 mb-4 text-[11px] leading-relaxed text-white/75" style={{ borderColor: focused!.color }}>{p.impact}</div>
+            )}
+            <p className="font-mono text-[10px] uppercase text-white/45" style={{ letterSpacing: 2 }}>Interactive evidence gallery</p>
+            <h2 className="mt-1 text-xl font-semibold md:text-2xl" style={{ letterSpacing: 0 }}>Flagship Security Systems</h2>
+          </div>
 
-            <div className={lbl + ' mb-2'}>live signal</div>
-            <div className="flex justify-between items-baseline mb-1">
-              <span className="font-mono text-[9px] uppercase tracking-wider text-white/40">throughput</span>
-              <span className="font-mono text-[12px]" style={{ color: focused!.color }}>{signal}/s</span>
-            </div>
-            <div className="h-[2px] w-full bg-white/10 mb-4"><div className="h-full transition-all duration-300" style={{ width: `${signal}%`, background: focused!.color }} /></div>
+          <div className="absolute bottom-5 left-5 flex items-center gap-2 md:bottom-7 md:left-7">
+            <button
+              type="button"
+              onClick={() => move(-1)}
+              aria-label="Previous project"
+              title="Previous project"
+              className="flex h-10 w-10 items-center justify-center border border-white/15 text-lg text-white/70 transition-colors hover:border-white/40 hover:text-white"
+              style={{ borderRadius: 6, background: 'rgba(7,9,12,0.8)' }}
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => move(1)}
+              aria-label="Next project"
+              title="Next project"
+              className="flex h-10 w-10 items-center justify-center border border-white/15 text-lg text-white/70 transition-colors hover:border-white/40 hover:text-white"
+              style={{ borderRadius: 6, background: 'rgba(7,9,12,0.8)' }}
+            >
+              →
+            </button>
+            <span className="ml-2 font-mono text-[10px] text-white/45">
+              {String(activeIndex + 1).padStart(2, '0')} / {String(FEATURED.length).padStart(2, '0')}
+            </span>
+          </div>
+        </div>
 
-            <div className={lbl + ' mb-2'}>stack</div>
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {p.stack.slice(0, 8).map((s) => (
-                <span key={s} className="font-mono text-[9px] uppercase tracking-wider px-2 py-1 border border-white/10 text-white/60">{s}</span>
-              ))}
-            </div>
+        <aside className="flex min-h-[510px] flex-col border-t border-white/10 p-5 md:p-7 lg:min-h-0 lg:border-l lg:border-t-0 lg:p-8">
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-mono text-[10px] uppercase" style={{ color: accent, letterSpacing: 2 }}>Selected evidence</span>
+            <span className="font-mono text-[10px] text-white/35">{active.duration}</span>
+          </div>
 
-            <div className="flex flex-wrap gap-2">
-              {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border" style={{ color: focused!.color, borderColor: `${focused!.color}55` }}>Live →</a>}
-              <a href={p.github} target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-white/15 text-white/60">GitHub →</a>
-              <a href={`/projects/${p.id}`} className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-white/15 text-white/60">Case Study →</a>
+          <h3 className="mt-5 text-2xl font-semibold leading-tight" style={{ letterSpacing: 0 }}>{active.title}</h3>
+          <p className="mt-2 text-sm text-white/50">{active.subtitle}</p>
+
+          <div className="mt-6 border-y border-white/10 py-5">
+            <p className="font-mono text-[10px] uppercase text-white/35" style={{ letterSpacing: 2 }}>Verified impact</p>
+            <p className="mt-3 text-sm leading-6 text-white/78">{active.impact}</p>
+          </div>
+
+          <div className="grid grid-cols-3 border-b border-white/10 py-5">
+            {metrics.map((metric) => (
+              <div key={metric.label} className="border-r border-white/10 px-2 first:pl-0 last:border-r-0 last:pr-0">
+                <p className="font-mono text-sm font-semibold md:text-base" style={{ color: accent }}>{metric.value}</p>
+                <p className="mt-1 text-[9px] leading-3 text-white/38">{metric.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {active.stack.slice(0, 7).map((item) => (
+              <span key={item} className="border border-white/10 px-2 py-1 font-mono text-[9px] uppercase text-white/55" style={{ borderRadius: 4 }}>
+                {item}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            <a
+              href={`/projects/${active.id}`}
+              className="px-4 py-2 font-mono text-[10px] uppercase text-[#071014] transition-opacity hover:opacity-85"
+              style={{ background: accent, borderRadius: 5, letterSpacing: 1 }}
+            >
+              Case study →
+            </a>
+            <a
+              href={active.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase text-white/65 transition-colors hover:border-white/40 hover:text-white"
+              style={{ borderRadius: 5, letterSpacing: 1 }}
+            >
+              GitHub ↗
+            </a>
+            {active.demo && (
+              <a
+                href={active.demo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase text-white/65 transition-colors hover:border-white/40 hover:text-white"
+                style={{ borderRadius: 5, letterSpacing: 1 }}
+              >
+                Live demo ↗
+              </a>
+            )}
+            {standalone ? (
+              <button
+                type="button"
+                onClick={copyProjectLink}
+                className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase text-white/65 transition-colors hover:border-white/40 hover:text-white"
+                style={{ borderRadius: 5, letterSpacing: 1 }}
+              >
+                {copied ? 'Link copied' : 'Copy link'}
+              </button>
+            ) : (
+              <a
+                href={`/4d?project=${active.id}`}
+                className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase text-white/65 transition-colors hover:border-white/40 hover:text-white"
+                style={{ borderRadius: 5, letterSpacing: 1 }}
+              >
+                Open full 3D ↗
+              </a>
+            )}
+          </div>
+
+          <div className="mt-auto pt-8">
+            <p className="mb-3 font-mono text-[10px] uppercase text-white/30" style={{ letterSpacing: 2 }}>Flagship index</p>
+            <div className="border-t border-white/10">
+              {FEATURED.map((project, index) => {
+                const selected = index === activeIndex
+                return (
+                  <button
+                    key={project.id}
+                    type="button"
+                    onClick={() => setActiveIndex(index)}
+                    className="flex w-full items-center gap-3 border-b border-white/10 py-3 text-left transition-colors hover:text-white"
+                    style={{ color: selected ? '#ffffff' : 'rgba(255,255,255,0.42)' }}
+                  >
+                    <span className="h-2 w-2 flex-none" style={{ borderRadius: 2, background: projectAccent(project), opacity: selected ? 1 : 0.45 }} />
+                    <span className="font-mono text-[10px]">{project.num}</span>
+                    <span className="min-w-0 truncate text-sm">{project.title}</span>
+                  </button>
+                )
+              })}
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-    </div>
+          </div>
+        </aside>
+      </div>
+    </section>
   )
 }

@@ -44,18 +44,6 @@ export default function ProjectsSection() {
       ) : (
         <div style={{ marginTop: 16 }}>
           <ProjectNexus />
-          <p
-            style={{
-              textAlign: 'center',
-              fontFamily: 'ui-monospace, monospace',
-              fontSize: 10,
-              letterSpacing: 1.5,
-              color: 'rgba(255,255,255,0.35)',
-              marginTop: 8,
-            }}
-          >
-            drag to orbit · filter by domain · click a node to enter
-          </p>
         </div>
       )}
     </div>
