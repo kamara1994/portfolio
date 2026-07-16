@@ -6,16 +6,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface Message { role: 'user' | 'assistant'; content: string }
 
 const QUICK_QUESTIONS = [
-  'What projects has Joseph built?',
-  'Is Joseph available to hire?',
-  'What are his top skills?',
+  'Give me Joseph\'s strongest project.',
+  'Is Joseph a fit for SOC roles?',
+  'Explain BLUE-X in plain English.',
+  'What should recruiters know?',
 ]
 
-const GREETING = "Hi, I'm PWEZA, Joseph's AI assistant. Ask me anything about him, or we can just chat. What's up?"
+const GREETING = "I'm PWEZA, Joseph's portfolio assistant. I can brief you on his projects, skills, certifications, hiring fit, or walk you straight to the strongest proof on this site."
 
 // How long (ms) to keep the mic OFF after PWEZA stops talking, so the dying
 // echo of its own voice on speakers can't get captured and answered.
 const SPEECH_COOLDOWN = 800
+const LISTENING_IDLE_TIMEOUT = 7000
+const TRANSCRIPT_MIN_CONFIDENCE = 0.55
 
 export default function AIChat() {
   const [open, setOpen]                     = useState(false)
@@ -26,12 +29,14 @@ export default function AIChat() {
   const [listening, setListening]           = useState(false)
   const [speaking, setSpeaking]             = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
-  const [voiceMode, setVoiceMode]           = useState<'voice' | 'text'>('voice')
+  const [voiceMode, setVoiceMode]           = useState<'voice' | 'text'>('text')
   const [greeted, setGreeted]               = useState(false)
 
   const bottomRef        = useRef<HTMLDivElement>(null)
+  const messagesRef      = useRef<Message[]>([{ role: 'assistant', content: GREETING }])
   const recognitionRef   = useRef<any>(null)
-  const voiceModeRef     = useRef<'voice' | 'text'>('voice')
+  const listenTimerRef    = useRef<any>(null)
+  const voiceModeRef     = useRef<'voice' | 'text'>('text')
   const audioRef         = useRef<HTMLAudioElement | null>(null)
   const speakingRef      = useRef(false)
   const loadingRef       = useRef(false)
@@ -44,6 +49,7 @@ export default function AIChat() {
   useEffect(() => { loadingRef.current   = loading },   [loading])
   useEffect(() => { listeningRef.current = listening }, [listening])
   useEffect(() => { openRef.current      = open },      [open])
+  useEffect(() => { messagesRef.current   = messages }, [messages])
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
   useEffect(() => {
     const supported = typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
@@ -56,6 +62,11 @@ export default function AIChat() {
     const initial  = setTimeout(() => { setPulse(true); setTimeout(() => setPulse(false), 2000) }, 3000)
     return () => { clearInterval(interval); clearTimeout(initial) }
   }, [open])
+
+  const clearListenTimer = () => {
+    if (listenTimerRef.current) clearTimeout(listenTimerRef.current)
+    listenTimerRef.current = null
+  }
 
   const stopSpeaking = () => {
     if (audioRef.current) { try { audioRef.current.pause() } catch {} ; audioRef.current = null }
@@ -79,6 +90,8 @@ export default function AIChat() {
     if (audioDataUrl) {
       try {
         const audio = new Audio(audioDataUrl)
+        audio.playbackRate = 1.04
+        audio.preservesPitch = true
         audio.onplay  = begin
         audio.onended = finish
         audio.onerror = finish
@@ -89,7 +102,7 @@ export default function AIChat() {
     }
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) { onEnd?.(); return }
     const u = new SpeechSynthesisUtterance(text)
-    u.rate = 1.02; u.pitch = 1.05; u.volume = 0.95
+    u.rate = 1.08; u.pitch = 1.03; u.volume = 0.96
     const voices = window.speechSynthesis.getVoices()
     const v = voices.find(x => x.name.includes('Samantha') || x.name.includes('Karen') || x.name.includes('Google US') || x.lang === 'en-US')
     if (v) u.voice = v
@@ -123,6 +136,7 @@ export default function AIChat() {
     const since = Date.now() - lastSpeechEndRef.current
     if (since < SPEECH_COOLDOWN) { setTimeout(() => startListening(), SPEECH_COOLDOWN - since + 50); return }
 
+    clearListenTimer()
     try { recognitionRef.current?.stop() } catch {}
 
     const r = new SR()
@@ -131,29 +145,52 @@ export default function AIChat() {
     r.interimResults = false
     r.lang           = 'en-US'
 
-    r.onstart  = () => { listeningRef.current = true; setListening(true) }
+    r.onstart  = () => {
+      listeningRef.current = true
+      setListening(true)
+      clearListenTimer()
+      listenTimerRef.current = setTimeout(() => {
+        if (!gotResult) {
+          try { r.stop() } catch {}
+          listeningRef.current = false
+          setListening(false)
+        }
+      }, LISTENING_IDLE_TIMEOUT)
+    }
     r.onresult = (e: any) => {
       gotResult = true
-      const transcript = (e.results[0][0].transcript || '').trim()
+      clearListenTimer()
+      const result = e.results?.[0]?.[0]
+      const transcript = (result?.transcript || '').trim()
+      const confidence = typeof result?.confidence === 'number' ? result.confidence : 1
       if (!transcript) return
+      if (confidence < TRANSCRIPT_MIN_CONFIDENCE) {
+        setMessages(prev => [...prev, { role: 'assistant', content: "I caught that poorly. Say it once more and I'll listen closer." }])
+        return
+      }
       // Final safety net: drop anything captured inside the cooldown window
       // (that's almost always PWEZA's own echo, not you).
       if (Date.now() - lastSpeechEndRef.current < SPEECH_COOLDOWN) return
       send(transcript, 'voice')
     }
     r.onerror  = () => {
+      clearListenTimer()
       listeningRef.current = false; setListening(false)
-      if (openRef.current && voiceModeRef.current === 'voice' && !loadingRef.current && !speakingRef.current) setTimeout(() => startListening(), 350)
     }
     r.onend    = () => {
+      clearListenTimer()
       listeningRef.current = false; setListening(false)
-      if (openRef.current && voiceModeRef.current === 'voice' && !loadingRef.current && !speakingRef.current) setTimeout(() => startListening(), 350)
     }
 
     try { r.start(); recognitionRef.current = r } catch {}
   }
 
-  const stopListening = () => { try { recognitionRef.current?.stop() } catch {}; listeningRef.current = false; setListening(false) }
+  const stopListening = () => {
+    clearListenTimer()
+    try { recognitionRef.current?.stop() } catch {}
+    listeningRef.current = false
+    setListening(false)
+  }
 
   const send = async (text?: string, mode: 'voice' | 'text' = voiceModeRef.current) => {
     const msg = (text ?? input).trim()
@@ -164,16 +201,19 @@ export default function AIChat() {
     stopListening()
     loadingRef.current = true
 
-    const newMessages: Message[] = [...messages, { role: 'user', content: msg }]
+    const newMessages: Message[] = [...messagesRef.current, { role: 'user', content: msg }]
     setMessages(newMessages); setInput(''); setLoading(true)
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages.map(m => ({ role: m.role, content: m.content })) })
+        body: JSON.stringify({
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          wantsAudio: mode === 'voice',
+        })
       })
       const data = await res.json()
-      const reply = (data.content || data.error || 'Sorry, I had trouble with that.').trim()
+      const reply = (data.content || data.error || "I couldn't reach the full brain for a second, but I'm still here. Try that again and I'll tighten it up.").trim()
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
 
       if (mode === 'voice') {
@@ -182,7 +222,11 @@ export default function AIChat() {
         })
       }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error - try again?' }])
+      const fallback = 'Connection hiccup on my side. Ask again in a second, or try one of the quick prompts below.'
+      setMessages(prev => [...prev, { role: 'assistant', content: fallback }])
+      if (mode === 'voice') speak(fallback, null, () => {
+        if (voiceModeRef.current === 'voice') setTimeout(() => startListening(), 350)
+      })
     } finally {
       loadingRef.current = false
       setLoading(false)
@@ -218,6 +262,7 @@ export default function AIChat() {
 
   const handleMicClick = () => {
     if (!voiceSupported) return
+    if (speakingRef.current) { cutIn(); return }
     if (listening) { stopListening(); return }
     setVoiceMode('voice'); voiceModeRef.current = 'voice'
     startListening()
@@ -326,16 +371,9 @@ export default function AIChat() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="font-mono font-bold tracking-wider" style={{ fontSize: 11, color: '#00d4ff', margin: 0 }}>PWEZA</p>
                 <p className="font-mono" style={{ fontSize: 9, color: '#62788f', margin: 0 }}>
-                  {speaking ? '🔊 Speaking — tap “Cut in” to talk' : listening ? '🎤 Listening…' : voiceMode === 'voice' && voiceSupported ? "Voice mode · Joseph's voice" : 'Text mode'}
+                  {speaking ? 'Speaking - tap Cut in to talk' : listening ? 'Listening now - ask naturally' : loading ? 'Thinking through Joseph\'s portfolio' : voiceMode === 'voice' && voiceSupported ? 'Voice-ready portfolio guide' : 'Text mode portfolio guide'}
                 </p>
               </div>
-              {speaking && (
-                <button type="button" onClick={cutIn}
-                  className="font-mono"
-                  style={{ fontSize: 8.5, color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)', padding: '3px 7px', borderRadius: 5, background: 'rgba(245,158,11,0.1)', cursor: 'pointer' }}>
-                  🎤 Cut in
-                </button>
-              )}
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 8px #00f5d4', animation: 'pwezaPulse 2s ease-in-out infinite' }} />
               <span className="font-mono font-bold" style={{ fontSize: 9, color: '#00f5d4', letterSpacing: 1 }}>ONLINE</span>
             </div>
@@ -398,30 +436,35 @@ export default function AIChat() {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={e => e.key === 'Enter' && send(undefined, 'text')}
-                placeholder={listening ? 'Listening…' : 'Type or tap mic'}
+                placeholder={listening ? 'Listening...' : 'Ask about projects, fit, skills...'}
                 className="font-mono"
+                aria-label="Ask PWEZA"
                 style={{ flex: 1, fontSize: 11, color: '#fff', padding: '8px 11px',
                   background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, outline: 'none' }}
               />
               <button type="button" onClick={handleMicClick}
                 disabled={loading || !voiceSupported}
+                title={voiceSupported ? (speaking ? 'Interrupt PWEZA and speak' : listening ? 'Stop listening' : 'Start voice listening') : 'Voice input is not supported in this browser'}
+                aria-label={speaking ? 'Interrupt PWEZA and speak' : listening ? 'Stop listening' : 'Start voice listening'}
                 style={{
                   position: 'relative',
                   width: 34, height: 34, borderRadius: 6,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-                  color: listening ? '#ef4444' : voiceSupported ? '#00f5d4' : '#33485c',
-                  background: listening ? 'rgba(239,68,68,0.15)' : voiceSupported ? 'rgba(0,245,212,0.1)' : 'transparent',
-                  border: '1px solid ' + (listening ? 'rgba(239,68,68,0.5)' : voiceSupported ? 'rgba(0,245,212,0.4)' : 'rgba(255,255,255,0.08)'),
+                  color: speaking ? '#f59e0b' : listening ? '#ef4444' : voiceSupported ? '#00f5d4' : '#33485c',
+                  background: speaking ? 'rgba(245,158,11,0.15)' : listening ? 'rgba(239,68,68,0.15)' : voiceSupported ? 'rgba(0,245,212,0.1)' : 'transparent',
+                  border: '1px solid ' + (speaking ? 'rgba(245,158,11,0.55)' : listening ? 'rgba(239,68,68,0.5)' : voiceSupported ? 'rgba(0,245,212,0.4)' : 'rgba(255,255,255,0.08)'),
                   cursor: voiceSupported ? 'pointer' : 'not-allowed',
                   opacity: voiceSupported ? 1 : 0.4,
-                  animation: listening ? 'pwezaListen 0.7s ease-in-out infinite' : 'none',
+                  animation: (listening || speaking) ? 'pwezaListen 0.7s ease-in-out infinite' : 'none',
                 }}>
                 {listening ? '⏹' : '🎤'}
                 {listening && <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 6px #ef4444', animation: 'pwezaPulse 1s ease-in-out infinite' }} />}
               </button>
               <button type="button" onClick={() => send(undefined, 'text')}
                 disabled={loading || !input.trim()}
+                title="Send message"
+                aria-label="Send message"
                 style={{
                   width: 34, height: 34, borderRadius: 6,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,

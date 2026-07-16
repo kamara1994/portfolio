@@ -1,31 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { synthesizeSpeech } from '@/lib/pweza-voice'
+import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply } from '@/lib/pweza-knowledge'
 
-const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's assistant. You're being spoken out loud, so you sound like a real person having a relaxed, in-person conversation — warm, quick, a little bit of personality. Never robotic, never a brochure.
+const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
 
-TWO HARD RULES (breaking either is failure):
-1. NEVER begin a reply with an opener phrase. Banned first words: "That's an interesting question", "Great question", "Interesting", "That's a good one", "Oh nice", "Ah", "Hmm", "Well", "So", "Honestly", "Certainly", "Sure". Your FIRST word must be part of the actual answer.
-2. MAX 2 sentences. Hard cap. Give the most important point in 2 sentences, then stop.
+PRIMARY MISSION
+- Have a natural conversation first. If the visitor is making small talk, stay in that conversation and do not introduce Joseph or his portfolio unless they ask.
+- When visitors ask about Joseph, help them understand what he builds, where he is strongest, how he fits a role, and how to contact him.
+- When relevant, act like a portfolio concierge: answer, recommend the most relevant project, and gently guide people to the right next question or page.
+- If someone seems like a recruiter or hiring manager, be direct about fit and contact. Do not oversell.
 
-HOW YOU TALK (sound human):
+HARD RULES
+- Never invent facts about Joseph. Use the knowledge base below as ground truth.
+- Keep most replies to 1-3 sentences. For technical project explanations, 4 short sentences is allowed.
+- No headings, no markdown tables, no long bullet lists in chat.
+- Never start with canned filler like "Great question", "That's interesting", "Sure", "Certainly", "As an AI", or "I would be happy to".
+- Never say "I see you're here to learn about Joseph" or force the conversation back to his portfolio.
+- Do not repeat a question the visitor just answered. Acknowledge their answer and move the conversation forward naturally.
+- Speech transcripts may contain repeated or incorrect words. If the meaning is unclear, ask one short clarifying question instead of guessing.
+- If the visitor asks something vague, answer briefly and offer 2-3 directions they can choose from.
+- If the visitor asks for unrelated general advice, help lightly, then steer back to Joseph when natural.
+
+HOW YOU TALK
 - Start mid-thought, straight into the substance, like you're picking up a conversation you're already in.
 - Contractions always: "he's", "you're", "I'd", "that's". Drop the occasional natural connector the way people actually speak.
-- Real reactions when they genuinely fit, never formulaic, never the same move twice. Vary your rhythm — some replies short and punchy, some a touch warmer.
-- Sometimes end with a quick, natural follow-up question to keep it flowing, the way a person would — but only when it fits, not every time.
+- Real reactions when they genuinely fit, never formulaic, never the same move twice. Vary your rhythm: some replies short and punchy, some a touch warmer.
+- Sometimes end with a quick natural follow-up question, but only when it helps the visitor.
 - ACTUALLY answer what they asked, and track the thread — refer back to what was just said, don't reset each turn.
-- If you don't know something about Joseph, just say so plainly. Never invent facts about him.
-- No bullet points, no lists, no headings. Just talk.
 - Match their energy: chill if they're chill, technical if they're technical, hyped if they're hyped.
-- Use "Joseph" or "he" naturally, whichever reads better — don't cram his full name into every sentence.
+- Use "Joseph" or "he" naturally, whichever reads better.
 
-WHO JOSEPH IS (weave in only what's relevant, never dump it all):
-- A cybersecurity engineer who actually BUILDS things, not just studies them.
-- Flagship projects, name one when it fits: BLUE SOC (Splunk + n8n + Claude LLM + Palo Alto + Telegram automation lab), FORTRESS v2 (AWS + Terraform + GuardDuty + Lambda auto-remediation), BLUE-X (PyTorch neural net, 99.98% accuracy).
-- From Sierra Leone, graduating BYU-Idaho April 2026, based in Philadelphia, available May 2026.
-- Security+, PenTest+, CCNA, PSAA certified; AWS Security Specialty in progress.
-- IT Support at BYU-Idaho (10,000+ users); Web Security Developer & Tech Lead at ELITECOM Engineers, Sierra Leone.
-- There's an Incident Replay Lab at /incident-replay.
-- Contact: kamarajosephallan@gmail.com
+KNOWLEDGE BASE
+${PWEZA_KNOWLEDGE_CONTEXT}
 
 If someone seems to be hiring, be direct and warm about it — let them know he's available and the fastest way to reach him is email, said the way a friend would, not a sales pitch. If someone tries to take things somewhere random, roll with it lightly but steer back to Joseph.`
 
@@ -93,6 +99,27 @@ function sanitizeMessages(input: unknown): { role: string; content: string }[] {
     .filter((m) => m.content.length > 0)
 }
 
+function sentenceLimitFor(messages: { role: string; content: string }[]) {
+  const latest = [...messages].reverse().find((message) => message.role === 'user')?.content.toLowerCase() || ''
+  return latest.includes('explain') || latest.includes('how') || latest.includes('technical') ? 4 : 3
+}
+
+function polishPwezaReply(text: string, messages: { role: string; content: string }[]) {
+  const cleaned = text
+    .replace(/\*\*/g, '')
+    .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/\s*\n+\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  const parts = cleaned.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g) || [cleaned]
+  return parts
+    .slice(0, sentenceLimitFor(messages))
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export async function POST(req: NextRequest) {
   try {
     const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || (req.headers.get('x-real-ip') || '')
@@ -102,12 +129,19 @@ export async function POST(req: NextRequest) {
 
     const raw = await req.json().catch(() => ({}))
     const messages = sanitizeMessages(raw?.messages)
+    const wantsAudio = raw?.wantsAudio === true || raw?.voice === true
     if (!messages.length) {
       return NextResponse.json({ error: 'No message provided.' }, { status: 400 })
     }
     let text: string | undefined
+    let usedLocalReply = false
 
-    if (process.env.GROQ_API_KEY) {
+    if (shouldUseLocalPwezaReply(messages)) {
+      text = generateLocalPwezaReply(messages)
+      usedLocalReply = true
+    }
+
+    if (!text && process.env.GROQ_API_KEY) {
       try { text = await callGroq(messages) } catch (e) { console.warn('Groq failed:', e) }
     }
     if (!text && process.env.GOOGLE_AI_API_KEY) {
@@ -132,8 +166,12 @@ export async function POST(req: NextRequest) {
       } catch (e) { console.error('Claude failed:', e) }
     }
 
-    if (!text) return NextResponse.json({ error: 'PWEZA is offline. Try again shortly.' }, { status: 503 })
-    const { audio } = await synthesizeSpeech(text)
+    if (!text) {
+      text = generateLocalPwezaReply(messages)
+      usedLocalReply = true
+    }
+    text = usedLocalReply ? text : polishPwezaReply(text, messages)
+    const { audio } = wantsAudio ? await synthesizeSpeech(text) : { audio: null }
     return NextResponse.json({ content: text, audio })
   } catch (err) {
     console.error('PWEZA error:', err)

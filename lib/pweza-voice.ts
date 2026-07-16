@@ -3,8 +3,8 @@
 // synthesis so the chat and tts routes stay in sync.
 //
 // Engine: Microsoft Edge neural TTS (via msedge-tts) — free, no API key, no
-// billing. Voice is "PWEZA deep": Christopher pitched 28Hz down and slowed
-// 15% for a super-deep, cinematic delivery, per Joseph's pick (Jul 2026).
+// billing. Voice is "PWEZA deep": Christopher pitched 28Hz down with a light
+// slowdown for a confident delivery that stays clear in conversation.
 // ElevenLabs was removed after its subscription lockout; if it ever returns,
 // this module is the single door to swap engines behind.
 
@@ -19,7 +19,7 @@ export function resolveVoice(): string {
 export function resolveProsody() {
   return {
     pitch: process.env.PWEZA_TTS_PITCH || '-28Hz',
-    rate: process.env.PWEZA_TTS_RATE || '-15%',
+    rate: process.env.PWEZA_TTS_RATE || '-7%',
   }
 }
 

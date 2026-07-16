@@ -20,7 +20,10 @@ export default function VisitTracker() {
     if (lastSent.current === pathname) return
     lastSent.current = pathname
 
+    let sent = false
     const track = () => {
+      if (sent) return
+      sent = true
       fetch('/api/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -34,8 +37,16 @@ export default function VisitTracker() {
       }).catch(() => {})
     }
 
-    const timer = setTimeout(track, 900)
-    return () => clearTimeout(timer)
+    const sendBeforeLeave = () => {
+      if (document.visibilityState === 'hidden') track()
+    }
+
+    const timer = setTimeout(track, 200)
+    document.addEventListener('visibilitychange', sendBeforeLeave)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', sendBeforeLeave)
+    }
   }, [pathname])
 
   return null

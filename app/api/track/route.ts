@@ -35,7 +35,7 @@ function clamp(s: unknown, max = 300): string {
 }
 
 function clientIp(req: NextRequest): string {
-  const fwd = req.headers.get('x-forwarded-for')
+  const fwd = req.headers.get('x-vercel-forwarded-for') || req.headers.get('x-forwarded-for')
   if (fwd) return fwd.split(',')[0].trim()
   return req.headers.get('x-real-ip') || ''
 }
@@ -62,6 +62,32 @@ interface Geo {
   lat?: number; lon?: number; timezone?: string
   isp?: string; org?: string; as?: string
   proxy?: boolean; hosting?: boolean; mobile?: boolean
+}
+
+function decodeHeader(value: string | null): string | undefined {
+  if (!value) return undefined
+  try { return decodeURIComponent(value) } catch { return value }
+}
+
+function numberHeader(value: string | null): number | undefined {
+  if (!value) return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+// Vercel adds these from the visitor's public IP before the request reaches
+// the function. Prefer them for location because they avoid a second network
+// lookup and remain available when the enrichment provider is slow.
+function vercelGeo(req: NextRequest): Geo {
+  return {
+    city: decodeHeader(req.headers.get('x-vercel-ip-city')),
+    region: decodeHeader(req.headers.get('x-vercel-ip-country-region')),
+    country: decodeHeader(req.headers.get('x-vercel-ip-country')),
+    zip: decodeHeader(req.headers.get('x-vercel-ip-postal-code')),
+    lat: numberHeader(req.headers.get('x-vercel-ip-latitude')),
+    lon: numberHeader(req.headers.get('x-vercel-ip-longitude')),
+    timezone: decodeHeader(req.headers.get('x-vercel-ip-timezone')),
+  }
 }
 
 async function geolocate(ip: string): Promise<Geo> {
@@ -137,7 +163,18 @@ export async function POST(req: NextRequest) {
     const language = clamp(body.language, 40)
     const ua = clamp(req.headers.get('user-agent') || '', 400)
 
-    const geo = await geolocate(ip)
+    const edgeGeo = vercelGeo(req)
+    const enrichedGeo = await geolocate(ip)
+    const geo: Geo = {
+      ...enrichedGeo,
+      city: edgeGeo.city || enrichedGeo.city,
+      region: enrichedGeo.region || edgeGeo.region,
+      country: enrichedGeo.country || edgeGeo.country,
+      zip: edgeGeo.zip || enrichedGeo.zip,
+      lat: edgeGeo.lat ?? enrichedGeo.lat,
+      lon: edgeGeo.lon ?? enrichedGeo.lon,
+      timezone: edgeGeo.timezone || enrichedGeo.timezone,
+    }
 
     const locationParts = [geo.city, geo.region, geo.country].filter(Boolean)
     const location = locationParts.length ? locationParts.join(', ') : 'Unknown'
@@ -162,8 +199,8 @@ export async function POST(req: NextRequest) {
       header,
       '',
       `📄 Page: ${esc(page)}`,
-      `📍 Location: ${esc(location)}${geo.zip ? ` (${esc(geo.zip)})` : ''}`,
-      mapLink ? `🗺️ Map: ${mapLink}` : null,
+      `📍 Approx. location: ${esc(location)}${geo.zip ? ` (${esc(geo.zip)})` : ''}`,
+      mapLink ? `🗺️ Map area: ${mapLink}` : null,
       geo.timezone ? `🕓 TZ: ${esc(geo.timezone)}` : null,
       ip ? `🌐 IP: ${esc(ip)}` : null,
       orgStr ? `🏢 ISP/Org: ${esc(orgStr)}` : null,
