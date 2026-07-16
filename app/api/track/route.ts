@@ -23,7 +23,7 @@ const TARGET_COMPANIES = [
 // Best-effort in-memory throttle so the public endpoint can't be used to spam
 // the Telegram chat. Resets on cold start — fine for this use case.
 const RATE = new Map<string, number>()
-const RATE_WINDOW_MS = 30_000
+const RATE_WINDOW_MS = 5_000
 
 function esc(s: string): string {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

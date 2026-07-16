@@ -21,20 +21,28 @@ export default function VisitTracker() {
     lastSent.current = pathname
 
     let sent = false
-    const track = () => {
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
+    const track = async () => {
       if (sent) return
       sent = true
-      fetch('/api/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        keepalive: true,
-        body: JSON.stringify({
-          page: pathname,
-          referrer: document.referrer || 'direct',
-          screen: `${window.screen.width}x${window.screen.height}`,
-          language: navigator.language,
-        }),
-      }).catch(() => {})
+      try {
+        const response = await fetch('/api/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            page: pathname,
+            referrer: document.referrer || 'direct',
+            screen: `${window.screen.width}x${window.screen.height}`,
+            language: navigator.language,
+          }),
+        })
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok || result?.telegram?.ok === false) throw new Error('visit-alert-failed')
+      } catch {
+        sent = false
+        retryTimer = setTimeout(track, 1500)
+      }
     }
 
     const sendBeforeLeave = () => {
@@ -45,6 +53,7 @@ export default function VisitTracker() {
     document.addEventListener('visibilitychange', sendBeforeLeave)
     return () => {
       clearTimeout(timer)
+      if (retryTimer) clearTimeout(retryTimer)
       document.removeEventListener('visibilitychange', sendBeforeLeave)
     }
   }, [pathname])
