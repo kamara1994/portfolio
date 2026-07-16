@@ -6,12 +6,20 @@ import { ContactShadows, Html, useProgress, useTexture } from '@react-three/drei
 import * as THREE from 'three'
 import { projects, type Project } from '@/data/projects'
 
-const FEATURED = projects.filter((project) => project.featured)
+const GALLERY_PROJECTS = projects
 
 const ACCENTS: Record<string, string> = {
   'blue-soc-p8': '#21c7e8',
+  'python-ids': '#ef6f6c',
+  'cve-scanner': '#c7e36b',
+  'threat-intel-dashboard': '#6ba8e3',
+  'blue-v3': '#d78ee8',
+  'security-automation-toolkit': '#7bd5b3',
+  elitecom: '#f08a5d',
+  'pandie-foundation': '#e5c76b',
   'fortress-v2': '#f2aa4c',
   'blue-x': '#42d392',
+  'enterprise-networking': '#8aa4ff',
 }
 
 const PROOF_METRICS: Record<string, Array<{ value: string; label: string }>> = {
@@ -122,6 +130,59 @@ function FortressSurface() {
   return <meshBasicMaterial map={texture} toneMapped={false} />
 }
 
+function makeProjectTexture(project: Project) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1600
+  canvas.height = 1000
+  const context = canvas.getContext('2d')!
+  const accent = projectAccent(project)
+
+  context.fillStyle = '#091015'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = accent
+  context.fillRect(82, 76, 10, 122)
+  context.font = '700 54px ui-monospace, monospace'
+  context.fillText(project.title.toUpperCase(), 128, 137)
+  context.fillStyle = '#91a0a8'
+  context.font = '24px ui-monospace, monospace'
+  context.fillText(project.category.toUpperCase(), 130, 183)
+
+  const steps = (project.architecture || [project.approach]).slice(0, 5)
+  steps.forEach((step, index) => {
+    const y = 285 + index * 112
+    context.fillStyle = '#101b22'
+    context.strokeStyle = index === 0 ? accent : '#33464f'
+    context.lineWidth = 2
+    context.fillRect(130, y, 1340, 76)
+    context.strokeRect(130, y, 1340, 76)
+    context.fillStyle = accent
+    context.font = '700 22px ui-monospace, monospace'
+    context.fillText(String(index + 1).padStart(2, '0'), 165, y + 47)
+    context.fillStyle = '#dce6e9'
+    context.font = '22px ui-monospace, monospace'
+    const label = step.length > 86 ? `${step.slice(0, 83)}...` : step
+    context.fillText(label, 235, y + 47)
+  })
+
+  context.fillStyle = '#0f171c'
+  context.fillRect(82, 880, 1436, 60)
+  context.fillStyle = accent
+  context.font = '700 20px ui-monospace, monospace'
+  context.fillText(`${project.role.toUpperCase()} / ${project.duration.toUpperCase()}`, 120, 919)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 4
+  texture.needsUpdate = true
+  return texture
+}
+
+function GeneratedProjectSurface({ project }: { project: Project }) {
+  const texture = useMemo(() => makeProjectTexture(project), [project])
+  useEffect(() => () => texture.dispose(), [texture])
+  return <meshBasicMaterial map={texture} toneMapped={false} />
+}
+
 function SignalField({ reduced }: { reduced: boolean }) {
   const ref = useRef<THREE.Points>(null)
   const geometry = useMemo(() => {
@@ -169,8 +230,8 @@ function EvidenceFrame({
     if (!group.current) return
 
     let offset = index - activeIndex
-    if (offset > FEATURED.length / 2) offset -= FEATURED.length
-    if (offset < -FEATURED.length / 2) offset += FEATURED.length
+    if (offset > GALLERY_PROJECTS.length / 2) offset -= GALLERY_PROJECTS.length
+    if (offset < -GALLERY_PROJECTS.length / 2) offset += GALLERY_PROJECTS.length
 
     const active = offset === 0
     const targetX = offset * 5.25
@@ -211,7 +272,9 @@ function EvidenceFrame({
         <planeGeometry args={[4.62, 2.98]} />
         {project.id === 'fortress-v2'
           ? <FortressSurface />
-          : <ScreenshotSurface src={project.screenshot || '/screenshots/blue-soc.png'} />}
+          : project.id === 'pandie-foundation'
+            ? <GeneratedProjectSurface project={project} />
+            : <ScreenshotSurface src={project.screenshot || '/screenshots/blue-soc.png'} />}
       </mesh>
 
       <mesh position={[0, 1.69, 0.03]}>
@@ -263,7 +326,7 @@ function GalleryScene({
       <pointLight position={[7, 2, 3]} intensity={18} color="#f2aa4c" />
       <SignalField reduced={reduced} />
 
-      {FEATURED.map((project, index) => (
+      {GALLERY_PROJECTS.map((project, index) => (
         <EvidenceFrame
           key={project.id}
           project={project}
@@ -300,6 +363,24 @@ function LoadingProgress() {
 }
 
 function StaticEvidence({ project }: { project: Project }) {
+  if (project.id === 'pandie-foundation') {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center px-5 pt-24 pb-20">
+        <div className="w-full max-w-3xl border border-[#e5c76b]/40 bg-[#091015] p-5 md:p-8">
+          <p className="font-mono text-sm font-bold text-[#e5c76b] md:text-xl">{project.title}</p>
+          <p className="mt-1 font-mono text-[8px] uppercase text-white/45 md:text-[10px]" style={{ letterSpacing: 1 }}>{project.category}</p>
+          <div className="mt-5 space-y-2">
+            {(project.architecture || []).slice(0, 5).map((step, index) => (
+              <p key={step} className="border border-white/10 p-2 font-mono text-[8px] text-white/65 md:text-[10px]">
+                <span className="mr-3 text-[#e5c76b]">{String(index + 1).padStart(2, '0')}</span>{step}
+              </p>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (project.id === 'fortress-v2') {
     const columns = [
       ['Telemetry', 'CloudTrail', 'GuardDuty', 'WAF'],
@@ -342,7 +423,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     []
   )
-  const active = FEATURED[activeIndex]
+  const active = GALLERY_PROJECTS[activeIndex]
   const accent = projectAccent(active)
   const metrics = PROOF_METRICS[active.id] || []
 
@@ -352,7 +433,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
 
     if (standalone) {
       const requested = new URLSearchParams(window.location.search).get('project')
-      const requestedIndex = FEATURED.findIndex((project) => project.id === requested)
+      const requestedIndex = GALLERY_PROJECTS.findIndex((project) => project.id === requested)
       if (requestedIndex >= 0) setActiveIndex(requestedIndex)
     }
     setDeepLinkReady(true)
@@ -366,7 +447,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
   }, [active.id, deepLinkReady, standalone])
 
   const move = (direction: number) => {
-    setActiveIndex((current) => (current + direction + FEATURED.length) % FEATURED.length)
+    setActiveIndex((current) => (current + direction + GALLERY_PROJECTS.length) % GALLERY_PROJECTS.length)
   }
 
   const copyProjectLink = async () => {
@@ -444,7 +525,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
               </a>
             )}
             <p className="font-mono text-[10px] uppercase text-white/45" style={{ letterSpacing: 2 }}>Interactive evidence gallery</p>
-            <h2 className="mt-1 text-xl font-semibold md:text-2xl" style={{ letterSpacing: 0 }}>Flagship Security Systems</h2>
+            <h2 className="mt-1 text-xl font-semibold md:text-2xl" style={{ letterSpacing: 0 }}>Project Evidence Gallery</h2>
           </div>
 
           <div className="absolute bottom-5 left-5 flex items-center gap-2 md:bottom-7 md:left-7">
@@ -469,12 +550,12 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
               →
             </button>
             <span className="ml-2 font-mono text-[10px] text-white/45">
-              {String(activeIndex + 1).padStart(2, '0')} / {String(FEATURED.length).padStart(2, '0')}
+              {String(activeIndex + 1).padStart(2, '0')} / {String(GALLERY_PROJECTS.length).padStart(2, '0')}
             </span>
           </div>
         </div>
 
-        <aside className="flex min-h-[510px] flex-col border-t border-white/10 p-5 md:p-7 lg:min-h-0 lg:border-l lg:border-t-0 lg:p-8">
+        <aside className="flex min-h-[510px] flex-col overflow-y-auto border-t border-white/10 p-5 md:p-7 lg:min-h-0 lg:border-l lg:border-t-0 lg:p-8">
           <div className="flex items-center justify-between gap-4">
             <span className="font-mono text-[10px] uppercase" style={{ color: accent, letterSpacing: 2 }}>Selected evidence</span>
             <span className="font-mono text-[10px] text-white/35">{active.duration}</span>
@@ -488,14 +569,16 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
             <p className="mt-3 text-sm leading-6 text-white/78">{active.impact}</p>
           </div>
 
-          <div className="grid grid-cols-3 border-b border-white/10 py-5">
-            {metrics.map((metric) => (
-              <div key={metric.label} className="border-r border-white/10 px-2 first:pl-0 last:border-r-0 last:pr-0">
-                <p className="font-mono text-sm font-semibold md:text-base" style={{ color: accent }}>{metric.value}</p>
-                <p className="mt-1 text-[9px] leading-3 text-white/38">{metric.label}</p>
-              </div>
-            ))}
-          </div>
+          {metrics.length > 0 && (
+            <div className="grid grid-cols-3 border-b border-white/10 py-5">
+              {metrics.map((metric) => (
+                <div key={metric.label} className="border-r border-white/10 px-2 first:pl-0 last:border-r-0 last:pr-0">
+                  <p className="font-mono text-sm font-semibold md:text-base" style={{ color: accent }}>{metric.value}</p>
+                  <p className="mt-1 text-[9px] leading-3 text-white/38">{metric.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-5 flex flex-wrap gap-2">
             {active.stack.slice(0, 7).map((item) => (
@@ -554,21 +637,24 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
           </div>
 
           <div className="mt-auto pt-8">
-            <p className="mb-3 font-mono text-[10px] uppercase text-white/30" style={{ letterSpacing: 2 }}>Flagship index</p>
-            <div className="border-t border-white/10">
-              {FEATURED.map((project, index) => {
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="font-mono text-[10px] uppercase text-white/30" style={{ letterSpacing: 2 }}>All projects</p>
+              <p className="font-mono text-[9px] text-white/30">{GALLERY_PROJECTS.length} total</p>
+            </div>
+            <div className="grid grid-cols-2 border-l border-t border-white/10">
+              {GALLERY_PROJECTS.map((project, index) => {
                 const selected = index === activeIndex
                 return (
                   <button
                     key={project.id}
                     type="button"
                     onClick={() => setActiveIndex(index)}
-                    className="flex w-full items-center gap-3 border-b border-white/10 py-3 text-left transition-colors hover:text-white"
+                    className="flex min-w-0 items-center gap-2 border-b border-r border-white/10 px-2 py-2.5 text-left transition-colors hover:text-white"
                     style={{ color: selected ? '#ffffff' : 'rgba(255,255,255,0.42)' }}
                   >
                     <span className="h-2 w-2 flex-none" style={{ borderRadius: 2, background: projectAccent(project), opacity: selected ? 1 : 0.45 }} />
-                    <span className="font-mono text-[10px]">{project.num}</span>
-                    <span className="min-w-0 truncate text-sm">{project.title}</span>
+                    <span className="font-mono text-[9px]">{project.num}</span>
+                    <span className="min-w-0 truncate text-[11px]">{project.title}</span>
                   </button>
                 )
               })}
