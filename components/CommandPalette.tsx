@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 const commands = [
   { id: 'incident-lab',   label: 'Open Incident Replay Lab',  icon: '🛡️', action: 'navigate', target: '/incident-replay', tag: 'LAB' },
   { id: 'blue-soc',       label: 'View BLUE SOC Project',     icon: '🔵', action: 'scroll',   target: 'projects',          tag: 'PROJECT' },
+  { id: 'pweza-project',  label: 'View PWEZA AI Agent',       icon: '🤖', action: 'navigate', target: '/projects/pweza-voice-agent', tag: 'PROJECT' },
   { id: 'projects',       label: 'Jump to Projects',          icon: '📁', action: 'scroll',   target: 'projects',          tag: 'SECTION' },
   { id: 'skills',         label: 'Jump to Skills',            icon: '⚡', action: 'scroll',   target: 'skills',            tag: 'SECTION' },
   { id: 'certs',          label: 'Jump to Certifications',    icon: '🏆', action: 'scroll',   target: 'certs',             tag: 'SECTION' },

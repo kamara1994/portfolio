@@ -32,7 +32,7 @@ const certs = [
     issuer: 'Cisco',
     date: 'Active Certification',
     status: 'earned',
-    image: '/images/cert-ccna.png',
+    image: '',
     verifyUrl: 'https://cp.certmetrics.com/cisco/en/public/verify',
     color: '#00BCEB',
     description: 'Validates skills in network fundamentals, IP connectivity, routing protocols, VLANs, security fundamentals, and network automation.',
@@ -131,7 +131,7 @@ function CertModal({ cert, onClose }: { cert: typeof certs[0], onClose: () => vo
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={cert.image}
+                  src={cert.image || undefined}
                   alt={cert.fullName}
                   className="w-full h-auto max-h-[400px] object-contain"
                   onError={(e) => {
@@ -140,9 +140,9 @@ function CertModal({ cert, onClose }: { cert: typeof certs[0], onClose: () => vo
                     if (target.nextSibling) (target.nextSibling as HTMLElement).style.display = 'flex'
                   }}
                 />
-                <div className="absolute inset-0 hidden items-center justify-center flex-col gap-3">
-                  <div className="font-mono text-[11px] text-muted tracking-wider">Certificate image not found</div>
-                  <div className="font-mono text-[10px] text-[rgba(0,212,255,0.4)]">Add {cert.image} to your project</div>
+                <div className="absolute inset-0 items-center justify-center flex-col gap-3" style={{ display: cert.image ? 'none' : 'flex' }}>
+                  <div className="font-orbitron text-4xl font-black" style={{ color: cert.color }}>{cert.name}</div>
+                  <div className="font-mono text-[10px] text-muted tracking-widest">VERIFIED CISCO CREDENTIAL</div>
                 </div>
               </>
             )}
@@ -222,7 +222,7 @@ export default function Certs() {
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={cert.image}
+                      src={cert.image || undefined}
                       alt={cert.fullName}
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity scale-105 group-hover:scale-100 transition-transform duration-500"
                       onError={(e) => {
@@ -232,12 +232,12 @@ export default function Certs() {
                       }}
                     />
                     <div
-                      className="absolute inset-0 hidden items-center justify-center"
-                      style={{ background: `linear-gradient(135deg, ${cert.color}22, #020818)` }}
+                      className="absolute inset-0 items-center justify-center"
+                      style={{ display: cert.image ? 'none' : 'flex', background: `linear-gradient(135deg, ${cert.color}22, #020818)` }}
                     >
                       <div className="text-center">
                         <div className="font-orbitron text-3xl font-black mb-1" style={{ color: cert.color }}>{cert.name}</div>
-                        <div className="font-mono text-[9px] text-muted tracking-widest">ADD CERT IMAGE</div>
+                        <div className="font-mono text-[9px] text-muted tracking-widest">VERIFIED CISCO CREDENTIAL</div>
                       </div>
                     </div>
                   </>

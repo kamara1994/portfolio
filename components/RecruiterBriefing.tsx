@@ -7,6 +7,7 @@ const highlights = [
   { icon: '🔵', label: 'Flagship Project',  color: '#00f5d4', value: 'BLUE SOC — Splunk → n8n → AI-assisted triage → Palo Alto workflow → Telegram alerting' },
   { icon: '☁️', label: 'Cloud Security',    color: '#ffaa00', value: 'FORTRESS v2 — AWS GuardDuty, Terraform IaC, Lambda remediation, 5 attack simulations' },
   { icon: '🤖', label: 'AI Security',       color: '#a855f7', value: 'BLUE-X — PyTorch threat classifier, 50k samples, 99.98% accuracy on controlled dataset' },
+  { icon: '🧠', label: 'AI Agent Systems',  color: '#00d4ff', value: 'PWEZA — persistent voice conversations, multi-model routing, knowledge grounding, neural TTS, and visitor intelligence automation' },
   { icon: '🎯', label: 'Target Roles',      color: '#818cf8', value: 'SOC Analyst · Security Engineer · Cloud Security · AI Security' },
 ]
 

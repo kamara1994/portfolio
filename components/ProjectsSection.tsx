@@ -24,17 +24,17 @@ export default function ProjectsSection() {
   })
 
   return (
-    <div className="relative">
+    <div id="projects" className="relative">
       <div className="flex justify-center pt-10">
         <div
           className="inline-flex"
           style={{ border: '1px solid rgba(127,223,255,0.25)', borderRadius: 8, overflow: 'hidden' }}
         >
           <button type="button" style={tab(view === 'grid')} onClick={() => setView('grid')}>
-            ▦ Grid
+            ▦ Project Grid
           </button>
           <button type="button" style={tab(view === '3d')} onClick={() => setView('3d')}>
-            ◇ 3D Nexus
+            ◇ 3D Gallery
           </button>
         </div>
       </div>

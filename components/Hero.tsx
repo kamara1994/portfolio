@@ -63,7 +63,7 @@ export default function Hero() {
             className="flex items-center gap-3 font-mono text-[11px] text-neon tracking-[3px] uppercase mb-6"
           >
             <span className="w-8 h-px bg-neon" />
-            Available for Roles · Open to Work
+            Open to Work · B.S. Cybersecurity, December 2026
             <span className="w-2 h-2 rounded-full bg-neon" style={{ boxShadow: '0 0 8px var(--neon)', animation: reduced ? 'none' : 'heroPulse 2s ease-in-out infinite' }} />
           </motion.div>
 
@@ -88,11 +88,9 @@ export default function Hero() {
             initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.28 }}
             className="text-muted text-[15px] leading-relaxed max-w-xl mb-8"
           >
-            From <span className="text-[#ffaa00] font-semibold">Sierra Leone</span> to the global stage — I design and build
-            security automation connecting <span className="text-cyan font-semibold">SIEM detection</span>,{' '}
+            I build security systems that connect <span className="text-cyan font-semibold">SIEM detection</span>,{' '}
             <span className="text-neon font-semibold">cloud defense</span>, and{' '}
-            <span className="text-purple2 font-semibold">AI-assisted triage</span> into structured,
-            analyst-reviewed response workflows.
+            <span className="text-purple2 font-semibold">AI-assisted triage</span> into structured, analyst-reviewed response workflows, with architecture and validation evidence behind every major project.
           </motion.p>
 
           <motion.div

@@ -3,11 +3,11 @@ import { motion } from 'framer-motion'
 import SectionHeader from './ui/SectionHeader'
 
 const stats = [
-  { label: 'Degree',     val: 'B.S. Cybersecurity — BYU-Idaho' },
+  { label: 'Degree',     val: 'B.S. Cybersecurity · Dec 2026' },
   { label: 'Location',   val: 'Philadelphia, PA · Remote-First' },
   { label: 'Focus',      val: 'SOC Automation · AI Security · Cloud' },
   { label: 'Certs',      val: 'Security+ · CCNA · PenTest+ · PSAA' },
-  { label: 'Status',     val: '🟢 Available Now', highlight: true },
+  { label: 'Status',     val: '🟢 Open to Work · Available Now', highlight: true },
   { label: 'Work Auth',  val: 'U.S. Work Authorized' },
   { label: 'Response',   val: '< 24 hours' },
 ]
@@ -15,8 +15,8 @@ const stats = [
 const differentiators = [
   {
     icon: '🔵',
-    title: 'Builder, not just a student',
-    desc: 'Every project on this portfolio was built from scratch — real architecture decisions, real tradeoffs, real evidence. Not coursework. Not tutorials.',
+    title: 'Engineering backed by evidence',
+    desc: 'Every featured system documents the architecture, tools, decisions, validation process, and measurable outcome behind the work.',
   },
   {
     icon: '🤖',
@@ -60,7 +60,11 @@ export default function About() {
             </p>
 
             <p className="text-[15px] text-muted leading-[1.9]">
-              I hold <span className="text-cyan">CompTIA Security+</span>, <span className="text-cyan">PenTest+</span>, <span className="text-cyan">Cisco CCNA</span>, and <span className="text-cyan">TCM PSAA</span> certifications — offensive and defensive. I'm targeting roles as a <strong className="text-[#e2eaff]">SOC Analyst</strong>, <strong className="text-[#e2eaff]">Security Engineer</strong>, or <strong className="text-[#e2eaff]">Cloud Security Engineer</strong>, remote-preferred, available now.
+              I engineered <strong className="text-[#e2eaff]">PWEZA</strong> as a voice-first AI portfolio agent with multi-model routing, structured project knowledge, persistent speech sessions, neural text-to-speech, and resilient local fallbacks. Its companion visitor intelligence agent enriches server-side visit signals and delivers privacy-conscious, approximate location alerts through Telegram.
+            </p>
+
+            <p className="text-[15px] text-muted leading-[1.9]">
+              I'm completing my <strong className="text-[#e2eaff]">B.S. in Cybersecurity at BYU-Idaho in December 2026</strong>. I also hold <span className="text-cyan">CompTIA Security+</span>, <span className="text-cyan">PenTest+</span>, <span className="text-cyan">Cisco CCNA</span>, and <span className="text-cyan">TCM PSAA</span> certifications. I'm available now for SOC Analyst, Security Engineer, Cloud Security, and AI Security opportunities.
             </p>
 
             {/* Differentiators */}

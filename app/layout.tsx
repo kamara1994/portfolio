@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://josephkamara.vercel.app',
     title: 'Joseph Allan Kamara | Cybersecurity Engineer',
-    description: 'SOC automation, AI-assisted threat detection, cloud security, and incident response. Security+ · PenTest+ · CCNA · PSAA certified. Available May 2026.',
+    description: 'SOC automation, AI-assisted threat detection, cloud security, and incident response. Security+ · PenTest+ · CCNA · PSAA certified. B.S. Cybersecurity expected December 2026; available now.',
     siteName: 'Joseph Allan Kamara Portfolio',
     images: [{
       url: 'https://josephkamara.vercel.app/profile/joseph.jpg',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Joseph Allan Kamara | Cybersecurity Engineer',
-    description: 'SOC automation, AI-assisted threat detection, cloud security. Security+ · PenTest+ · CCNA · PSAA. Available May 2026.',
+    description: 'SOC automation, AI-assisted threat detection, and cloud security. B.S. Cybersecurity expected December 2026; available now.',
     images: ['https://josephkamara.vercel.app/profile/joseph.jpg'],
   },
   robots: { index: true, follow: true },

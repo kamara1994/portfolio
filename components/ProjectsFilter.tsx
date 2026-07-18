@@ -220,8 +220,8 @@ export default function ProjectsFilter() {
   const filtered   = activeCategory==='All' ? projects : projects.filter(p=>p.category===activeCategory)
 
   const tabs = [
-    { id:'built',    label:'Built',              sub:'production projects', icon:'▦', color:'#00d4ff', glow:'#818cf8', count:projects.length,      rainbow:false },
-    { id:'building', label:'Currently Building', sub:'active development',  icon:'⚡', color:'#00f5d4', glow:'#a855f7', count:currentBuilds.length, rainbow:true  },
+    { id:'built',    label:'Documented Systems', sub:'built and validated', icon:'▦', color:'#00d4ff', glow:'#818cf8', count:projects.length,      rainbow:false },
+    { id:'building', label:'In Development',     sub:'active engineering',  icon:'⚡', color:'#00f5d4', glow:'#a855f7', count:currentBuilds.length, rainbow:true  },
   ]
 
   return (
@@ -233,10 +233,13 @@ export default function ProjectsFilter() {
         background:'radial-gradient(ellipse, rgba(0,212,255,0.12), transparent 70%)', filter:'blur(50px)' }}/>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-2">Portfolio</div>
-        <h2 className="font-orbitron text-3xl font-black text-[#e2eaff] mb-10">
-          Featured <span className="text-cyan">Projects</span>
+        <div className="font-mono text-[10px] text-neon tracking-[4px] uppercase mb-2">Engineering Evidence</div>
+        <h2 className="font-orbitron text-3xl font-black text-[#e2eaff] mb-4">
+          Security Systems <span className="text-cyan">Portfolio</span>
         </h2>
+        <p className="mb-10 max-w-3xl text-sm leading-6 text-muted">
+          {projects.length} documented builds spanning SOC automation, cloud defense, AI agents, networking, penetration testing, and production web platforms. Each project connects technical decisions to evidence and outcomes.
+        </p>
 
         {/* ── Floating glass tabs ── */}
         <div style={{ perspective: 1400, display: 'flex', flexWrap: 'wrap', gap: 22, marginBottom: 44, paddingTop: 8, paddingBottom: 8 }}>
@@ -301,10 +304,13 @@ export default function ProjectsFilter() {
 
                             {/* Screenshot */}
                             <div className="relative w-full h-52 overflow-hidden" style={{borderRadius:'14px 14px 0 0'}}>
-                              {project.screenshot
+                              {project.screenshot && project.id !== 'pandie-foundation'
                                 ? <img src={project.screenshot} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
                                 : <div className="w-full h-full flex items-center justify-center" style={{background:'linear-gradient(135deg,rgba(0,212,255,0.05),rgba(129,140,248,0.05))'}}>
-                                    <div className="font-orbitron text-6xl font-black text-[rgba(0,212,255,0.08)]">{project.num}</div>
+                                    <div className="px-6 text-center">
+                                      <div className="font-mono text-[9px] uppercase tracking-[2px] text-cyan/55">{project.category}</div>
+                                      <div className="mt-2 font-orbitron text-lg font-bold text-[#e2eaff]/80">{project.title}</div>
+                                    </div>
                                   </div>
                               }
                               <div className="absolute inset-0" style={{background:'linear-gradient(to top,rgba(0,0,0,0.8),transparent)'}}/>
@@ -352,8 +358,8 @@ export default function ProjectsFilter() {
                                       ⚡ SIMULATE
                                     </button>
                                   )}
-                                  <button onClick={()=>open(project.id)} className="font-mono text-[9px] px-2.5 py-1 border border-cyan/30 text-cyan hover:bg-cyan/10 transition-all">QUICK VIEW</button>
-                                  <Link href={`/projects/${project.id}`} className="font-mono text-[10px] text-neon hover:text-cyan transition-colors">FULL →</Link>
+                                  <button onClick={()=>open(project.id)} className="font-mono text-[9px] px-2.5 py-1 border border-cyan/30 text-cyan hover:bg-cyan/10 transition-all">EVIDENCE</button>
+                                  <Link href={`/projects/${project.id}`} className="font-mono text-[10px] text-neon hover:text-cyan transition-colors">CASE STUDY →</Link>
                                 </div>
                                 <div className="flex gap-2">
                                   {project.github && <a href={project.github} target="_blank" className="font-mono text-[8px] border border-[rgba(0,212,255,0.15)] text-muted px-2 py-0.5 hover:border-cyan hover:text-cyan transition-colors">GH</a>}
@@ -378,7 +384,7 @@ export default function ProjectsFilter() {
             <motion.div key="building" initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-12}} transition={{duration:.22}}>
               <div className="flex items-center gap-3 mb-8 font-mono text-[10px] text-muted">
                 <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse"/>
-                Real projects actively in development — progress is honest, not marketing.
+                Active engineering work with scope, progress, and current status documented.
               </div>
               <div style={{ perspective: 1400 }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

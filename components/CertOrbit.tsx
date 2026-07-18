@@ -37,7 +37,7 @@ const CERTS = [
     issuer: 'Cisco',
     date: 'Active Certification',
     status: 'earned',
-    image: '/images/cert-ccna.png',
+    image: '',
     color: '#00BCEB',
     description: 'Validates skills in network fundamentals, IP connectivity, routing protocols, VLANs, security fundamentals, and automation.',
     certNum: null,
@@ -448,7 +448,7 @@ export default function CertOrbit() {
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={cert.image}
+                      src={cert.image || undefined}
                       alt={cert.name}
                       className="h-full w-full object-cover opacity-75"
                       onError={e => {
@@ -460,7 +460,7 @@ export default function CertOrbit() {
                     />
                     <div
                       className="co-fb absolute inset-0 items-center justify-center"
-                      style={{ display: 'none', background: `${cert.color}18` }}
+                      style={{ display: cert.image ? 'none' : 'flex', background: `${cert.color}18` }}
                     >
                       <span
                         className="font-orbitron font-black"

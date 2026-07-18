@@ -216,7 +216,7 @@ export default function Skills() {
   return (
     <section id="skills" className="relative z-10 py-24 px-6 bg-[rgba(5,14,36,0.4)]">
       <div className="max-w-7xl mx-auto">
-        <SectionHeader label="Technical Arsenal" title="Core " accent="Skills" />
+        <SectionHeader label="Applied Capabilities" title="Security Engineering " accent="Skills" />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
@@ -250,7 +250,7 @@ export default function Skills() {
                       {cat.title}
                     </div>
                     <div className="font-mono text-muted mt-0.5" style={{ fontSize: 8 }}>
-                      {cat.skills.length} skills
+                      {cat.skills.length} capabilities
                     </div>
                   </div>
                   {activeCategory === cat.id && (
@@ -281,7 +281,7 @@ export default function Skills() {
                     <div>
                       <div className="font-orbitron text-base font-bold text-[#e2eaff]">{current.title}</div>
                       <div className="font-mono text-muted" style={{ fontSize: 9 }}>
-                        {current.skills.length} skills · hands-on experience
+                        {current.skills.length} tools and capabilities · demonstrated through applied work
                       </div>
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export default function Skills() {
                     style={{ borderColor: `${current.color}18`, background: `${current.color}04` }}
                   >
                     <div className="font-mono text-muted tracking-[2px] uppercase mb-3" style={{ fontSize: 8 }}>
-                      Skill Profile
+                      Capability Profile
                     </div>
                     <RadarChart category={current} />
                     {/* Corner accents */}
@@ -307,10 +307,10 @@ export default function Skills() {
                   {/* Quick stats */}
                   <div className="space-y-3">
                     {[
-                      { label: 'Top Skill',    val: current.skills.sort((a, b) => b.level - a.level)[0].name },
-                      { label: 'Avg Level',    val: Math.round(current.skills.reduce((s, k) => s + k.level, 0) / current.skills.length) + '%' },
-                      { label: 'Proficient',   val: current.skills.filter(s => s.level >= 85).length + ' skills' },
-                      { label: 'Experienced',  val: current.skills.filter(s => s.level >= 75 && s.level < 85).length + ' skills' },
+                      { label: 'Primary Capability', val: [...current.skills].sort((a, b) => b.level - a.level)[0].name },
+                      { label: 'Capability Set',     val: current.skills.length + ' areas' },
+                      { label: 'Advanced Practice',  val: current.skills.filter(s => s.level >= 85).length + ' areas' },
+                      { label: 'Applied Practice',   val: current.skills.filter(s => s.level >= 75 && s.level < 85).length + ' areas' },
                     ].map((stat, i) => (
                       <motion.div
                         key={stat.label}
@@ -361,7 +361,7 @@ export default function Skills() {
                             border: `1px solid ${current.color}30`,
                           }}
                         >
-                          {skill.level >= 85 ? 'PROFICIENT' : skill.level >= 75 ? 'EXPERIENCED' : 'FAMILIAR'}
+                          {skill.level >= 85 ? 'ADVANCED' : skill.level >= 75 ? 'APPLIED' : 'WORKING'}
                         </span>
                       </div>
                       {/* Bar */}
@@ -376,8 +376,8 @@ export default function Skills() {
                         />
                       </div>
                       <div className="flex justify-between mt-1 relative">
-                        <span className="font-mono text-muted" style={{ fontSize: 7 }}>0%</span>
-                        <span className="font-mono" style={{ fontSize: 7, color: current.color }}>{skill.level}%</span>
+                        <span className="font-mono text-muted" style={{ fontSize: 7 }}>FOUNDATION</span>
+                        <span className="font-mono" style={{ fontSize: 7, color: current.color }}>PROJECT PRACTICE</span>
                       </div>
                     </motion.div>
                   ))}
@@ -389,8 +389,7 @@ export default function Skills() {
                   style={{ borderColor: 'rgba(0,212,255,0.08)', background: 'rgba(0,212,255,0.02)' }}
                 >
                   <p className="font-mono text-muted leading-relaxed" style={{ fontSize: 9 }}>
-                    Proficiency based on hands-on project experience and lab work.
-                    All skills applied in real projects — not just coursework.
+                    Capability levels reflect repeated hands-on use across documented projects, security labs, coursework, certifications, and professional support work. They are directional evidence of practice, not claims of mastery.
                   </p>
                 </div>
               </motion.div>

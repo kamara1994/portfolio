@@ -14,7 +14,7 @@ const roles: { id: Role; label: string; icon: string; color: string; desc: strin
 
 const roleContent: Record<Role, { headline: string; highlights: string[] }> = {
   recruiter: {
-    headline: 'Security+ · PenTest+ · CCNA · PSAA certified. Available May 2026. Philadelphia, PA.',
+    headline: 'Security+ · PenTest+ · CCNA · PSAA certified. Graduating December 2026. Available now in Philadelphia, PA.',
     highlights: ['View resume and certifications', 'Explore flagship projects', 'See the Recruiter Briefing', 'Contact Joseph directly'],
   },
   analyst: {

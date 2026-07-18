@@ -8,7 +8,7 @@ JOSEPH SNAPSHOT
 - Name: Joseph Allan Kamara.
 - Positioning: cybersecurity engineer, security automation builder, AI security builder, and cloud security practitioner.
 - Location: Philadelphia, PA; from Sierra Leone.
-- Education: BYU-Idaho, graduating April 2026.
+- Education: B.S. Cybersecurity at BYU-Idaho, expected graduation December 2026.
 - Availability: available now for SOC Analyst, Security Engineer, Cloud Security Engineer, AI Security Engineer, and related roles.
 - Contact: kamarajosephallan@gmail.com.
 - GitHub: https://github.com/kamara1994.
@@ -104,6 +104,10 @@ export function shouldUseLocalPwezaReply(messages: { role: string; content: stri
     'splunk',
     'n8n',
     'telegram',
+    'pweza',
+    'voice agent',
+    'portfolio assistant',
+    'visitor intelligence',
     'fortress',
     'aws',
     'cloud',
@@ -134,6 +138,12 @@ export function shouldUseLocalPwezaReply(messages: { role: string; content: stri
     'experience',
     'work history',
     'background',
+    'graduate',
+    'graduation',
+    'degree',
+    'education',
+    'byu',
+    'university',
     'resume',
     'download',
     'cv',
@@ -197,8 +207,19 @@ export function generateLocalPwezaReply(messages: { role: string; content: strin
     return 'Joseph is ready for cloud security roles now, especially where AWS, Terraform, detection, and response automation matter. FORTRESS v2 is the proof point: GuardDuty, CloudTrail, WAF, Lambda response workflows, Security Hub, and 20+ AWS resources deployed as code.'
   }
 
+  if (includesAny(text, ['pweza', 'voice agent', 'portfolio assistant', 'visitor intelligence'])) {
+    if (includesAny(text, ['visitor', 'location', 'tracking', 'telegram alert'])) {
+      return `${projectLine('pweza-visitor-intelligence')} It uses server-derived, approximate network location and organization context rather than device GPS, then sends a structured Telegram alert with duplicate suppression and graceful fallbacks.`
+    }
+    return `${projectLine('pweza-voice-agent')} It combines persistent voice conversations, portfolio-grounded local replies, Groq and Gemini routing, Claude fallback, neural speech, and interruption-safe microphone control.`
+  }
+
   if (includesAny(text, ['recruit', 'hiring manager', 'should know'])) {
-    return 'Recruiters should know Joseph is a builder, not just a certification collector: BLUE SOC proves SOC automation, FORTRESS v2 proves AWS cloud defense, and BLUE-X proves AI threat classification at 99.98% accuracy in a controlled dataset. He is available now, and the fastest contact is kamarajosephallan@gmail.com.'
+    return 'Recruiters should know Joseph backs his skills with documented systems: BLUE SOC demonstrates SOC automation, FORTRESS v2 demonstrates AWS cloud defense, and BLUE-X demonstrates AI threat classification at 99.98% accuracy in a controlled dataset. He graduates in December 2026, is available now, and the fastest contact is kamarajosephallan@gmail.com.'
+  }
+
+  if (includesAny(text, ['graduate', 'graduation', 'degree', 'education', 'byu', 'university'])) {
+    return 'Joseph is completing a B.S. in Cybersecurity at BYU-Idaho and expects to graduate in December 2026. He is available now for SOC Analyst, Security Engineer, Cloud Security, and AI Security opportunities.'
   }
 
   if (includesAny(text, ['hire', 'available', 'job', 'role', 'interview', 'contact', 'email'])) {
@@ -218,7 +239,7 @@ export function generateLocalPwezaReply(messages: { role: string; content: strin
   }
 
   if (includesAny(text, ['project', 'built', 'portfolio', 'showcase'])) {
-    return `Joseph's strongest projects are BLUE SOC P8, FORTRESS v2, and BLUE-X. Together they show SOC automation, AWS cloud defense, Terraform, GuardDuty, Lambda response workflows, and AI-powered threat classification.`
+    return `Joseph's portfolio contains ${projects.length} documented projects across security operations, cloud defense, AI agents, networking, penetration testing, and production web platforms. BLUE SOC P8, FORTRESS v2, BLUE-X, and PWEZA are the flagship systems, with the full project gallery available on this site.`
   }
 
   if (includesAny(text, ['skill', 'stack', 'tools', 'technology', 'tech'])) {

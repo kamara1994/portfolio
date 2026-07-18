@@ -20,6 +20,8 @@ const ACCENTS: Record<string, string> = {
   'fortress-v2': '#f2aa4c',
   'blue-x': '#42d392',
   'enterprise-networking': '#8aa4ff',
+  'pweza-voice-agent': '#00f5d4',
+  'pweza-visitor-intelligence': '#00d4ff',
 }
 
 const PROOF_METRICS: Record<string, Array<{ value: string; label: string }>> = {
@@ -37,6 +39,16 @@ const PROOF_METRICS: Record<string, Array<{ value: string; label: string }>> = {
     { value: '99.98%', label: 'model accuracy' },
     { value: '50k', label: 'traffic samples' },
     { value: '5', label: 'traffic classes' },
+  ],
+  'pweza-voice-agent': [
+    { value: '3-model', label: 'provider routing' },
+    { value: '2-mode', label: 'voice and text' },
+    { value: '20/min', label: 'endpoint guard' },
+  ],
+  'pweza-visitor-intelligence': [
+    { value: 'Server', label: 'location source' },
+    { value: '5 sec', label: 'duplicate guard' },
+    { value: 'Live', label: 'Telegram delivery' },
   ],
 }
 
@@ -223,6 +235,7 @@ function EvidenceFrame({
   onSelect: () => void
 }) {
   const group = useRef<THREE.Group>(null)
+  const orbitAngle = useRef((index > GALLERY_PROJECTS.length / 2 ? index - GALLERY_PROJECTS.length : index) * ((Math.PI * 2) / GALLERY_PROJECTS.length))
   const [hovered, setHovered] = useState(false)
   const accent = projectAccent(project)
 
@@ -233,19 +246,28 @@ function EvidenceFrame({
     if (offset > GALLERY_PROJECTS.length / 2) offset -= GALLERY_PROJECTS.length
     if (offset < -GALLERY_PROJECTS.length / 2) offset += GALLERY_PROJECTS.length
 
-    const active = offset === 0
-    const targetX = offset * 5.25
-    const targetY = active ? 0.25 : -0.3
-    const targetZ = active ? 0 : -2.2
-    const targetRotation = active ? 0 : offset > 0 ? -0.3 : 0.3
-    const targetScale = (active ? 1 : 0.76) + (hovered ? 0.035 : 0)
-    const ease = reduced ? 1 : 1 - Math.pow(0.0008, delta)
+    const step = (Math.PI * 2) / GALLERY_PROJECTS.length
+    let targetAngle = offset * step
+    while (targetAngle - orbitAngle.current > Math.PI) targetAngle -= Math.PI * 2
+    while (targetAngle - orbitAngle.current < -Math.PI) targetAngle += Math.PI * 2
+
+    const ease = reduced ? 1 : 1 - Math.pow(0.0025, delta)
+    orbitAngle.current = THREE.MathUtils.lerp(orbitAngle.current, targetAngle, ease)
+
+    const drift = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.55) * 0.09
+    const displayAngle = orbitAngle.current + drift
+    const depth = 1 - Math.cos(displayAngle)
+    const targetX = Math.sin(displayAngle) * 7.2
+    const targetY = 0.25 - depth * 0.28
+    const targetZ = -depth * 4.1
+    const targetRotation = displayAngle * 0.42
+    const targetScale = 1 - depth * 0.17 + (hovered ? 0.035 : 0)
 
     group.current.position.x = THREE.MathUtils.lerp(group.current.position.x, targetX, ease)
     group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, targetY, ease)
     group.current.position.z = THREE.MathUtils.lerp(group.current.position.z, targetZ, ease)
     group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, targetRotation, ease)
-    group.current.rotation.x = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.45 + index) * 0.012
+    group.current.rotation.x = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.45 + index) * 0.018
     group.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), ease)
   })
 
@@ -272,7 +294,7 @@ function EvidenceFrame({
         <planeGeometry args={[4.62, 2.98]} />
         {project.id === 'fortress-v2'
           ? <FortressSurface />
-          : project.id === 'pandie-foundation'
+          : project.id === 'pandie-foundation' || !project.screenshot
             ? <GeneratedProjectSurface project={project} />
             : <ScreenshotSurface src={project.screenshot || '/screenshots/blue-soc.png'} />}
       </mesh>
@@ -309,13 +331,32 @@ function GalleryScene({
   reduced: boolean
   onSelect: (index: number) => void
 }) {
+  const stage = useRef<THREE.Group>(null)
+
   useFrame((state, delta) => {
     if (reduced) return
-    const targetX = state.pointer.x * 0.32
-    const targetY = 0.2 + state.pointer.y * 0.18
-    state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, targetX, delta * 1.8)
-    state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, delta * 1.8)
+
+    const elapsed = state.clock.elapsedTime
+    const targetX = state.pointer.x * 0.72
+    const targetY = 0.2 + state.pointer.y * 0.36
+    const ease = 1 - Math.pow(0.012, delta)
+
+    state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, targetX, ease)
+    state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, ease)
     state.camera.lookAt(0, 0, 0)
+
+    if (stage.current) {
+      const idleYaw = Math.sin(elapsed * 0.55) * 0.11
+      const idlePitch = Math.sin(elapsed * 0.42) * 0.025
+      const pointerYaw = state.pointer.x * 0.12
+      const pointerPitch = -state.pointer.y * 0.07
+
+      stage.current.rotation.y = THREE.MathUtils.lerp(stage.current.rotation.y, idleYaw + pointerYaw, ease)
+      stage.current.rotation.x = THREE.MathUtils.lerp(stage.current.rotation.x, idlePitch + pointerPitch, ease)
+      stage.current.rotation.z = THREE.MathUtils.lerp(stage.current.rotation.z, Math.sin(elapsed * 0.35) * 0.012 - state.pointer.x * 0.012, ease)
+      stage.current.position.x = Math.sin(elapsed * 0.3) * 0.055
+      stage.current.position.y = Math.sin(elapsed * 0.7) * 0.07
+    }
   })
 
   return (
@@ -326,16 +367,18 @@ function GalleryScene({
       <pointLight position={[7, 2, 3]} intensity={18} color="#f2aa4c" />
       <SignalField reduced={reduced} />
 
-      {GALLERY_PROJECTS.map((project, index) => (
-        <EvidenceFrame
-          key={project.id}
-          project={project}
-          index={index}
-          activeIndex={activeIndex}
-          reduced={reduced}
-          onSelect={() => onSelect(index)}
-        />
-      ))}
+      <group ref={stage}>
+        {GALLERY_PROJECTS.map((project, index) => (
+          <EvidenceFrame
+            key={project.id}
+            project={project}
+            index={index}
+            activeIndex={activeIndex}
+            reduced={reduced}
+            onSelect={() => onSelect(index)}
+          />
+        ))}
+      </group>
 
       <ContactShadows position={[0, -2.05, 0]} opacity={0.42} scale={18} blur={2.8} far={8} color="#000000" />
       <gridHelper args={[32, 32, '#28404a', '#111a1f']} position={[0, -2.08, 0]} />
@@ -348,7 +391,7 @@ function LoadingProgress() {
   if (!active && progress >= 100) return null
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#07090c]" role="status" aria-live="polite">
+    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#020818]" role="status" aria-live="polite">
       <div className="w-48">
         <div className="mb-3 flex items-center justify-between font-mono text-[9px] uppercase text-white/45" style={{ letterSpacing: 2 }}>
           <span>Loading evidence</span>
@@ -363,16 +406,17 @@ function LoadingProgress() {
 }
 
 function StaticEvidence({ project }: { project: Project }) {
-  if (project.id === 'pandie-foundation') {
+  if (project.id === 'pandie-foundation' || !project.screenshot) {
+    const accent = projectAccent(project)
     return (
       <div className="absolute inset-0 flex items-center justify-center px-5 pt-24 pb-20">
-        <div className="w-full max-w-3xl border border-[#e5c76b]/40 bg-[#091015] p-5 md:p-8">
-          <p className="font-mono text-sm font-bold text-[#e5c76b] md:text-xl">{project.title}</p>
+        <div className="w-full max-w-3xl border bg-[#091015] p-5 md:p-8" style={{ borderColor: `${accent}66` }}>
+          <p className="font-mono text-sm font-bold md:text-xl" style={{ color: accent }}>{project.title}</p>
           <p className="mt-1 font-mono text-[8px] uppercase text-white/45 md:text-[10px]" style={{ letterSpacing: 1 }}>{project.category}</p>
           <div className="mt-5 space-y-2">
             {(project.architecture || []).slice(0, 5).map((step, index) => (
               <p key={step} className="border border-white/10 p-2 font-mono text-[8px] text-white/65 md:text-[10px]">
-                <span className="mr-3 text-[#e5c76b]">{String(index + 1).padStart(2, '0')}</span>{step}
+                <span className="mr-3" style={{ color: accent }}>{String(index + 1).padStart(2, '0')}</span>{step}
               </p>
             ))}
           </div>
@@ -413,12 +457,86 @@ function StaticEvidence({ project }: { project: Project }) {
   )
 }
 
+function ProjectThumbnail({ project }: { project: Project }) {
+  const accent = projectAccent(project)
+  if (project.id === 'fortress-v2' || project.id === 'pandie-foundation' || !project.screenshot) {
+    return (
+      <div className="flex aspect-[16/10] items-end border border-white/10 bg-[#010c1e] p-3" style={{ borderTopColor: accent }}>
+        <div>
+          <p className="font-mono text-[8px] uppercase text-white/35">{project.category}</p>
+          <p className="mt-1 text-xs font-semibold text-white/85">{project.title}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="aspect-[16/10] overflow-hidden border border-white/10" style={{ borderTopColor: accent }}>
+      <img src={project.screenshot} alt="" className="h-full w-full object-cover object-top opacity-75 transition-opacity group-hover:opacity-100" />
+    </div>
+  )
+}
+
+function GalleryModal({
+  mode,
+  active,
+  onClose,
+  onSelect,
+}: {
+  mode: 'overview' | 'evidence'
+  active: Project
+  onClose: () => void
+  onSelect: (index: number) => void
+}) {
+  const accent = projectAccent(active)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 md:p-8" role="dialog" aria-modal="true" aria-label={mode === 'overview' ? 'All project overview' : `${active.title} evidence viewer`}>
+      <div className="flex max-h-full w-full max-w-6xl flex-col overflow-hidden border border-white/15 bg-[#020818]" style={{ borderRadius: 6 }}>
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 md:px-6">
+          <div>
+            <p className="font-mono text-[9px] uppercase text-white/35" style={{ letterSpacing: 2 }}>{mode === 'overview' ? 'Complete portfolio' : active.category}</p>
+            <h4 className="mt-1 text-sm font-semibold md:text-base">{mode === 'overview' ? `${GALLERY_PROJECTS.length} Project Systems` : active.title}</h4>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close viewer" title="Close" className="flex h-9 w-9 items-center justify-center border border-white/15 text-lg text-white/60 hover:border-white/40 hover:text-white" style={{ borderRadius: 5 }}>×</button>
+        </div>
+
+        {mode === 'overview' ? (
+          <div className="grid overflow-y-auto p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:p-6">
+            {GALLERY_PROJECTS.map((project, index) => (
+              <button key={project.id} type="button" onClick={() => onSelect(index)} className="group border-b border-r border-white/10 p-2 text-left hover:bg-white/[0.035]">
+                <ProjectThumbnail project={project} />
+                <div className="mt-2 flex items-start gap-2 px-1 pb-1">
+                  <span className="font-mono text-[9px]" style={{ color: projectAccent(project) }}>{project.num}</span>
+                  <span className="min-w-0 text-[11px] leading-4 text-white/65 group-hover:text-white">{project.title}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="relative min-h-[300px] flex-1 overflow-hidden bg-[#020818] md:min-h-[560px]">
+            {active.id === 'fortress-v2' || active.id === 'pandie-foundation'
+              ? <StaticEvidence project={active} />
+              : <img src={active.screenshot} alt={`${active.title} full project evidence`} className="h-full w-full object-contain p-3 md:p-6" />}
+            <div className="absolute bottom-3 left-3 border border-white/10 bg-[#010c1e]/90 px-3 py-2 font-mono text-[9px] uppercase md:bottom-5 md:left-5" style={{ color: accent, borderRadius: 4 }}>
+              Evidence {active.num} / {active.duration}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function ProjectNexus({ standalone = false }: { standalone?: boolean }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null)
   const [deepLinkReady, setDeepLinkReady] = useState(false)
   const [copied, setCopied] = useState(false)
-  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const [touring, setTouring] = useState(true)
+  const [modal, setModal] = useState<'overview' | 'evidence' | null>(null)
+  const pointerStart = useRef<{ x: number; y: number } | null>(null)
+  const suppressSceneClickUntil = useRef(0)
   const reduced = useMemo(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     []
@@ -446,8 +564,41 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
     window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
   }, [active.id, deepLinkReady, standalone])
 
+  useEffect(() => {
+    if (!touring || modal) return
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % GALLERY_PROJECTS.length)
+    }, 4200)
+    return () => window.clearInterval(timer)
+  }, [modal, touring])
+
+  useEffect(() => {
+    if (!modal) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setModal(null)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [modal])
+
   const move = (direction: number) => {
+    setTouring(false)
     setActiveIndex((current) => (current + direction + GALLERY_PROJECTS.length) % GALLERY_PROJECTS.length)
+  }
+
+  const selectProject = (index: number) => {
+    setTouring(false)
+    setActiveIndex(index)
+  }
+
+  const selectFromScene = (index: number) => {
+    if (Date.now() < suppressSceneClickUntil.current) return
+    selectProject(index)
   }
 
   const copyProjectLink = async () => {
@@ -471,7 +622,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
 
   return (
     <section
-      aria-label="Featured project evidence gallery"
+      aria-label="Project evidence gallery"
       tabIndex={0}
       onKeyDown={(event) => {
         if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
@@ -479,22 +630,26 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
           move(event.key === 'ArrowLeft' ? -1 : 1)
         }
       }}
-      onTouchStart={(event) => {
-        const touch = event.changedTouches[0]
-        touchStart.current = { x: touch.clientX, y: touch.clientY }
+      onPointerDown={(event) => {
+        if ((event.target as HTMLElement).closest('button, a')) return
+        pointerStart.current = { x: event.clientX, y: event.clientY }
+        event.currentTarget.setPointerCapture(event.pointerId)
       }}
-      onTouchEnd={(event) => {
-        if (!touchStart.current) return
-        const touch = event.changedTouches[0]
-        const deltaX = touch.clientX - touchStart.current.x
-        const deltaY = touch.clientY - touchStart.current.y
-        touchStart.current = null
-        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) move(deltaX > 0 ? -1 : 1)
+      onPointerUp={(event) => {
+        if (!pointerStart.current) return
+        const deltaX = event.clientX - pointerStart.current.x
+        const deltaY = event.clientY - pointerStart.current.y
+        pointerStart.current = null
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
+          suppressSceneClickUntil.current = Date.now() + 300
+          move(deltaX > 0 ? -1 : 1)
+        }
       }}
+      onPointerCancel={() => { pointerStart.current = null }}
       className={standalone
-        ? 'relative min-h-screen overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/35 lg:h-screen'
-        : 'relative min-h-[940px] overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/35 lg:h-[720px] lg:min-h-[680px]'}
-      style={{ background: '#07090c', color: '#edf3f5', borderTop: '1px solid rgba(255,255,255,0.09)', borderBottom: '1px solid rgba(255,255,255,0.09)' }}
+        ? 'relative min-h-screen touch-pan-y overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/35 lg:h-screen'
+        : 'relative min-h-[940px] touch-pan-y overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/35 lg:h-[720px] lg:min-h-[680px]'}
+      style={{ background: '#020818', color: '#e2eaff', borderTop: '1px solid rgba(0,212,255,0.12)', borderBottom: '1px solid rgba(0,212,255,0.12)' }}
     >
       <div className="grid min-h-[inherit] lg:h-full lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="relative h-[430px] min-h-[430px] overflow-hidden lg:h-auto lg:min-h-0">
@@ -506,10 +661,10 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
                 gl={{ antialias: true, powerPreference: 'high-performance' }}
                 shadows
               >
-                <color attach="background" args={['#07090c']} />
-                <fog attach="fog" args={['#07090c', 10, 24]} />
+                <color attach="background" args={['#020818']} />
+                <fog attach="fog" args={['#020818', 10, 24]} />
                 <Suspense fallback={null}>
-                  <GalleryScene activeIndex={activeIndex} reduced={reduced} onSelect={setActiveIndex} />
+                  <GalleryScene activeIndex={activeIndex} reduced={reduced} onSelect={selectFromScene} />
                 </Suspense>
               </Canvas>
               <LoadingProgress />
@@ -535,7 +690,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
               aria-label="Previous project"
               title="Previous project"
               className="flex h-10 w-10 items-center justify-center border border-white/15 text-lg text-white/70 transition-colors hover:border-white/40 hover:text-white"
-              style={{ borderRadius: 6, background: 'rgba(7,9,12,0.8)' }}
+              style={{ borderRadius: 6, background: 'rgba(2,8,24,0.82)' }}
             >
               ←
             </button>
@@ -545,13 +700,33 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
               aria-label="Next project"
               title="Next project"
               className="flex h-10 w-10 items-center justify-center border border-white/15 text-lg text-white/70 transition-colors hover:border-white/40 hover:text-white"
-              style={{ borderRadius: 6, background: 'rgba(7,9,12,0.8)' }}
+              style={{ borderRadius: 6, background: 'rgba(2,8,24,0.82)' }}
             >
               →
             </button>
             <span className="ml-2 font-mono text-[10px] text-white/45">
               {String(activeIndex + 1).padStart(2, '0')} / {String(GALLERY_PROJECTS.length).padStart(2, '0')}
             </span>
+          </div>
+
+          <div className="absolute bottom-5 right-5 flex items-center gap-2 md:bottom-7 md:right-7">
+            <button
+              type="button"
+              onClick={() => setTouring((current) => !current)}
+              aria-pressed={touring}
+              className="border px-3 py-2 font-mono text-[9px] uppercase transition-colors"
+              style={{ borderColor: touring ? accent : 'rgba(255,255,255,0.15)', color: touring ? accent : 'rgba(255,255,255,0.62)', borderRadius: 5, background: 'rgba(2,8,24,0.86)' }}
+            >
+              {touring ? 'Pause tour' : 'Start tour'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTouring(false); setModal('overview') }}
+              className="border border-white/15 px-3 py-2 font-mono text-[9px] uppercase text-white/65 transition-colors hover:border-white/40 hover:text-white"
+              style={{ borderRadius: 5, background: 'rgba(2,8,24,0.86)' }}
+            >
+              Overview
+            </button>
           </div>
         </div>
 
@@ -563,6 +738,21 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
 
           <h3 className="mt-5 text-2xl font-semibold leading-tight" style={{ letterSpacing: 0 }}>{active.title}</h3>
           <p className="mt-2 text-sm text-white/50">{active.subtitle}</p>
+
+          <div className="mt-5 grid grid-cols-2 border-l border-t border-white/10">
+            <div className="border-b border-r border-white/10 p-2.5">
+              <p className="font-mono text-[8px] uppercase text-white/28">Category</p>
+              <p className="mt-1 text-[11px] text-white/68">{active.category}</p>
+            </div>
+            <div className="border-b border-r border-white/10 p-2.5">
+              <p className="font-mono text-[8px] uppercase text-white/28">Status</p>
+              <p className="mt-1 text-[11px] capitalize text-white/68">{active.status?.replace('-', ' ') || 'Documented'}</p>
+            </div>
+            <div className="col-span-2 border-b border-r border-white/10 p-2.5">
+              <p className="font-mono text-[8px] uppercase text-white/28">Role</p>
+              <p className="mt-1 text-[11px] text-white/68">{active.role}</p>
+            </div>
+          </div>
 
           <div className="mt-6 border-y border-white/10 py-5">
             <p className="font-mono text-[10px] uppercase text-white/35" style={{ letterSpacing: 2 }}>Verified impact</p>
@@ -589,6 +779,14 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => { setTouring(false); setModal('evidence') }}
+              className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase text-white/65 transition-colors hover:border-white/40 hover:text-white"
+              style={{ borderRadius: 5, letterSpacing: 1 }}
+            >
+              Inspect evidence
+            </button>
             <a
               href={`/projects/${active.id}`}
               className="px-4 py-2 font-mono text-[10px] uppercase text-[#071014] transition-opacity hover:opacity-85"
@@ -648,7 +846,7 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
                   <button
                     key={project.id}
                     type="button"
-                    onClick={() => setActiveIndex(index)}
+                    onClick={() => selectProject(index)}
                     className="flex min-w-0 items-center gap-2 border-b border-r border-white/10 px-2 py-2.5 text-left transition-colors hover:text-white"
                     style={{ color: selected ? '#ffffff' : 'rgba(255,255,255,0.42)' }}
                   >
@@ -662,6 +860,14 @@ export default function ProjectNexus({ standalone = false }: { standalone?: bool
           </div>
         </aside>
       </div>
+      {modal && (
+        <GalleryModal
+          mode={modal}
+          active={active}
+          onClose={() => setModal(null)}
+          onSelect={(index) => { selectProject(index); setModal(null) }}
+        />
+      )}
     </section>
   )
 }

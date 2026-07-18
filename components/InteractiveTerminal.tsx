@@ -2,11 +2,11 @@
 import { useState, useRef, useEffect } from 'react'
 
 const COMMANDS: Record<string, string[]> = {
-  whoami: ['Joseph Allan Kamara','Cybersecurity Engineer | AI Security Builder','BYU-Idaho · Graduating April 2026','Location: Philadelphia, PA (Remote-first)'],
+  whoami: ['Joseph Allan Kamara','Cybersecurity Engineer | AI Security Builder','BYU-Idaho · B.S. Cybersecurity · December 2026','Location: Philadelphia, PA (Remote-first)'],
   'cat skills.txt': ['Security Operations: Splunk, Security Onion, Threat Hunting','Cloud Security: AWS GuardDuty, Terraform, WAF, Lambda','Penetration Testing: Kali, Metasploit, Burp Suite, Nmap','AI Security: PyTorch, Claude LLM, n8n Multi-Agent','Networking: Cisco CCNA, OSPF, VRRP, EtherChannel'],
-  'ls projects/': ['drwxr-xr-x  BLUE-SOC-P8/','drwxr-xr-x  FORTRESS-v2/','drwxr-xr-x  BLUE-X/','drwxr-xr-x  CVE-Scanner/','drwxr-xr-x  BLUE-v3/','drwxr-xr-x  Enterprise-Networking/','... and 5 more projects'],
+  'ls projects/': ['drwxr-xr-x  BLUE-SOC-P8/','drwxr-xr-x  FORTRESS-v2/','drwxr-xr-x  BLUE-X/','drwxr-xr-x  PWEZA-Voice-Agent/','drwxr-xr-x  PWEZA-Visitor-Intelligence/','drwxr-xr-x  Enterprise-Networking/','... and 7 more projects'],
   'cat certs.txt': ['✓ CompTIA Security+','✓ CompTIA PenTest+','✓ Cisco CCNA','✓ TCM Practical SOC Analyst Associate','⟳ AWS Security Specialty (In Progress)'],
-  './status.sh': ['OPEN TO WORK ✓','Available: May 2026','Target: SOC Analyst | Security Engineer | AI Security','Remote-first preferred · Open to hybrid','Response time: < 24 hours'],
+  './status.sh': ['OPEN TO WORK ✓','Graduation: December 2026','Availability: Open to opportunities now','Target: SOC Analyst | Security Engineer | Cloud Security | AI Security','Remote-first preferred · Open to hybrid','Response time: < 24 hours'],
   'cat contact.txt': ['Email: kamarajosephallan@gmail.com','LinkedIn: linkedin.com/in/joseph-allan-kamara','GitHub: github.com/kamara1994','Portfolio: josephkamara.vercel.app'],
   help: ['Available commands:','  whoami          — Who is Joseph?','  cat skills.txt  — Technical skills','  ls projects/    — View all projects','  cat certs.txt   — Certifications','  ./status.sh     — Availability status','  cat contact.txt — Contact info','  clear           — Clear terminal'],
   clear: [],
