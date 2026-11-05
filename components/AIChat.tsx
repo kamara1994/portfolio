@@ -25,7 +25,6 @@ export default function AIChat() {
   const [messages, setMessages]             = useState<Message[]>([{ role: 'assistant', content: GREETING }])
   const [input, setInput]                   = useState('')
   const [loading, setLoading]               = useState(false)
-  const [pulse, setPulse]                   = useState(false)
   const [listening, setListening]           = useState(false)
   const [speaking, setSpeaking]             = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
@@ -58,12 +57,6 @@ export default function AIChat() {
     setVoiceSupported(supported)
   }, [])
 
-  useEffect(() => {
-    if (open) return
-    const interval = setInterval(() => { setPulse(true); setTimeout(() => setPulse(false), 2000) }, 8000)
-    const initial  = setTimeout(() => { setPulse(true); setTimeout(() => setPulse(false), 2000) }, 3000)
-    return () => { clearInterval(interval); clearTimeout(initial) }
-  }, [open])
 
   const clearListenTimer = () => {
     if (listenTimerRef.current) clearTimeout(listenTimerRef.current)
@@ -308,56 +301,15 @@ export default function AIChat() {
 
   return (
     <>
-      <div style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 999999, isolation: 'isolate' }}
-        className="flex flex-col items-start gap-2">
-        <AnimatePresence>
-          {!open && (
-            <motion.button
-              type="button" onClick={toggleOpen}
-              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-              whileHover={{ scale: 1.04 }}
-              className="flex items-center gap-2 font-mono"
-              style={{
-                fontSize: 9, padding: '6px 11px', letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700,
-                color: '#00d4ff', cursor: 'pointer', outline: 'none',
-                background: 'rgba(2,8,24,0.85)',
-                backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(0,212,255,0.3)', borderRadius: 6, pointerEvents: 'auto',
-              }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 6px #00f5d4', animation: 'pwezaPulse 2s ease-in-out infinite', pointerEvents: 'none' }} />
-              <span style={{ pointerEvents: 'none' }}>Ask PWEZA</span>
-              {voiceSupported && <span style={{ pointerEvents: 'none', fontSize: 10 }}>🎤</span>}
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        <motion.button
-          type="button" onClick={toggleOpen}
-          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
-          animate={pulse && !open
-            ? { boxShadow: ['0 0 25px rgba(0,212,255,0.4)', '0 0 60px rgba(0,245,212,0.8)', '0 0 25px rgba(0,212,255,0.4)'], scale: [1, 1.1, 1] }
-            : {}}
-          transition={{ duration: 1.4, ease: 'easeInOut' }}
-          aria-label="Open PWEZA chat"
-          style={{
-            position: 'relative', width: 64, height: 64, borderRadius: 16,
-            background: 'linear-gradient(135deg, #00d4ff, #00f5d4)',
-            boxShadow: open ? '0 0 40px rgba(0,212,255,0.6)' : '0 0 25px rgba(0,212,255,0.4)',
-            cursor: 'pointer', outline: 'none', border: 'none', padding: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto',
-          }}>
-          {!open && (
-            <span style={{
-              position: 'absolute', inset: 0, borderRadius: 16, pointerEvents: 'none',
-              animation: 'pwezaRipple 2s ease-out infinite',
-              boxShadow: '0 0 0 0 rgba(0,212,255,0.4)',
-            }} />
-          )}
-          <span style={{ pointerEvents: 'none', fontSize: open ? 22 : 28, color: '#020818', fontWeight: 900 }}>
-            {open ? '✕' : '🤖'}
-          </span>
-        </motion.button>
-      </div>
+      <button
+        type="button"
+        onClick={toggleOpen}
+        aria-label={open ? 'Close PWEZA chat' : 'Open PWEZA chat'}
+        className="fixed bottom-5 right-5 z-[999999] flex h-12 items-center gap-3 border border-line bg-panel/95 px-5 text-[15px] font-semibold text-snow backdrop-blur transition-colors hover:bg-raised"
+      >
+        <span aria-hidden className="h-2 w-2 rounded-full bg-signal" />
+        {open ? 'Close' : <><span className="md:hidden">Ask AI</span><span className="hidden md:inline">Ask my AI assistant</span></>}
+      </button>
 
       <AnimatePresence>
         {open && (
@@ -367,13 +319,13 @@ export default function AIChat() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 280, damping: 26 }}
             style={{
-              position: 'fixed', bottom: 112, left: 24, width: 360, maxWidth: 'calc(100vw - 48px)',
+              position: 'fixed', bottom: 84, right: 20, width: 360, maxWidth: 'calc(100vw - 48px)',
               zIndex: 999998,
-              background: 'rgba(3,10,25,0.98)',
+              background: 'rgba(11,17,29,0.98)',
               backdropFilter: 'blur(30px) saturate(180%)',
               WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-              border: '1px solid rgba(0,212,255,0.25)', borderRadius: 12,
-              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 50px rgba(0,212,255,0.15)',
+              border: '1px solid rgba(150,170,210,0.16)', borderRadius: 0,
+              boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
               overflow: 'hidden',
             }}>
             <motion.div
@@ -381,27 +333,27 @@ export default function AIChat() {
               transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
               style={{
                 position: 'absolute', top: 0, left: '8%', right: '8%', height: 1.4,
-                background: 'linear-gradient(90deg, transparent, #00d4ff, #fff, #00f5d4, #00d4ff, transparent)',
+                background: 'linear-gradient(90deg, transparent, #EEF2F8, #fff, #7FA6FF, #EEF2F8, transparent)',
                 backgroundSize: '200% 100%',
-                boxShadow: '0 0 6px #00d4ff, 0 0 14px rgba(0,212,255,0.4)',
+                boxShadow: '0 0 6px #EEF2F8, 0 0 14px rgba(150,170,210,0.4)',
                 pointerEvents: 'none', borderRadius: 1,
               }}
             />
 
-            <div className="flex items-center gap-3" style={{ padding: '12px 14px', borderBottom: '1px solid rgba(0,212,255,0.1)', background: 'rgba(0,212,255,0.04)' }}>
+            <div className="flex items-center gap-3" style={{ padding: '12px 14px', borderBottom: '1px solid rgba(150,170,210,0.1)', background: 'rgba(150,170,210,0.04)' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: 'linear-gradient(135deg, rgba(0,212,255,0.4), rgba(0,245,212,0.4))',
+                background: 'linear-gradient(135deg, rgba(150,170,210,0.4), rgba(127,166,255,0.4))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
               }}>🤖</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p className="font-mono font-bold tracking-wider" style={{ fontSize: 11, color: '#00d4ff', margin: 0 }}>PWEZA</p>
-                <p className="font-mono" style={{ fontSize: 9, color: '#62788f', margin: 0 }}>
+                <p className="font-sans font-bold tracking-wider" style={{ fontSize: 11, color: '#EEF2F8', margin: 0 }}>PWEZA</p>
+                <p className="font-sans" style={{ fontSize: 9, color: '#8D97AA', margin: 0 }}>
                   {speaking ? 'Speaking - tap Cut in to talk' : listening ? 'Listening now - ask naturally' : loading ? 'Thinking through Joseph\'s portfolio' : voiceMode === 'voice' && voiceSupported ? 'Voice-ready portfolio guide' : 'Text mode portfolio guide'}
                 </p>
               </div>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 8px #00f5d4', animation: 'pwezaPulse 2s ease-in-out infinite' }} />
-              <span className="font-mono font-bold" style={{ fontSize: 9, color: '#00f5d4', letterSpacing: 1 }}>ONLINE</span>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7FA6FF', boxShadow: '0 0 8px #7FA6FF', animation: 'pwezaPulse 2s ease-in-out infinite' }} />
+              <span className="font-sans font-bold" style={{ fontSize: 9, color: '#7FA6FF', letterSpacing: 1 }}>ONLINE</span>
             </div>
 
             <div className="overflow-y-auto" style={{ height: 268, padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -409,17 +361,17 @@ export default function AIChat() {
                 const isUser = m.role === 'user'
                 return (
                   <div key={i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-                    <div className="font-mono" style={{
+                    <div className="font-sans" style={{
                       maxWidth: '86%', padding: '9px 12px', fontSize: 11, lineHeight: 1.55,
-                      color: isUser ? '#bff5ff' : '#9fb5cc',
-                      background: isUser ? 'rgba(0,212,255,0.10)' : 'rgba(255,255,255,0.03)',
-                      border: '1px solid ' + (isUser ? 'rgba(0,212,255,0.25)' : 'rgba(255,255,255,0.06)'),
+                      color: isUser ? '#EEF2F8' : '#B9C2D3',
+                      background: isUser ? 'rgba(150,170,210,0.10)' : 'rgba(255,255,255,0.03)',
+                      border: '1px solid ' + (isUser ? 'rgba(150,170,210,0.25)' : 'rgba(255,255,255,0.06)'),
                       borderRadius: isUser ? '11px 11px 3px 11px' : '11px 11px 11px 3px',
                     }}>
                       {m.content}
                       {m.role === 'assistant' && i === messages.length - 1 && !loading && (
                         <button type="button" onClick={() => replayMessage(m.content)} title="Replay"
-                          style={{ marginLeft: 6, color: '#62788f', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 11 }}>
+                          style={{ marginLeft: 6, color: '#8D97AA', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 11 }}>
                           🔊
                         </button>
                       )}
@@ -432,7 +384,7 @@ export default function AIChat() {
                   <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 11 }}>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {[0, 1, 2].map(i => (
-                        <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#00d4ff', boxShadow: '0 0 6px #00d4ff', animation: 'pwezaBounce 0.9s ease-in-out ' + (i * 0.15) + 's infinite' }} />
+                        <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#EEF2F8', boxShadow: '0 0 6px #EEF2F8', animation: 'pwezaBounce 0.9s ease-in-out ' + (i * 0.15) + 's infinite' }} />
                       ))}
                     </div>
                   </div>
@@ -445,11 +397,11 @@ export default function AIChat() {
               <div style={{ padding: '0 12px 8px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {QUICK_QUESTIONS.map(q => (
                   <button key={q} type="button" onClick={() => send(q, 'text')}
-                    className="font-mono"
+                    className="font-sans"
                     style={{
-                      fontSize: 9, padding: '4px 9px', color: '#00d4ff',
-                      background: 'rgba(0,212,255,0.05)',
-                      border: '1px solid rgba(0,212,255,0.2)', borderRadius: 5, cursor: 'pointer',
+                      fontSize: 9, padding: '4px 9px', color: '#EEF2F8',
+                      background: 'rgba(150,170,210,0.05)',
+                      border: '1px solid rgba(150,170,210,0.2)', borderRadius: 5, cursor: 'pointer',
                     }}>
                     {q}
                   </button>
@@ -457,13 +409,13 @@ export default function AIChat() {
               </div>
             )}
 
-            <div style={{ padding: 11, borderTop: '1px solid rgba(0,212,255,0.08)', display: 'flex', gap: 7, alignItems: 'center', background: 'rgba(0,212,255,0.02)' }}>
+            <div style={{ padding: 11, borderTop: '1px solid rgba(150,170,210,0.08)', display: 'flex', gap: 7, alignItems: 'center', background: 'rgba(150,170,210,0.02)' }}>
               <input
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={e => e.key === 'Enter' && send(undefined, 'text')}
                 placeholder={listening ? 'Listening...' : 'Ask about projects, fit, skills...'}
-                className="font-mono"
+                className="font-sans"
                 aria-label="Ask PWEZA"
                 style={{ flex: 1, fontSize: 11, color: '#fff', padding: '8px 11px',
                   background: 'rgba(255,255,255,0.03)',
@@ -477,9 +429,9 @@ export default function AIChat() {
                   position: 'relative',
                   width: 34, height: 34, borderRadius: 6,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-                  color: speaking ? '#f59e0b' : voiceMode === 'voice' ? '#00f5d4' : voiceSupported ? '#00f5d4' : '#33485c',
-                  background: speaking ? 'rgba(245,158,11,0.15)' : voiceMode === 'voice' ? 'rgba(0,245,212,0.18)' : voiceSupported ? 'rgba(0,245,212,0.1)' : 'transparent',
-                  border: '1px solid ' + (speaking ? 'rgba(245,158,11,0.55)' : voiceMode === 'voice' ? 'rgba(0,245,212,0.7)' : voiceSupported ? 'rgba(0,245,212,0.4)' : 'rgba(255,255,255,0.08)'),
+                  color: speaking ? '#f59e0b' : voiceMode === 'voice' ? '#7FA6FF' : voiceSupported ? '#7FA6FF' : '#3A4458',
+                  background: speaking ? 'rgba(245,158,11,0.15)' : voiceMode === 'voice' ? 'rgba(127,166,255,0.18)' : voiceSupported ? 'rgba(127,166,255,0.1)' : 'transparent',
+                  border: '1px solid ' + (speaking ? 'rgba(245,158,11,0.55)' : voiceMode === 'voice' ? 'rgba(127,166,255,0.7)' : voiceSupported ? 'rgba(127,166,255,0.4)' : 'rgba(255,255,255,0.08)'),
                   cursor: voiceSupported ? 'pointer' : 'not-allowed',
                   opacity: voiceSupported ? 1 : 0.4,
                   animation: (listening || speaking) ? 'pwezaListen 0.7s ease-in-out infinite' : 'none',
@@ -494,9 +446,9 @@ export default function AIChat() {
                 style={{
                   width: 34, height: 34, borderRadius: 6,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-                  color: '#00d4ff',
-                  background: 'rgba(0,212,255,0.1)',
-                  border: '1px solid rgba(0,212,255,0.3)',
+                  color: '#EEF2F8',
+                  background: 'rgba(150,170,210,0.1)',
+                  border: '1px solid rgba(150,170,210,0.3)',
                   cursor: (loading || !input.trim()) ? 'not-allowed' : 'pointer',
                   opacity: (loading || !input.trim()) ? 0.4 : 1,
                 }}>→</button>
@@ -507,7 +459,6 @@ export default function AIChat() {
 
       <style>{`
         @keyframes pwezaPulse  { 0%, 100% { opacity: 0.55 } 50% { opacity: 1 } }
-        @keyframes pwezaRipple { 0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4) } 100% { box-shadow: 0 0 0 8px rgba(0,212,255,0) } }
         @keyframes pwezaBounce { 0%, 100% { transform: translateY(0); opacity: 0.5 } 50% { transform: translateY(-6px); opacity: 1 } }
         @keyframes pwezaListen { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.1) } }
       `}</style>
