@@ -1,11 +1,7 @@
 node_modules/
+.next/
 .vercel
-node_modules/
-.env.local
-.next
-.next/
-node_modules/
-.next/
 .env*
 .DS_Store
 .playwright-mcp/
+*.tsbuildinfo

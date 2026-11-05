@@ -35,7 +35,6 @@ SITE ROUTES PWEZA CAN MENTION
 - /projects/blue-x for the AI threat classification platform.
 - /incident-replay for the Incident Replay Lab.
 - /blue-soc-brief for the BLUE SOC briefing page.
-- /threat-intel for threat intelligence content.
 `.trim()
 
 function latestUserMessage(messages: { role: string; content: string }[]) {

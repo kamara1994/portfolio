@@ -182,4 +182,3 @@ export function useProjectModal() {
   }
 }
 
-export default ProjectModal
