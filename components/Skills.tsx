@@ -1,7 +1,14 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { SKILL_CATEGORIES, PROJECT_NAMES, type Skill } from '@/data/skills'
+import { useRole } from './roles'
+
+const ALL = SKILL_CATEGORIES.flatMap((c) => c.skills)
+const TOTAL = ALL.length
+const IN_PROJECTS = ALL.filter((s) => s.projects?.length).length
+const CERT_COUNT = new Set(ALL.flatMap((s) => s.certs ?? [])).size
+const ROLE_CATEGORY: Record<string, string> = { recruiter: 'secops', soc: 'secops', engineer: 'cloud' }
 
 const ICONS: Record<string, React.ReactNode> = {
   shield: <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3zM9 12l2 2 4-4" />,
@@ -30,6 +37,20 @@ function evidenceLabel(s: Skill) {
 
 export default function Skills() {
   const [active, setActive] = useState(SKILL_CATEGORIES[0].id)
+  const tabs = useRef<(HTMLButtonElement | null)[]>([])
+  const role = useRole()
+  useEffect(() => { if (role && ROLE_CATEGORY[role]) setActive(ROLE_CATEGORY[role]) }, [role])
+
+  const onKey = (e: React.KeyboardEvent) => {
+    const i = SKILL_CATEGORIES.findIndex((c) => c.id === active)
+    const n = SKILL_CATEGORIES.length
+    const to = { ArrowDown: i + 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowLeft: i - 1, Home: 0, End: n - 1 }[e.key]
+    if (to === undefined) return
+    e.preventDefault()
+    const j = (to + n) % n
+    setActive(SKILL_CATEGORIES[j].id)
+    tabs.current[j]?.focus()
+  }
   const cat = SKILL_CATEGORIES.find((c) => c.id === active)!
   const built = cat.skills.filter((s) => s.projects?.length).length
 
@@ -43,13 +64,20 @@ export default function Skills() {
         <p className="mt-5 max-w-[60ch] text-[17px] leading-relaxed text-smoke">
           Every skill links to where I used it or the certification that covers it.
         </p>
+        <dl className="sk-stats mt-8">
+          <div><dt>Skills</dt><dd>{TOTAL}</dd></div>
+          <div><dt>Used in real projects</dt><dd>{IN_PROJECTS}</dd></div>
+          <div><dt>Certifications behind them</dt><dd>{CERT_COUNT}</dd></div>
+        </dl>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-12 lg:gap-10">
           {/* Categories */}
-          <div role="tablist" aria-label="Skill categories" className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-2 lg:col-span-4 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
-            {SKILL_CATEGORIES.map((c) => (
+          <div role="tablist" aria-label="Skill categories" aria-orientation="vertical" onKeyDown={onKey} className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-2 lg:col-span-4 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
+            {SKILL_CATEGORIES.map((c, i) => (
               <button
                 key={c.id}
+                ref={(el) => { tabs.current[i] = el }}
+                tabIndex={c.id === active ? 0 : -1}
                 role="tab"
                 aria-selected={c.id === active}
                 aria-controls="skill-panel"

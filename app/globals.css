@@ -255,3 +255,8 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .sk-proof-link { color: #8AD4FF; border-color: rgba(111,214,255,0.3); transition: color .2s, border-color .2s, background .2s; }
 .sk-proof-link:hover { color: #FFFFFF; border-color: #6FD6FF; background: rgba(76,201,255,0.12); }
 @media (prefers-reduced-motion: reduce) { .sk-panel-in { animation: none; } }
+.sk-stats { display: flex; flex-wrap: wrap; gap: 12px; }
+.sk-stats > div { display: flex; align-items: baseline; gap: 12px; padding: 12px 18px; border-radius: 14px;
+  background: rgba(8,14,28,0.6); border: 1px solid rgba(150,170,210,0.14); }
+.sk-stats dd { order: -1; font-family: "Barlow Condensed", Barlow, sans-serif; font-weight: 700; font-size: 30px; line-height: 1; color: #6FD6FF; }
+.sk-stats dt { font-size: 14px; color: #8D97AA; }
