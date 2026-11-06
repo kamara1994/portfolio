@@ -1,11 +1,8 @@
-'use client'
 import { RESUME } from './Nav'
-import { ROLES, RoleTabs, useRole } from './role'
 
 export default function Hero() {
-  const { role } = useRole()
   return (
-    <section className="relative flex min-h-[100svh] flex-col overflow-hidden pb-20 pt-[104px] md:pb-28">
+    <section className="relative flex min-h-[100svh] items-end overflow-hidden pb-20 pt-32 md:pb-28">
       {/* A single horizon of light: the only decoration on the page */}
       <div
         aria-hidden
@@ -16,10 +13,6 @@ export default function Hero() {
         }}
       />
       <div className="wrap relative">
-        <RoleTabs />
-      </div>
-      <div className="flex-1" />
-      <div className="wrap relative mt-16">
         <h1 className="hero-rise font-display text-[clamp(56px,11.5vw,184px)] font-bold uppercase leading-[0.86] tracking-[-0.01em]">
           Joseph Allan
           <br />
@@ -28,7 +21,7 @@ export default function Hero() {
 
         <div className="hero-rise-late mt-10 grid gap-10 md:grid-cols-12 md:items-end">
           <p className="max-w-[34ch] text-[clamp(20px,2vw,26px)] leading-snug text-snow/90 md:col-span-6">
-            {ROLES[role].intro}
+            Cybersecurity engineer. I build SOC automation, cloud security labs on AWS, and AI tools that catch threats faster.
           </p>
           <div className="md:col-span-6 md:justify-self-end md:text-right">
             <p className="text-[15px] leading-relaxed text-smoke">
@@ -37,8 +30,20 @@ export default function Hero() {
               B.S. Cybersecurity, BYU-Idaho, December 2026
             </p>
             <div className="mt-6 flex flex-wrap gap-3 md:justify-end">
-              <a href="#work" className="btn-primary">See my work</a>
-              <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Download résumé</a>
+              <a href="#work" className="glass-btn glass-btn--main">
+                <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="7" width="18" height="13" rx="2" />
+                  <path d="M9 7V5h6v2M3 13h18" />
+                </svg>
+                See my work
+                <span aria-hidden className="glass-dot" />
+              </a>
+              <a href={RESUME} target="_blank" rel="noopener" className="glass-btn">
+                <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+                </svg>
+                Download résumé
+              </a>
             </div>
           </div>
         </div>

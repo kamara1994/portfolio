@@ -1,19 +1,11 @@
-'use client'
 import Link from 'next/link'
 import { projects } from '@/data/projects'
 import ProjectMedia from './ProjectMedia'
-import { ROLES, useRole } from './role'
 
-const flagshipAll = projects.filter((p) => p.placement === 'flagship')
+const flagship = projects.filter((p) => p.placement === 'flagship')
 const more = projects.filter((p) => p.placement === 'more')
 
 export default function Work() {
-  const { role } = useRole()
-  const rank = (id: string) => {
-    const i = ROLES[role].order.indexOf(id)
-    return i === -1 ? 99 : i
-  }
-  const flagship = [...flagshipAll].sort((a, b) => rank(a.id) - rank(b.id))
   return (
     <section id="work" aria-label="Work">
       {flagship.map((p, i) => (
