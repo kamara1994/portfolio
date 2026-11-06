@@ -1,4 +1,4 @@
-import { certs, skillGroups } from '@/data'
+import { certs } from '@/data'
 
 const VERIFY: Record<string, string> = {
   CompTIA: 'https://www.certmetrics.com/comptia/public/verification.aspx',
@@ -6,17 +6,14 @@ const VERIFY: Record<string, string> = {
   'TCM Security': 'https://certifications.tcm-sec.com/verify',
 }
 
-const TOOLKIT = ['Security Operations', 'Cloud Security', 'Network Security', 'AI & Automation', 'Scripting & Dev']
 
 export default function Credentials() {
-  const groups = skillGroups.filter((g) => TOOLKIT.includes(g.title))
-
   return (
     <section id="credentials" className="border-t border-line">
       <div className="wrap grid gap-16 py-24 md:grid-cols-12 md:py-32">
-        <div className="md:col-span-5">
+        <div className="md:col-span-12">
           <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Credentials</h2>
-          <ul className="mt-12 divide-y divide-line border-y border-line">
+          <ul className="mt-12 grid border-t border-line md:grid-cols-2 md:gap-x-16 [&>li]:border-b [&>li]:border-line">
             {certs.map((c) => (
               <li key={c.name} className="flex items-baseline justify-between gap-6 py-5">
                 <div>
@@ -45,17 +42,6 @@ export default function Credentials() {
           </ul>
         </div>
 
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Toolkit</h2>
-          <dl className="mt-12 space-y-8">
-            {groups.map((g) => (
-              <div key={g.title}>
-                <dt className="text-[17px] font-semibold">{g.title}</dt>
-                <dd className="mt-2 text-[16px] leading-relaxed text-smoke">{g.skills.slice(0, 8).join(', ')}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
       </div>
     </section>
   )

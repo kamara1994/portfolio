@@ -4,6 +4,7 @@ import Work from '@/components/Work'
 import Credentials from '@/components/Credentials'
 import Experience from '@/components/Experience'
 import Story from '@/components/Story'
+import Skills from '@/components/Skills'
 import Footer from '@/components/Footer'
 import AIChat from '@/components/AIChat'
 
@@ -14,6 +15,7 @@ export default function Home() {
       <main>
         <Hero />
         <Work />
+        <Skills />
         <Credentials />
         <Experience />
         <Story />

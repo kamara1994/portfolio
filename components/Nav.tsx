@@ -5,6 +5,7 @@ import { ROLES, RoleIcon } from './roles'
 
 const LINKS = [
   { href: '/#work', label: 'Work' },
+  { href: '/#skills', label: 'Skills' },
   { href: '/#credentials', label: 'Credentials' },
   { href: '/#experience', label: 'Experience' },
   { href: '/#story', label: 'About' },
