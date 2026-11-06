@@ -13,7 +13,7 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 /* Buttons: glass tabs with a lit cyan top edge and spaced capitals. The lead button also
    carries a status dot; the follow button is the same shape, unlit. 48px tall. */
 .btn {
-  @apply relative inline-flex items-center justify-center h-12 px-7 font-semibold uppercase;
+  @apply relative inline-flex shrink-0 items-center justify-center whitespace-nowrap h-12 px-7 font-semibold uppercase;
   font-size: 13.5px; letter-spacing: 0.2em;
   border-radius: 14px;
   border: 1px solid transparent;
@@ -106,15 +106,27 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 @keyframes nav-line { to { background-position: 300% 0; } }
 @media (prefers-reduced-motion: reduce) { .nav-link::after { animation: none; transition: none; } }
 
-/* "See my work" reader list: plain, no boxes */
-.plain-menu {
-  border-radius: 12px;
-  background: rgba(8,13,24,0.94);
-  border: 1px solid rgba(150,170,210,0.12);
-  backdrop-filter: blur(10px);
+/* "See my work" reader list: no panel, a glowing branch with ticks */
+.branch { position: relative; margin-left: 22px; padding: 14px 0 4px 0; }
+.branch::before {                    /* the rail */
+  content: ''; position: absolute; left: 0; top: 0; bottom: 18px; width: 1px;
+  background: linear-gradient(180deg, rgba(111,214,255,0.9), rgba(111,214,255,0.15));
+  box-shadow: 0 0 8px rgba(76,201,255,0.6);
 }
-.plain-item { transition: color .2s, background-color .2s; }
-.plain-item:hover, .plain-item:focus-visible { color: #FFFFFF; background: rgba(127,166,255,0.07); }
+.branch-hint { padding-left: 22px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #6F7B91; }
+.branch-item {
+  position: relative; display: flex; align-items: center; gap: 12px; width: max-content;
+  padding: 9px 0 9px 22px; font-size: 15px; font-weight: 500; color: #C3CCDC; white-space: nowrap;
+  transition: color .2s, transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.branch-item::before {               /* the tick off the rail */
+  content: ''; position: absolute; left: 0; top: 50%; width: 12px; height: 1px;
+  background: rgba(111,214,255,0.45); transition: background .2s, width .25s, box-shadow .2s;
+}
+.branch-item svg { color: #7FA6FF; transition: color .2s; }
+.branch-item:hover, .branch-item:focus-visible { color: #FFFFFF; transform: translateX(4px); }
+.branch-item:hover svg, .branch-item:focus-visible svg { color: #6FD6FF; }
+.branch-item:hover::before, .branch-item:focus-visible::before { width: 16px; background: #6FD6FF; box-shadow: 0 0 8px #4CC9FF; }
 
 /* Top-left status pill: flips OPEN TO WORK <-> HIRE ME */
 .status-pill {
