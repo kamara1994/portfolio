@@ -1,5 +1,11 @@
 import { certs, skillGroups } from '@/data'
 
+const VERIFY: Record<string, string> = {
+  CompTIA: 'https://www.certmetrics.com/comptia/public/verification.aspx',
+  Cisco: 'https://cp.certmetrics.com/cisco/en/public/verify',
+  'TCM Security': 'https://certifications.tcm-sec.com/verify',
+}
+
 const TOOLKIT = ['Security Operations', 'Cloud Security', 'Network Security', 'AI & Automation', 'Scripting & Dev']
 
 export default function Credentials() {
@@ -17,8 +23,15 @@ export default function Credentials() {
                   <p className="text-[19px] font-semibold leading-snug">{c.name}</p>
                   <p className="mt-1 text-[15px] text-smoke">{c.issuer}</p>
                 </div>
-                <span className={`shrink-0 text-[14px] ${c.status === 'earned' ? 'text-snow/80' : 'text-smoke'}`}>
-                  {c.status === 'earned' ? 'Earned' : 'In progress'}
+                <span className="flex shrink-0 flex-col items-end gap-1 text-[14px]">
+                  <span className={c.status === 'earned' ? 'text-snow/80' : 'text-smoke'}>
+                    {c.status === 'earned' ? 'Earned' : 'In progress'}
+                  </span>
+                  {c.status === 'earned' && VERIFY[c.issuer] && (
+                    <a href={VERIFY[c.issuer]} target="_blank" rel="noopener" className="text-[13px] text-[#6FD6FF] hover:text-white">
+                      Verify with {c.issuer}
+                    </a>
+                  )}
                 </span>
               </li>
             ))}
