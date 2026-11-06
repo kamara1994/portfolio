@@ -10,54 +10,50 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 
 :focus-visible { outline: 2px solid #7FA6FF; outline-offset: 3px; border-radius: 2px; }
 
-/* Buttons. One leads, one follows, so a pair never competes.
-   Size unchanged: 48px tall, 28px side padding, 15px text. */
+/* Buttons: glass tabs with a lit cyan top edge and spaced capitals. The lead button also
+   carries a status dot; the follow button is the same shape, unlit. 48px tall. */
 .btn {
-  @apply relative inline-flex items-center justify-center h-12 px-7 text-[15px] font-semibold tracking-wide;
-  border-radius: 12px;
+  @apply relative inline-flex items-center justify-center h-12 px-7 font-semibold uppercase;
+  font-size: 13.5px; letter-spacing: 0.2em;
+  border-radius: 14px;
   border: 1px solid transparent;
-  overflow: hidden;
   transition: color .25s ease, background-color .25s ease, border-color .25s ease, box-shadow .3s ease, transform .25s ease;
+}
+.btn::before {                       /* lit top edge */
+  content: ''; position: absolute; top: -1px; left: 16%; right: 16%; height: 2px; border-radius: 2px; pointer-events: none;
 }
 .btn:active { transform: translateY(1px); }
 
-/* Lead: deep blue glass, crisp lit edge, white text */
-.btn-primary { @apply btn; padding-left: 27px; padding-right: 27px;
-  color: #FFFFFF;
-  background: linear-gradient(180deg, #1C2C4E 0%, #111B31 100%);
-  border-color: rgba(127,166,255,0.68);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.18),
-    0 1px 0 rgba(0,0,0,0.5),
-    0 12px 30px -10px rgba(80,125,230,0.65);
+.btn-primary { @apply btn;
+  color: #8AD4FF;
+  background: linear-gradient(180deg, rgba(22,48,74,0.62), rgba(8,18,32,0.82));
+  border-color: rgba(120,200,255,0.38);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 26px -12px rgba(60,170,255,0.55);
 }
-.btn-primary::before {               /* lit top edge */
-  content: ''; position: absolute; top: 0; left: 18%; right: 18%; height: 1px; pointer-events: none;
-  background: linear-gradient(90deg, transparent, #A9C2FF, transparent);
-}
-.btn-primary::after {                /* one sheen pass on hover */
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.14) 50%, transparent 65%);
-  transform: translateX(-120%);
+.btn-primary::before { background: linear-gradient(90deg, transparent, #6FD6FF, transparent); box-shadow: 0 0 10px #4CC9FF; }
+.btn-primary::after {                /* status dot */
+  content: ''; position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%;
+  background: #4BE3C8; box-shadow: 0 0 8px #4BE3C8; pointer-events: none;
 }
 .btn-primary:hover {
-  border-color: rgba(150,185,255,0.85);
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.22),
-    0 1px 0 rgba(0,0,0,0.5),
-    0 16px 34px -12px rgba(90,135,240,0.7);
+  color: #B5E6FF; border-color: rgba(140,215,255,0.7); transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 14px 32px -12px rgba(70,185,255,0.75);
 }
-.btn-primary:hover::after { transform: translateX(120%); transition: transform .8s cubic-bezier(.2,.7,.2,1); }
 .btn-primary:active { transform: translateY(0); }
 
-/* Follow: quiet outline, no glow */
 .btn-ghost { @apply btn;
   color: #B9C2D3;
-  background: transparent;
-  border-color: rgba(150,170,210,0.24);
+  background: linear-gradient(180deg, rgba(150,170,210,0.05), rgba(8,13,24,0.6));
+  border-color: rgba(150,170,210,0.22);
 }
-.btn-ghost:hover { color: #EEF2F8; border-color: rgba(238,242,248,0.5); background: rgba(150,170,210,0.06); }
+.btn-ghost::before { background: linear-gradient(90deg, transparent, rgba(150,200,255,0.35), transparent); }
+.btn-ghost:hover { color: #EEF2F8; border-color: rgba(140,215,255,0.45); }
+.btn-ghost:hover::before { background: linear-gradient(90deg, transparent, rgba(111,214,255,0.7), transparent); }
+@media (max-width: 639px) {
+  .btn { font-size: 12px; letter-spacing: 0.12em; padding-left: 16px; padding-right: 16px; }
+  .btn-primary { padding-right: 22px; }
+  .btn-primary::after { top: 7px; right: 7px; width: 6px; height: 6px; }
+}
 
 .wrap { @apply mx-auto w-full max-w-site px-6 md:px-10 xl:px-14; }
 
