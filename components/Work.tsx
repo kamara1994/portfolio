@@ -6,6 +6,20 @@ import { RESUME } from './Nav'
 import { ROLES, RoleIcon, chooseRole, useRole } from './roles'
 
 const flagshipAll = projects.filter((p) => p.placement === 'flagship')
+
+/** Split a title into the name and its version-like ending (P8, v2, X) for the color accent. */
+function splitTitle(t: string): [string, string] {
+  const dash = t.match(/^(.*-)([A-Z0-9]{1,3})$/)
+  if (dash) return [dash[1], dash[2]]
+  const last = t.match(/^(.*\s)([A-Za-z]?\d[\w.]*)$/)
+  if (last) return [last[1], last[2]]
+  return [t, '']
+}
+/** "Main — detail" subtitles: show the detail as a quiet second line instead of an em dash. */
+function splitSub(t: string): [string, string] {
+  const i = t.indexOf(' — ')
+  return i === -1 ? [t, ''] : [t.slice(0, i), t.slice(i + 3)]
+}
 const more = projects.filter((p) => p.placement === 'more')
 
 export default function Work() {
@@ -38,14 +52,18 @@ export default function Work() {
         </div>
       )}
       {flagship.map((p, i) => (
-        <article key={p.id} className={i === 0 ? '' : 'border-t border-line'}>
-          <div className="wrap grid gap-10 pb-20 pt-12 md:grid-cols-12 md:gap-12 md:pb-28 md:pt-14">
+        <article key={p.id} className="wrap py-8 md:py-10">
+          <div className="hud-frame grid gap-10 p-6 sm:p-10 md:grid-cols-12 md:gap-12 md:p-12">
+            <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
+            <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
             <div className={`md:col-span-5 md:self-end ${i % 2 ? 'md:order-2' : ''}`}>
               <p className="text-[15px] text-smoke">{p.category}</p>
               <h2 className="mt-3 font-display text-[clamp(44px,6vw,92px)] font-bold uppercase leading-[0.9]">
-                {p.title}
+                {splitTitle(p.title)[0]}
+                {splitTitle(p.title)[1] && <span className="title-accent">{splitTitle(p.title)[1]}</span>}
               </h2>
-              <p className="mt-6 max-w-[40ch] text-[19px] leading-relaxed text-snow/85">{p.subtitle}</p>
+              <p className="mt-6 max-w-[46ch] text-[19px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
+              {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
               <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-smoke">{p.impact}</p>
               <p className="mt-6 text-[14px] leading-relaxed text-smoke">
                 {p.stack.slice(0, 6).join(', ')}
