@@ -39,26 +39,27 @@ const MILESTONES: Milestone[] = [
 export default function Story() {
   return (
     <section id="story" className="wrap pb-20 pt-24 md:pb-24 md:pt-32">
-      <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-6">
-          <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">My story</p>
-          <h2 className="mt-3 font-display text-[clamp(38px,4.4vw,68px)] font-bold uppercase leading-[0.95]">
-            Protecting systems means protecting <span className="title-accent">people</span>.
-          </h2>
+      <div className="grid gap-14 lg:grid-cols-12 lg:gap-14">
+        <div className="lg:col-span-5">
+          <div className="lg:sticky lg:top-28">
+            <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">My story</p>
+            <h2 className="mt-3 font-display text-[clamp(38px,3.8vw,64px)] font-bold uppercase leading-[0.95]">
+              Protecting systems means protecting <span className="title-accent">people</span>.
+            </h2>
+            <div className="mt-8 max-w-[52ch] space-y-5 text-[17px] leading-[1.75] text-snow/80">
+              <p>
+                I grew up in Freetown, Sierra Leone, where I saw how much everyday life depends on infrastructure that works.
+                That is what pulled me into security: not compliance checkboxes, but keeping real systems running for real people.
+              </p>
+              <p>
+                Today I am finishing my B.S. in Cybersecurity at BYU-Idaho and building the work to back it up. I use AI where it
+                cuts analyst toil, and I keep a human approving every containment decision.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="max-w-[58ch] space-y-5 self-end text-[17px] leading-[1.75] text-snow/80 lg:col-span-6">
-          <p>
-            I grew up in Freetown, Sierra Leone, where I saw how much everyday life depends on infrastructure that works.
-            That is what pulled me into security: not compliance checkboxes, but keeping real systems running for real people.
-          </p>
-          <p>
-            Today I am finishing my B.S. in Cybersecurity at BYU-Idaho and building the work to back it up. I use AI where it
-            cuts analyst toil, and I keep a human approving every containment decision.
-          </p>
-        </div>
-      </div>
 
-      <div className="mt-16 max-w-[920px]">
+        <div className="lg:col-span-7">
         <p className="font-display text-[clamp(28px,2.6vw,40px)] font-bold uppercase leading-none">
           The <span className="text-[#6FD6FF]">journey</span>
         </p>
@@ -97,6 +98,7 @@ export default function Story() {
               </li>
             ))}
           </ol>
+        </div>
         </div>
       </div>
     </section>
