@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import LineReveal from './LineReveal'
 
 type Milestone = {
   when: string
@@ -52,7 +53,7 @@ export default function Story() {
       (entries) => entries.forEach((e) => e.target.classList.toggle('in', e.isIntersecting)),
       { rootMargin: '0px 0px -18% 0px', threshold: 0.15 },
     )
-    el.querySelectorAll('.rv, .jt-row').forEach((n) => io.observe(n))
+    el.querySelectorAll('.rv, .rv-lines, .jt-row').forEach((n) => io.observe(n))
 
     // Draw the beam down with the scroll
     const jt = el.querySelector<HTMLElement>('.jt')
@@ -76,19 +77,24 @@ export default function Story() {
       <div className="grid gap-14 lg:grid-cols-12 lg:gap-14">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
-            <p className="rv text-[clamp(18px,1.4vw,22px)] font-medium text-signal">My story</p>
-            <h2 className="rv rv-d1 mt-3 font-display text-[clamp(38px,3.8vw,64px)] font-bold uppercase leading-[0.95]">
-              Protecting systems means protecting <span className="title-accent">people</span>.
-            </h2>
-            <div className="mt-8 max-w-[52ch] space-y-5 text-[17px] leading-[1.75] text-snow/80">
-              <p className="rv rv-d2">
-                I grew up in Freetown, Sierra Leone, where I saw how much everyday life depends on infrastructure that works.
-                That is what pulled me into security: not compliance checkboxes, but keeping real systems running for real people.
-              </p>
-              <p className="rv rv-d3">
-                Today I am finishing my B.S. in Cybersecurity at BYU-Idaho and building the work to back it up. I use AI where it
-                cuts analyst toil, and I keep a human approving every containment decision.
-              </p>
+            <div className="rv-lines">
+              <LineReveal parts={[{ text: 'My story' }]} className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal" />
+              <LineReveal
+                as="h2"
+                startLine={1}
+                parts={[{ text: 'Protecting systems means protecting' }, { text: 'people', className: 'title-accent' }, { text: '.', attach: true }]}
+                className="mt-3 font-display text-[clamp(38px,3.8vw,64px)] font-bold uppercase leading-[0.95]"
+              />
+              <div className="mt-8 max-w-[52ch] space-y-5 text-[17px] leading-[1.75] text-snow/80">
+                <LineReveal
+                  startLine={5}
+                  parts={[{ text: 'I grew up in Freetown, Sierra Leone, where I saw how much everyday life depends on infrastructure that works. That is what pulled me into security: not compliance checkboxes, but keeping real systems running for real people.' }]}
+                />
+                <LineReveal
+                  startLine={10}
+                  parts={[{ text: 'Today I am finishing my B.S. in Cybersecurity at BYU-Idaho and building the work to back it up. I use AI where it cuts analyst toil, and I keep a human approving every containment decision.' }]}
+                />
+              </div>
             </div>
           </div>
         </div>
