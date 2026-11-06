@@ -30,20 +30,8 @@ export default function Hero() {
               B.S. Cybersecurity, BYU-Idaho, December 2026
             </p>
             <div className="mt-6 flex flex-wrap gap-3 md:justify-end">
-              <a href="#work" className="glass-btn glass-btn--main">
-                <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="7" width="18" height="13" rx="2" />
-                  <path d="M9 7V5h6v2M3 13h18" />
-                </svg>
-                See my work
-                <span aria-hidden className="glass-dot" />
-              </a>
-              <a href={RESUME} target="_blank" rel="noopener" className="glass-btn">
-                <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
-                </svg>
-                Download résumé
-              </a>
+              <a href="#work" className="btn-primary">See my work</a>
+              <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Download résumé</a>
             </div>
           </div>
         </div>
