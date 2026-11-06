@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import TypeStatus from './TypeStatus'
+import FlipStatus from './FlipStatus'
 import { ROLES, RoleIcon } from './roles'
 
 const LINKS = [
@@ -31,13 +30,7 @@ export default function Nav() {
       }`}
     >
       <nav className="wrap flex h-[72px] items-center justify-between" aria-label="Main">
-        <Link href="/#contact" aria-label="Open to work. Contact Joseph" className="flex items-center gap-3 text-[15px] font-medium text-snow/85 hover:text-snow">
-          <span aria-hidden className="relative flex h-2 w-2">
-            <span className="absolute inset-0 rounded-full bg-signal/60 motion-safe:animate-ping" />
-            <span className="relative h-2 w-2 rounded-full bg-signal" />
-          </span>
-          <TypeStatus />
-        </Link>
+        <FlipStatus />
 
         <ul className="hidden items-center gap-9 md:flex">
           {LINKS.map((l) => (
