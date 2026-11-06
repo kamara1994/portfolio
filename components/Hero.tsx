@@ -46,17 +46,21 @@ export default function Hero() {
 
           <div className="hero-rise lg:order-1 lg:col-span-4 lg:col-start-1 lg:self-center">
             <h1>
-              <span className="block text-[clamp(20px,1.6vw,26px)] font-medium text-signal">Hi, my name is</span>
+              <span className="block text-[clamp(20px,1.6vw,26px)] font-medium text-snow/70">Hi, my name is</span>
               <span className="mt-3 block font-display text-[clamp(44px,4.4vw,80px)] font-bold uppercase leading-[0.92] tracking-[0.005em]">
                 Joseph Allan
                 <br />
                 Kamara
               </span>
             </h1>
-            <p className="mt-7 max-w-[40ch] text-[clamp(17px,1.3vw,20px)] leading-relaxed text-snow/90">
-              I build SOC automation, cloud security labs on AWS, and AI tools that catch threats faster.
+            <p className="mt-5 text-[clamp(20px,1.7vw,27px)] font-semibold leading-snug text-signal">
+              Securing systems.
+              <br className="sm:hidden" /> Automating defense.
             </p>
-            <p className="mt-3 text-[15px] text-smoke">B.S. Cybersecurity, BYU-Idaho, Dec 2026</p>
+            <p className="mt-4 max-w-[40ch] text-[clamp(17px,1.3vw,20px)] leading-relaxed text-snow/85">
+              I build SOC automation, AWS cloud security labs, and AI tools that catch threats faster.
+            </p>
+            <p className="mt-3 text-[15px] text-smoke">B.S. Cybersecurity, BYU-Idaho, graduating December 2026</p>
           </div>
 
           <div className="hero-rise lg:order-3 lg:col-span-4 lg:col-start-9 lg:self-center lg:justify-self-end">
