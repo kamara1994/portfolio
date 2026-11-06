@@ -47,9 +47,9 @@ export default function Story() {
     if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     el.classList.add('reveal-on')
 
-    // Reveal the story lines and each milestone as it scrolls into view, one by one
+    // Reveal the story lines and each milestone as it scrolls into view, and reset when it leaves, so it replays every time
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }),
+      (entries) => entries.forEach((e) => e.target.classList.toggle('in', e.isIntersecting)),
       { rootMargin: '0px 0px -18% 0px', threshold: 0.15 },
     )
     el.querySelectorAll('.rv, .jt-row').forEach((n) => io.observe(n))
