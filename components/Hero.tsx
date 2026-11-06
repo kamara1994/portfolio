@@ -19,15 +19,14 @@ export default function Hero() {
             <div className="portrait relative aspect-[5/7] overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/profile/joseph.jpg"
+                src="/profile/joseph-portrait.jpg"
                 alt="Portrait of Joseph Allan Kamara"
-                width={360}
-                height={504}
+                width={900}
+                height={1261}
                 fetchPriority="high"
-                className="h-full w-full object-cover grayscale contrast-[1.08]"
+                className="h-full w-full object-cover object-top saturate-[0.92]"
               />
-              <span aria-hidden className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(180deg, rgba(127,166,255,0.55), rgba(40,70,140,0.6))' }} />
-              <span aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(80% 60% at 70% 20%, rgba(169,194,255,0.18), transparent 60%)' }} />
+              <span aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(70% 62% at 52% 38%, transparent 50%, rgba(5,8,15,0.55) 80%, rgba(5,8,15,0.85) 100%)' }} />
             </div>
           </figure>
 

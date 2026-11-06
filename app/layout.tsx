@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: 'Joseph Allan Kamara | Cybersecurity Engineer',
     description: DESCRIPTION,
     siteName: 'Joseph Allan Kamara',
-    images: [{ url: '/profile/joseph.jpg', width: 360, height: 504, alt: 'Joseph Allan Kamara' }],
+    images: [{ url: '/profile/joseph-portrait.jpg', width: 900, height: 1261, alt: 'Joseph Allan Kamara' }],
   },
   twitter: { card: 'summary', title: 'Joseph Allan Kamara | Cybersecurity Engineer', description: DESCRIPTION },
   robots: { index: true, follow: true },
