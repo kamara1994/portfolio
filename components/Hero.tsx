@@ -15,7 +15,7 @@ export default function Hero() {
       <div className="wrap relative">
         <div className="grid items-end gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Portrait: first on phones, right column on laptops */}
-          <figure className="hero-rise relative w-[56%] max-w-[280px] sm:w-[44%] lg:order-2 lg:col-span-4 lg:col-start-9 lg:w-full lg:max-w-[340px] lg:justify-self-end lg:-mb-6">
+          <figure className="hero-rise relative w-[56%] max-w-[280px] sm:w-[44%] lg:order-2 lg:col-span-4 lg:col-start-9 lg:w-full lg:max-w-[340px] lg:justify-self-end ">
             <div className="portrait relative aspect-[5/7] overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -28,17 +28,20 @@ export default function Hero() {
               />
               <span aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(70% 62% at 52% 38%, transparent 50%, rgba(5,8,15,0.55) 80%, rgba(5,8,15,0.85) 100%)' }} />
             </div>
+            <figcaption className="relative mt-4 lg:mt-2">
+              <p className="sr-only">Certifications</p>
+              <ul className="flex flex-wrap gap-2 lg:justify-center" aria-label="Certifications">
+                {['Security+', 'PenTest+', 'CCNA', 'TCM PSAA'].map((c) => (
+                  <li key={c} className="rounded-full border border-line bg-panel/80 px-3 py-1 text-[13px] font-medium text-snow/85">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </figcaption>
           </figure>
 
           <div className="hero-rise lg:order-1 lg:col-span-8 lg:pb-6">
-            <p className="flex items-center gap-3 text-[15px] text-snow/75">
-              <span aria-hidden className="relative flex h-2 w-2">
-                <span className="absolute inset-0 rounded-full bg-signal/60 motion-safe:animate-ping" />
-                <span className="relative h-2 w-2 rounded-full bg-signal" />
-              </span>
-              Open to full-time roles
-            </p>
-            <h1 className="mt-6">
+            <h1>
               <span className="block text-[clamp(20px,1.7vw,26px)] font-medium text-snow/80">Hi, my name is</span>
               <span className="mt-3 block font-display text-[clamp(40px,5vw,88px)] font-bold uppercase leading-[0.92] tracking-[0.005em]">
               Joseph Allan
@@ -53,18 +56,14 @@ export default function Hero() {
         </div>
 
         <div className="hero-rise-late mt-10 grid gap-10 border-t border-line pt-9 md:mt-10 lg:grid-cols-12 lg:items-end lg:gap-8">
-          <p className="max-w-[38ch] text-[clamp(18px,1.45vw,22px)] leading-relaxed text-snow/90 lg:col-span-4">
+          <p className="max-w-[38ch] text-[clamp(18px,1.45vw,22px)] leading-relaxed text-snow/90 lg:col-span-5">
             I build SOC automation, cloud security labs on AWS, and AI tools that catch threats faster.
           </p>
 
-          <dl className="grid grid-cols-2 gap-6 text-[15px] lg:col-span-4 lg:col-start-5 lg:grid-cols-1 lg:gap-4">
-            <div className="lg:flex lg:items-baseline lg:gap-4">
-              <dt className="text-smoke lg:w-20 lg:shrink-0">Certified</dt>
-              <dd className="mt-1 leading-relaxed text-snow/90 lg:mt-0">Security+, PenTest+, CCNA, TCM PSAA</dd>
-            </div>
-            <div className="lg:flex lg:items-baseline lg:gap-4">
-              <dt className="text-smoke lg:w-20 lg:shrink-0">Education</dt>
-              <dd className="mt-1 leading-relaxed text-snow/90 lg:mt-0">B.S. Cybersecurity, BYU-Idaho, Dec 2026</dd>
+          <dl className="text-[15px] lg:col-span-3">
+            <div>
+              <dt className="text-smoke">Education</dt>
+              <dd className="mt-1 leading-relaxed text-snow/90">B.S. Cybersecurity, BYU-Idaho, Dec 2026</dd>
             </div>
           </dl>
 

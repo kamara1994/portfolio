@@ -9,7 +9,7 @@ export default function Work() {
   return (
     <section id="work" aria-label="Work">
       {flagship.map((p, i) => (
-        <article key={p.id} className="border-t border-line">
+        <article key={p.id} className={i === 0 ? '' : 'border-t border-line'}>
           <div className="wrap grid gap-10 pb-20 pt-12 md:grid-cols-12 md:gap-12 md:pb-28 md:pt-14">
             <div className={`md:col-span-5 md:self-end ${i % 2 ? 'md:order-2' : ''}`}>
               <p className="text-[15px] text-smoke">{p.category}</p>

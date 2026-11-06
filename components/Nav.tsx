@@ -29,8 +29,12 @@ export default function Nav() {
       }`}
     >
       <nav className="wrap flex h-[72px] items-center justify-between" aria-label="Main">
-        <Link href="/" className="font-display text-[22px] font-bold uppercase tracking-[0.12em]">
-          Joseph Kamara
+        <Link href="/#contact" aria-label="Open to full-time roles. Contact Joseph" className="flex items-center gap-3 text-[15px] font-medium text-snow/85 hover:text-snow">
+          <span aria-hidden className="relative flex h-2 w-2">
+            <span className="absolute inset-0 rounded-full bg-signal/60 motion-safe:animate-ping" />
+            <span className="relative h-2 w-2 rounded-full bg-signal" />
+          </span>
+          <span>Open to full-time roles<span className="hidden text-smoke sm:inline">, Philadelphia</span></span>
         </Link>
 
         <ul className="hidden items-center gap-9 md:flex">
