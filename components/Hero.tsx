@@ -1,8 +1,15 @@
 import { RESUME } from './Nav'
 
+const CERTS = [
+  { name: 'Security+', img: '/certs/security-plus.png' },
+  { name: 'PenTest+', img: '/certs/pentest-plus.png' },
+  { name: 'CCNA', img: '' },
+  { name: 'PSAA', img: '/certs/tcm-psaa.png' },
+]
+
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden pb-14 pt-24 md:pb-16 md:pt-28">
+    <section className="relative overflow-hidden border-b border-line pb-14 pt-24 md:pb-16 md:pt-28">
       {/* A single horizon of light behind the content */}
       <div
         aria-hidden
@@ -28,12 +35,22 @@ export default function Hero() {
               />
               <span aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(70% 62% at 52% 38%, transparent 50%, rgba(5,8,15,0.55) 80%, rgba(5,8,15,0.85) 100%)' }} />
             </div>
-            <figcaption className="relative mt-4 lg:mt-2">
-              <p className="sr-only">Certifications</p>
-              <ul className="flex flex-wrap gap-2 lg:justify-center" aria-label="Certifications">
-                {['Security+', 'PenTest+', 'CCNA', 'TCM PSAA'].map((c) => (
-                  <li key={c} className="rounded-full border border-line bg-panel/80 px-3 py-1 text-[13px] font-medium text-snow/85">
-                    {c}
+            <figcaption className="relative mt-5 lg:mt-3">
+              <ul className="flex gap-3 lg:justify-center" aria-label="Certifications">
+                {CERTS.map((c, i) => (
+                  <li key={c.name} className="cert-in w-[72px] text-center" style={{ animationDelay: `${0.9 + i}s` }}>
+                    <div className="cert-box">
+                      {c.img ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.img} alt={`${c.name} badge`} width={240} height={240} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full flex-col items-center justify-center bg-[#0E2A4A] leading-none">
+                          <span className="text-[10px] font-semibold tracking-[0.2em] text-[#9CC7F0]">CISCO</span>
+                          <span className="mt-1 font-display text-[19px] font-bold text-white">{c.name}</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-2 text-[12px] font-medium text-snow/80">{c.name}</p>
                   </li>
                 ))}
               </ul>
@@ -55,7 +72,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="hero-rise-late mt-10 grid gap-10 border-t border-line pt-9 md:mt-10 lg:grid-cols-12 lg:items-end lg:gap-8">
+        <div className="hero-rise-late mt-10 grid gap-10 md:mt-12 lg:grid-cols-12 lg:items-end lg:gap-8">
           <p className="max-w-[38ch] text-[clamp(18px,1.45vw,22px)] leading-relaxed text-snow/90 lg:col-span-5">
             I build SOC automation, cloud security labs on AWS, and AI tools that catch threats faster.
           </p>
