@@ -24,6 +24,24 @@ export default function Hero() {
               fetchPriority="high"
               className="cutout relative w-full"
             />
+            <ul className="relative -mt-4 flex justify-center gap-3" aria-label="Certifications">
+              {CERTS.map((c, i) => (
+                <li key={c.name} className="cert-in w-[72px] text-center" style={{ animationDelay: `${0.9 + i}s` }}>
+                  <div className="cert-box">
+                    {c.img ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.img} alt={`${c.name} badge`} width={240} height={240} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center bg-[#0E2A4A] leading-none">
+                        <span className="text-[10px] font-semibold tracking-[0.2em] text-[#9CC7F0]">CISCO</span>
+                        <span className="mt-1 font-display text-[19px] font-bold text-white">{c.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-[12px] font-medium text-snow/80">{c.name}</p>
+                </li>
+              ))}
+            </ul>
           </figure>
 
           <div className="hero-rise lg:order-1 lg:col-span-4 lg:col-start-1 lg:self-center">
@@ -35,6 +53,10 @@ export default function Hero() {
                 Kamara
               </span>
             </h1>
+            <p className="mt-7 max-w-[40ch] text-[clamp(17px,1.3vw,20px)] leading-relaxed text-snow/90">
+              I build SOC automation, cloud security labs on AWS, and AI tools that catch threats faster.
+            </p>
+            <p className="mt-3 text-[15px] text-smoke">B.S. Cybersecurity, BYU-Idaho, Dec 2026</p>
           </div>
 
           <div className="hero-rise lg:order-3 lg:col-span-4 lg:col-start-9 lg:self-center lg:justify-self-end">
@@ -46,40 +68,13 @@ export default function Hero() {
               <br />
               IT Infrastructure
             </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#work" className="btn-primary">See my work</a>
+              <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Download résumé</a>
+            </div>
           </div>
         </div>
 
-        {/* Intro | certs (under the portrait) | actions */}
-        <div className="hero-rise-late mt-10 grid gap-10 lg:mt-6 lg:grid-cols-12 lg:items-center lg:gap-6">
-          <p className="max-w-[36ch] text-[clamp(18px,1.4vw,21px)] leading-relaxed text-snow/90 lg:col-span-4">
-            I build SOC automation, cloud security labs on AWS, and AI tools that catch threats faster.
-            <span className="mt-3 block text-[15px] text-smoke">B.S. Cybersecurity, BYU-Idaho, Dec 2026</span>
-          </p>
-
-          <ul className="flex gap-3 lg:col-span-4 lg:col-start-5 lg:justify-center" aria-label="Certifications">
-            {CERTS.map((c, i) => (
-              <li key={c.name} className="cert-in w-[72px] text-center" style={{ animationDelay: `${0.9 + i}s` }}>
-                <div className="cert-box">
-                  {c.img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.img} alt={`${c.name} badge`} width={240} height={240} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center bg-[#0E2A4A] leading-none">
-                      <span className="text-[10px] font-semibold tracking-[0.2em] text-[#9CC7F0]">CISCO</span>
-                      <span className="mt-1 font-display text-[19px] font-bold text-white">{c.name}</span>
-                    </div>
-                  )}
-                </div>
-                <p className="mt-2 text-[12px] font-medium text-snow/80">{c.name}</p>
-              </li>
-            ))}
-          </ul>
-
-          <div className="flex flex-wrap gap-3 lg:col-span-4 lg:col-start-9 lg:justify-end">
-            <a href="#work" className="btn-primary">See my work</a>
-            <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Download résumé</a>
-          </div>
-        </div>
       </div>
     </section>
   )
