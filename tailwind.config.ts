@@ -17,7 +17,7 @@ const config: Config = {
         sans: ['Barlow', 'system-ui', 'sans-serif'],
         display: ['"Barlow Condensed"', 'Barlow', 'sans-serif'],
       },
-      maxWidth: { site: '1320px' },
+      maxWidth: { site: '1760px' },
     },
   },
   plugins: [],

@@ -59,7 +59,7 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 }
 .btn-ghost:hover { color: #EEF2F8; border-color: rgba(238,242,248,0.5); background: rgba(150,170,210,0.06); }
 
-.wrap { @apply mx-auto w-full max-w-site px-6 md:px-10; }
+.wrap { @apply mx-auto w-full max-w-site px-6 md:px-10 xl:px-14; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
