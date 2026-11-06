@@ -2,9 +2,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import TypeStatus from './TypeStatus'
+import WorkMenu from './WorkMenu'
+import { ROLES, RoleIcon } from './roles'
 
 const LINKS = [
-  { href: '/#work', label: 'Work' },
   { href: '/#credentials', label: 'Credentials' },
   { href: '/#experience', label: 'Experience' },
   { href: '/#contact', label: 'Contact' },
@@ -39,6 +40,7 @@ export default function Nav() {
         </Link>
 
         <ul className="hidden items-center gap-9 md:flex">
+          <WorkMenu />
           {LINKS.map((l) => (
             <li key={l.href}>
               <a href={l.href} className="nav-link text-[15px] font-medium text-snow/80 transition-colors hover:text-snow">
@@ -67,6 +69,21 @@ export default function Nav() {
 
       {open && (
         <ul id="mobile-menu" className="wrap flex flex-col gap-1 pb-8 md:hidden">
+          <li>
+            <a href="/#work" onClick={() => setOpen(false)} className="block py-3 font-display text-3xl font-semibold uppercase tracking-wide">
+              Work
+            </a>
+            <ul className="mb-2 grid gap-1 border-l border-line pl-4">
+              {ROLES.map((r) => (
+                <li key={r.id}>
+                  <a href={`/?role=${r.id}#work`} onClick={() => setOpen(false)} className="flex items-center gap-3 py-2 text-[16px] text-snow/85">
+                    <span className="text-signal"><RoleIcon role={r.id} className="h-4 w-4" /></span>
+                    For a {r.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </li>
           {LINKS.map((l) => (
             <li key={l.href}>
               <a href={l.href} onClick={() => setOpen(false)} className="block py-3 font-display text-3xl font-semibold uppercase tracking-wide">

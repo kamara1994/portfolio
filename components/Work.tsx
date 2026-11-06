@@ -1,13 +1,42 @@
+'use client'
 import Link from 'next/link'
 import { projects } from '@/data/projects'
 import ProjectMedia from './ProjectMedia'
+import { RESUME } from './Nav'
+import { ROLES, RoleIcon, chooseRole, useRole } from './roles'
 
-const flagship = projects.filter((p) => p.placement === 'flagship')
+const flagshipAll = projects.filter((p) => p.placement === 'flagship')
 const more = projects.filter((p) => p.placement === 'more')
 
 export default function Work() {
+  const role = useRole()
+  const current = ROLES.find((r) => r.id === role)
+  const rank = (id: string) => {
+    const i = current ? current.order.indexOf(id) : -1
+    return i === -1 ? 99 : i
+  }
+  const flagship = current ? [...flagshipAll].sort((a, b) => rank(a.id) - rank(b.id)) : flagshipAll
+
   return (
     <section id="work" aria-label="Work">
+      {current && (
+        <div className="wrap pt-8">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border border-line bg-panel/70 px-5 py-4">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-raised text-signal">
+              <RoleIcon role={current.id} />
+            </span>
+            <p className="text-[15px] text-snow/90">
+              Showing my work for a <span className="font-semibold text-snow">{current.label}</span>: {current.blurb.toLowerCase()}.
+            </p>
+            <div className="flex gap-5 text-[14px] md:ml-auto">
+              {current.id === 'recruiter' && (
+                <a href={RESUME} target="_blank" rel="noopener" className="text-signal hover:text-snow">Download résumé</a>
+              )}
+              <button type="button" onClick={() => chooseRole(null)} className="text-smoke hover:text-snow">Show everything</button>
+            </div>
+          </div>
+        </div>
+      )}
       {flagship.map((p, i) => (
         <article key={p.id} className={i === 0 ? '' : 'border-t border-line'}>
           <div className="wrap grid gap-10 pb-20 pt-12 md:grid-cols-12 md:gap-12 md:pb-28 md:pt-14">

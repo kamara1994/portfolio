@@ -98,7 +98,7 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 @media (prefers-reduced-motion: reduce) { .cert-in { animation: none; } }
 
 /* Menu links: a glowing line that grows from the center on hover and cycles colors */
-.nav-link { position: relative; display: inline-block; padding: 6px 0; }
+.nav-link { position: relative; display: inline-flex; align-items: center; padding: 6px 0; }
 .nav-link::after {
   content: ''; position: absolute; left: 50%; bottom: -5px; height: 3px; width: 0; border-radius: 3px;
   transform: translateX(-50%);
@@ -111,3 +111,13 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .nav-link:hover::after, .nav-link:focus-visible::after { width: 120%; }
 @keyframes nav-line { to { background-position: 300% 0; } }
 @media (prefers-reduced-motion: reduce) { .nav-link::after { animation: none; transition: none; } }
+
+/* Work dropdown */
+.role-menu {
+  border: 1px solid rgba(150,170,210,0.2); border-radius: 16px;
+  background: linear-gradient(180deg, rgba(18,26,42,0.97), rgba(11,17,29,0.97));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 60px -12px rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px);
+}
+.role-item { transition: background-color .2s; }
+.role-item:hover, .role-item:focus-visible { background: rgba(127,166,255,0.08); }
