@@ -28,16 +28,7 @@ export default function Contact() {
           <p className="mt-6 text-[15px] text-smoke">{EMAIL}</p>
         </div>
         <div className="md:col-span-3 md:col-start-10 md:self-end">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/profile/joseph.jpg"
-            alt="Joseph Allan Kamara"
-            width={360}
-            height={504}
-            loading="lazy"
-            className="w-40 border border-line grayscale md:w-full"
-          />
-          <a href={RESUME} target="_blank" rel="noopener" className="mt-4 inline-block text-[15px] text-snow/80 underline underline-offset-4 hover:text-snow">
+          <a href={RESUME} target="_blank" rel="noopener" className="inline-block text-[15px] text-snow/80 underline underline-offset-4 hover:text-snow">
             Download résumé (PDF)
           </a>
         </div>

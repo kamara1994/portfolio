@@ -10,7 +10,7 @@ export default function Work() {
     <section id="work" aria-label="Work">
       {flagship.map((p, i) => (
         <article key={p.id} className="border-t border-line">
-          <div className="wrap grid min-h-[100svh] content-center gap-10 py-20 md:grid-cols-12 md:gap-12 md:py-28">
+          <div className="wrap grid gap-10 pb-20 pt-12 md:grid-cols-12 md:gap-12 md:pb-28 md:pt-14">
             <div className={`md:col-span-5 md:self-end ${i % 2 ? 'md:order-2' : ''}`}>
               <p className="text-[15px] text-smoke">{p.category}</p>
               <h2 className="mt-3 font-display text-[clamp(44px,6vw,92px)] font-bold uppercase leading-[0.9]">

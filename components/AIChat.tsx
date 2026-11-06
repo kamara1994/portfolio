@@ -22,6 +22,13 @@ const TRANSCRIPT_MIN_CONFIDENCE = 0.35
 
 export default function AIChat() {
   const [open, setOpen]                     = useState(false)
+  const [scrolled, setScrolled]             = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.5)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
   const [messages, setMessages]             = useState<Message[]>([{ role: 'assistant', content: GREETING }])
   const [input, setInput]                   = useState('')
   const [loading, setLoading]               = useState(false)
@@ -305,7 +312,8 @@ export default function AIChat() {
         type="button"
         onClick={toggleOpen}
         aria-label={open ? 'Close PWEZA chat' : 'Open PWEZA chat'}
-        className="fixed bottom-5 right-5 z-[999999] flex h-12 items-center gap-3 border border-line bg-panel/95 px-5 text-[15px] font-semibold text-snow backdrop-blur transition-colors hover:bg-raised"
+        tabIndex={scrolled || open ? 0 : -1}
+        className={`fixed bottom-5 right-5 z-[999999] flex h-12 items-center gap-3 border border-line bg-panel/95 px-5 text-[15px] font-semibold text-snow backdrop-blur transition-[opacity,transform,background-color] duration-300 hover:bg-raised ${scrolled || open ? 'opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}
       >
         <span aria-hidden className="h-2 w-2 rounded-full bg-signal" />
         {open ? 'Close' : <><span className="md:hidden">Ask AI</span><span className="hidden md:inline">Ask my AI assistant</span></>}
