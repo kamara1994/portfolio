@@ -10,7 +10,7 @@ const MILESTONES: { when: string; title: string; note: string; next?: boolean }[
 
 export default function Story() {
   return (
-    <section id="story" className="wrap py-24 md:py-32">
+    <section id="story" className="wrap pb-16 pt-24 md:pb-20 md:pt-32">
       <div className="hud-frame grid gap-14 p-6 sm:p-10 md:p-14 lg:grid-cols-12 lg:gap-12">
         <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
         <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />

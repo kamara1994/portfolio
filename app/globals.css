@@ -195,22 +195,20 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .journey-item.is-next .journey-dot { border-color: #4BE3C8; box-shadow: 0 0 0 4px rgba(75,227,200,0.15), 0 0 14px #4BE3C8; animation: next-pulse 2.4s ease-in-out infinite; }
 @keyframes next-pulse { 50% { box-shadow: 0 0 0 8px rgba(75,227,200,0.05), 0 0 18px #4BE3C8; } }
 
-/* Let's connect */
-.connect-row {
-  display: flex; align-items: baseline; gap: 16px; padding: 14px 0;
-  border-bottom: 1px solid rgba(150,170,210,0.12); transition: color .2s, padding-left .25s;
+/* Footer: glowing color-drifting rule on top, small contact chips */
+.footer-glow::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #4CC9FF, #7FA6FF, #A78BFA, #4CC9FF, transparent);
+  background-size: 200% 100%; animation: accent-drift 10s ease-in-out infinite;
+  box-shadow: 0 0 14px rgba(76,201,255,0.55);
 }
-.connect-row:hover { padding-left: 6px; }
-.connect-row:hover span:last-child { color: #8AD4FF; }
-.field { display: grid; gap: 8px; }
-.field > span { font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8D97AA; }
-.field input, .field select, .field textarea {
-  width: 100%; border-radius: 12px; padding: 12px 14px; font-size: 16px; color: #EEF2F8;
-  background: rgba(8,13,24,0.7); border: 1px solid rgba(150,170,210,0.2);
-  transition: border-color .2s, box-shadow .2s;
+.footer-glow { background: radial-gradient(60% 120% at 50% 0%, rgba(60,110,210,0.10), transparent 70%); }
+.foot-chip {
+  display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 16px; border-radius: 12px;
+  font-size: 14px; font-weight: 500; color: #C3CCDC;
+  background: rgba(10,18,32,0.6); border: 1px solid rgba(150,170,210,0.18);
+  transition: color .2s, border-color .2s, box-shadow .25s, transform .25s;
 }
-.field textarea { resize: vertical; }
-.field input:focus, .field select:focus, .field textarea:focus {
-  outline: none; border-color: rgba(111,214,255,0.7); box-shadow: 0 0 0 3px rgba(76,201,255,0.15);
-}
+.foot-chip svg { color: #6FD6FF; }
+.foot-chip:hover { color: #FFFFFF; border-color: rgba(111,214,255,0.6); box-shadow: 0 0 18px -4px rgba(76,201,255,0.6); transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) { .journey-item.is-next .journey-dot { animation: none; } }

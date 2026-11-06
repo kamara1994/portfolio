@@ -1,101 +1,70 @@
-'use client'
-import { useState } from 'react'
 import { RESUME } from './Nav'
 
 export const EMAIL = 'kamarajosephallan@gmail.com'
 export const LINKEDIN = 'https://linkedin.com/in/joseph-allan-kamara'
 export const GITHUB = 'https://github.com/kamara1994'
 
-const ROLES = ['SOC Analyst', 'Security Engineer', 'Cloud Security', 'IT / Systems', 'Something else']
+const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent('Opportunity for Joseph Kamara')}`
 
-/** Closing block: "Let's connect" with a quick message that opens the visitor's own email app. */
+const LINKS: { label: string; href: string; ext?: boolean; icon: React.ReactNode }[] = [
+  {
+    label: 'Email',
+    href: MAILTO,
+    icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
+  },
+  {
+    label: 'LinkedIn',
+    href: LINKEDIN,
+    ext: true,
+    icon: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 014 0v4M12 10v7" /></>,
+  },
+  {
+    label: 'GitHub',
+    href: GITHUB,
+    ext: true,
+    icon: <path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 00-.8-2.3c2.7-.3 5.5-1.3 5.5-6a4.7 4.7 0 00-1.3-3.2 4.3 4.3 0 00-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 00-6 0C6.5 2.5 5.5 2.8 5.5 2.8a4.3 4.3 0 00-.1 3.2A4.7 4.7 0 004 9.2c0 4.6 2.8 5.7 5.5 6a3 3 0 00-.8 2.3V21" />,
+  },
+  {
+    label: 'Résumé',
+    href: RESUME,
+    ext: true,
+    icon: <><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>,
+  },
+]
+
+/** Compact closing footer: glowing rule, small "Let's connect", contact chips, copyright. */
 export default function Footer() {
-  const [name, setName] = useState('')
-  const [company, setCompany] = useState('')
-  const [role, setRole] = useState(ROLES[0])
-  const [note, setNote] = useState('')
-
-  const send = (e: React.FormEvent) => {
-    e.preventDefault()
-    const subject = `${role} role${company ? ` at ${company}` : ''}`
-    const body = [
-      'Hi Joseph,',
-      '',
-      `I'm ${name || '[your name]'}${company ? ` from ${company}` : ''}. I'd like to talk with you about a ${role} role.`,
-      ...(note ? ['', note] : []),
-    ].join('\n')
-    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  }
-
   return (
-    <footer id="contact" className="relative overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(80% 60% at 15% 10%, rgba(80,120,210,0.16) 0%, transparent 65%)' }} />
-
-      <div className="wrap relative py-24 md:py-32">
-        <div className="hud-frame grid gap-14 p-6 sm:p-10 md:p-14 lg:grid-cols-12 lg:gap-12">
-          <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
-          <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
-
-          <div className="lg:col-span-6">
-            <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">Hiring for security, cloud, or IT?</p>
-            <h2 className="mt-3 font-display text-[clamp(52px,7vw,112px)] font-bold uppercase leading-[0.9]">
-              Let&apos;s <span className="title-accent">connect</span>
-            </h2>
-            <p className="mt-7 max-w-[42ch] text-[18px] leading-relaxed text-snow/85">
-              I graduate in December 2026 and I&apos;m available now for full-time roles. Based in Philadelphia, open to remote.
-            </p>
-
-            <ul className="mt-10 space-y-1">
-              {[
-                { label: 'Email', value: EMAIL, href: `mailto:${EMAIL}` },
-                { label: 'LinkedIn', value: 'joseph-allan-kamara', href: LINKEDIN, ext: true },
-                { label: 'GitHub', value: 'kamara1994', href: GITHUB, ext: true },
-                { label: 'Résumé', value: 'Download PDF', href: RESUME, ext: true },
-              ].map((l) => (
-                <li key={l.label}>
-                  <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="connect-row">
-                    <span className="w-24 shrink-0 text-[13px] font-semibold uppercase tracking-[0.18em] text-smoke">{l.label}</span>
-                    <span className="text-[17px] text-snow/90">{l.value}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <form onSubmit={send} className="lg:col-span-5 lg:col-start-8" aria-label="Quick message">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-[#6FD6FF]">Quick message</p>
-            <p className="mt-2 text-[15px] text-smoke">Fill this in and it opens your email app with the message ready to send.</p>
-            <div className="mt-8 grid gap-5">
-              <label className="field">
-                <span>Your name</span>
-                <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
-              </label>
-              <label className="field">
-                <span>Company</span>
-                <input value={company} onChange={(e) => setCompany(e.target.value)} autoComplete="organization" />
-              </label>
-              <label className="field">
-                <span>Role</span>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
-                  {ROLES.map((r) => <option key={r}>{r}</option>)}
-                </select>
-              </label>
-              <label className="field">
-                <span>Message (optional)</span>
-                <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
-              </label>
-              <div className="pt-2">
-                <button type="submit" className="btn-primary">Write the email</button>
-              </div>
-            </div>
-          </form>
+    <footer id="contact" className="footer-glow relative">
+      <div className="wrap flex flex-col gap-8 py-12 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
+            Let&apos;s <span className="title-accent">connect</span>
+          </p>
+          <p className="mt-3 flex items-center gap-2.5 text-[15px] text-smoke">
+            <span aria-hidden className="status-dot" />
+            Open to full-time roles. Graduating December 2026. Based in Philadelphia.
+          </p>
         </div>
+
+        <ul className="flex flex-wrap gap-3">
+          {LINKS.map((l) => (
+            <li key={l.label}>
+              <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip">
+                <svg aria-hidden viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  {l.icon}
+                </svg>
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="border-t border-line">
-        <div className="wrap flex flex-col gap-3 py-8 text-[14px] text-smoke md:flex-row md:items-center md:justify-between">
+        <div className="wrap flex flex-col gap-2 pb-24 pt-5 text-[13px] text-smoke/80 sm:flex-row sm:justify-between md:pb-5">
           <p>© {new Date().getFullYear()} Joseph Allan Kamara</p>
-          <p>Built with Next.js, deployed on Vercel</p>
+          <p className="md:pr-56">{EMAIL}</p>
         </div>
       </div>
     </footer>
