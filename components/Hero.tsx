@@ -1,4 +1,5 @@
 import { RESUME } from './Nav'
+import SeeMyWork from './SeeMyWork'
 
 const CERTS = [
   { name: 'Security+', img: '/certs/security-plus.png' },
@@ -73,7 +74,7 @@ export default function Hero() {
               IT Infrastructure
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#work" className="btn-primary">See my work</a>
+              <SeeMyWork />
               <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Download résumé</a>
             </div>
           </div>
