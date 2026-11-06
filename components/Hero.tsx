@@ -22,8 +22,10 @@ export default function Hero() {
             Open to full-time roles
           </p>
 
-          <h1 className="mt-6 font-display text-[clamp(44px,6.6vw,116px)] font-bold uppercase leading-[0.92] tracking-[0.005em] md:whitespace-nowrap">
-            Joseph Allan Kamara
+          <h1 className="mt-6 font-display text-[clamp(44px,6.6vw,116px)] font-bold uppercase leading-[0.92] tracking-[0.005em] ">
+            Joseph Allan
+            <br />
+            Kamara
           </h1>
           <p className="mt-4 text-[clamp(20px,1.7vw,26px)] font-medium text-smoke">Cybersecurity Engineer</p>
         </div>
