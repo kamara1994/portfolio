@@ -96,3 +96,18 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .animate-caret { animation: caret 0.8s steps(1) infinite; }
 @keyframes caret { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cert-in { animation: none; } }
+
+/* Menu links: a glowing line that grows from the center on hover and cycles colors */
+.nav-link { position: relative; display: inline-block; padding: 6px 0; }
+.nav-link::after {
+  content: ''; position: absolute; left: 50%; bottom: -5px; height: 3px; width: 0; border-radius: 3px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #8B5CF6, #F97316, #22D3EE, #7FA6FF, #8B5CF6);
+  background-size: 300% 100%;
+  filter: drop-shadow(0 0 8px rgba(127,166,255,0.95)) drop-shadow(0 0 3px rgba(255,255,255,0.5));
+  transition: width .35s cubic-bezier(.2,.8,.2,1);
+  animation: nav-line 3s linear infinite;
+}
+.nav-link:hover::after, .nav-link:focus-visible::after { width: 120%; }
+@keyframes nav-line { to { background-position: 300% 0; } }
+@media (prefers-reduced-motion: reduce) { .nav-link::after { animation: none; transition: none; } }

@@ -41,7 +41,7 @@ export default function Nav() {
         <ul className="hidden items-center gap-9 md:flex">
           {LINKS.map((l) => (
             <li key={l.href}>
-              <a href={l.href} className="text-[15px] font-medium text-snow/80 transition-colors hover:text-snow">
+              <a href={l.href} className="nav-link text-[15px] font-medium text-snow/80 transition-colors hover:text-snow">
                 {l.label}
               </a>
             </li>
