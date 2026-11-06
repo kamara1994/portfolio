@@ -179,21 +179,37 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 @keyframes accent-drift { 0%,100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
 @media (prefers-reduced-motion: reduce) { .title-accent { animation: none; } }
 
-/* My story: journey rail with glowing dots */
-.journey { position: relative; padding-left: 30px; }
-.journey::before {
-  content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; border-radius: 2px;
-  background: linear-gradient(180deg, rgba(111,214,255,0.9), rgba(127,166,255,0.5) 60%, rgba(167,139,250,0.25));
-  box-shadow: 0 0 10px rgba(76,201,255,0.45);
-}
-.journey-item { position: relative; padding-bottom: 26px; }
-.journey-item:last-child { padding-bottom: 0; }
-.journey-dot {
-  position: absolute; left: -30px; top: 3px; width: 14px; height: 14px; border-radius: 50%;
-  background: #05080F; border: 2px solid #6FD6FF; box-shadow: 0 0 10px rgba(76,201,255,0.6);
-}
-.journey-item.is-next .journey-dot { border-color: #4BE3C8; box-shadow: 0 0 0 4px rgba(75,227,200,0.15), 0 0 14px #4BE3C8; animation: next-pulse 2.4s ease-in-out infinite; }
-@keyframes next-pulse { 50% { box-shadow: 0 0 0 8px rgba(75,227,200,0.05), 0 0 18px #4BE3C8; } }
+/* Journey timeline (old-site style, refined): laser beam, traveling packets, colored nodes and cards */
+.jt-beam { position: absolute; left: 21px; top: 10px; bottom: 10px; width: 2px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(76,201,255,0.85), rgba(75,227,200,0.6) 60%, rgba(76,201,255,0.1));
+  box-shadow: 0 0 12px rgba(76,201,255,0.45); }
+.jt-packet { position: absolute; left: -3px; top: 0; width: 8px; height: 8px; border-radius: 50%;
+  background: #4CC9FF; box-shadow: 0 0 10px #4CC9FF; animation: jt-packet 4.5s linear infinite; opacity: 0; }
+.jt-packet.alt { background: #4BE3C8; box-shadow: 0 0 10px #4BE3C8; }
+@keyframes jt-packet { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: calc(100% - 8px); opacity: 0; } }
+
+.jt-row { position: relative; display: flex; gap: 22px; align-items: flex-start; }
+.jt-node { position: relative; z-index: 1; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%; color: var(--c); background: #05080F;
+  border: 2px solid var(--c); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 45%, transparent); }
+.jt-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--c); opacity: .25; transform: scale(1.6); animation: jt-ring 2.2s ease-in-out infinite; }
+.jt-ring.r2 { transform: scale(2.1); animation-duration: 2.8s; animation-delay: .4s; }
+@keyframes jt-ring { 50% { opacity: .05; transform: scale(2.3); } }
+
+.jt-card { position: relative; flex: 1; overflow: hidden; padding: 18px 20px; border-radius: 4px 14px 14px 4px;
+  background: rgba(8,14,28,0.75); border: 1px solid rgba(120,200,255,0.12); border-left: 2px solid var(--c);
+  transition: transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s; }
+.jt-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--c), transparent); transition: opacity .4s; }
+.jt-card.is-now { background: color-mix(in srgb, var(--c) 5%, rgba(8,14,28,0.8)); border-color: color-mix(in srgb, var(--c) 35%, transparent); border-left-color: var(--c); }
+.group:hover .jt-card { transform: translateX(4px); box-shadow: 0 12px 30px -16px color-mix(in srgb, var(--c) 60%, transparent); }
+.group:hover .jt-card::before { opacity: 1; }
+.jt-year { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 9px; border-radius: 6px;
+  color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); background: color-mix(in srgb, var(--c) 10%, transparent); }
+.jt-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+  color: #8D97AA; background: rgba(150,170,210,0.08); }
+@media (max-width: 639px) { .jt-row { gap: 14px; } .jt-node { width: 38px; height: 38px; } .jt-beam { left: 18px; } }
+@media (prefers-reduced-motion: reduce) { .jt-packet, .jt-ring { animation: none; } }
 
 /* Footer: glowing color-drifting rule on top, small contact chips */
 .footer-glow::before {
