@@ -39,10 +39,13 @@ export default function Hero() {
               </span>
               Open to full-time roles
             </p>
-            <h1 className="mt-6 font-display text-[clamp(44px,6.6vw,116px)] font-bold uppercase leading-[0.92] tracking-[0.005em]">
+            <h1 className="mt-6">
+              <span className="block text-[clamp(20px,1.7vw,26px)] font-medium text-snow/80">Hi, my name is</span>
+              <span className="mt-3 block font-display text-[clamp(40px,5vw,88px)] font-bold uppercase leading-[0.92] tracking-[0.005em]">
               Joseph Allan
               <br />
               Kamara
+              </span>
             </h1>
             <p className="mt-5 text-[clamp(19px,1.6vw,24px)] font-medium text-snow/80">
               Cybersecurity, Cloud Security, IT Infrastructure
