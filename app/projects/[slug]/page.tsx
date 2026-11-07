@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { projects } from '@/data/projects'
 import Nav from '@/components/Nav'
@@ -15,6 +15,19 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   const slug = params.slug
   const project = projects.find(p => p.id === slug)
   const [imgError, setImgError] = useState(false)
+  const [fortressVideoReady, setFortressVideoReady] = useState(false)
+
+  useEffect(() => {
+    if (slug !== 'fortress-v2') return
+    let active = true
+    fetch('/videos/fortress-v2-demo.mp4', { method: 'HEAD' })
+      .then(response => {
+        const type = response.headers.get('content-type') || ''
+        if (active && response.ok && type.includes('video')) setFortressVideoReady(true)
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [slug])
 
   const currentIndex = projects.findIndex(p => p.id === slug)
   const prevProject = projects[currentIndex - 1]
@@ -163,6 +176,33 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       </section>
+
+      {/* The recorded demo is shown only after the MP4 has actually been uploaded.
+          This avoids broken media links during staged publication. */}
+      {project.id === 'fortress-v2' && fortressVideoReady && (
+        <section id="fortress-demo" className="px-6 pb-16">
+          <div className="max-w-5xl mx-auto">
+            <div className="font-mono text-[10px] text-neon tracking-[3px] uppercase mb-2">Verified Security Lab</div>
+            <h2 className="font-orbitron text-2xl font-bold text-[#e2eaff] mb-3">
+              Watch the FORTRESS v2 demonstration
+            </h2>
+            <p className="text-sm text-muted max-w-3xl leading-relaxed mb-6">
+              A captioned walkthrough of synthetic security events, CloudWatch detection, the alarm history, and Amazon SNS.
+              Demonstrates the five-resource learner lab, not the undeployed reference architecture.
+            </p>
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full aspect-video rounded-lg border border-cyan/20 bg-black"
+              aria-label="FORTRESS v2 captioned AWS security monitoring demonstration"
+            >
+              <source src="/videos/fortress-v2-demo.mp4" type="video/mp4" />
+              Your browser does not support HTML5 video.
+            </video>
+          </div>
+        </section>
+      )}
 
       {/* IMPACT */}
       <section className="px-6 py-8 border-y border-[rgba(0,212,255,0.08)] bg-[rgba(0,212,255,0.02)]">
