@@ -31,9 +31,9 @@ const PROOF_METRICS: Record<string, Array<{ value: string; label: string }>> = {
     { value: 'Human', label: 'containment approval' },
   ],
   'fortress-v2': [
-    { value: '20+', label: 'AWS resources' },
-    { value: '6', label: 'Terraform modules' },
-    { value: '5', label: 'attack simulations' },
+    { value: '5', label: 'deployed resources' },
+    { value: '6', label: 'synthetic events' },
+    { value: '1', label: 'verified alarm' },
   ],
   'blue-x': [
     { value: '99.98%', label: 'model accuracy' },
@@ -71,12 +71,12 @@ function makeFortressTexture() {
   context.fillText('FORTRESS v2', 125, 135)
   context.fillStyle = '#91a0a8'
   context.font = '24px ui-monospace, monospace'
-  context.fillText('AWS DEFENSE ARCHITECTURE / TERRAFORM DEPLOYED', 127, 180)
+  context.fillText('AWS LEARNER LAB / TERRAFORM DEPLOYED', 127, 180)
 
   const columns = [
-    { x: 110, title: 'TELEMETRY', items: ['CloudTrail', 'GuardDuty', 'WAF'] },
-    { x: 610, title: 'DETECTION', items: ['EventBridge', 'Security Hub', 'CloudWatch'] },
-    { x: 1110, title: 'RESPONSE', items: ['Lambda isolation', 'SNS alerting', 'Analyst review'] },
+    { x: 110, title: 'TELEMETRY', items: ['Synthetic JSON events', 'CloudWatch Logs', '1-day retention'] },
+    { x: 610, title: 'DETECTION', items: ['JSON metric filter', 'Custom event metric', 'CloudWatch alarm'] },
+    { x: 1110, title: 'RESPONSE', items: ['SNS topic', 'Confirmed email', 'Verified delivery'] },
   ]
 
   columns.forEach((column, columnIndex) => {
@@ -113,10 +113,10 @@ function makeFortressTexture() {
   context.fillRect(80, 820, 1440, 100)
   context.fillStyle = '#f2aa4c'
   context.font = '700 28px ui-monospace, monospace'
-  context.fillText('20+ AWS RESOURCES', 120, 880)
+  context.fillText('5 DEPLOYED RESOURCES', 120, 880)
   context.fillStyle = '#dce6e9'
-  context.fillText('6 TERRAFORM MODULES', 610, 880)
-  context.fillText('5 ATTACK SIMULATIONS', 1110, 880)
+  context.fillText('6 SYNTHETIC EVENTS', 610, 880)
+  context.fillText('SNS EMAIL CONFIRMED', 1110, 880)
 
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
@@ -427,16 +427,16 @@ function StaticEvidence({ project }: { project: Project }) {
 
   if (project.id === 'fortress-v2') {
     const columns = [
-      ['Telemetry', 'CloudTrail', 'GuardDuty', 'WAF'],
-      ['Detection', 'EventBridge', 'Security Hub', 'CloudWatch'],
-      ['Response', 'Lambda isolation', 'SNS alerting', 'Analyst review'],
+      ['Telemetry', 'Synthetic events', 'CloudWatch Logs', '1-day retention'],
+      ['Detection', 'Metric filter', 'Custom metric', 'CloudWatch alarm'],
+      ['Response', 'SNS topic', 'Confirmed email', 'Delivery verified'],
     ]
 
     return (
       <div className="absolute inset-0 flex items-center justify-center px-5 pt-24 pb-20">
         <div className="w-full max-w-3xl border border-[#f2aa4c]/40 bg-[#091015] p-5 md:p-8">
           <p className="font-mono text-sm font-bold text-[#f2aa4c] md:text-xl">FORTRESS v2</p>
-          <p className="mt-1 font-mono text-[8px] uppercase text-white/45 md:text-[10px]" style={{ letterSpacing: 1 }}>AWS defense architecture / Terraform deployed</p>
+          <p className="mt-1 font-mono text-[8px] uppercase text-white/45 md:text-[10px]" style={{ letterSpacing: 1 }}>AWS Learner Lab / Terraform deployed</p>
           <div className="mt-5 grid grid-cols-3 gap-2 md:gap-4">
             {columns.map(([title, ...items]) => (
               <div key={title}>
