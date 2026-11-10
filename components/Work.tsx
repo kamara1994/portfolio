@@ -88,7 +88,7 @@ export default function Work() {
       {more.length > 0 && (
         <div className="border-t border-line">
           <div className="wrap py-24 md:py-32">
-            <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More work</h2>
+            <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More <span className="title-accent">work</span></h2>
             <ul className="mt-12 divide-y divide-line border-y border-line">
               {more.map((p) => (
                 <li key={p.id}>

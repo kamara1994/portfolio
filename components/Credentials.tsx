@@ -12,7 +12,7 @@ export default function Credentials() {
     <section id="credentials" className="border-t border-line">
       <div className="wrap grid gap-16 py-24 md:grid-cols-12 md:py-32">
         <div className="md:col-span-12">
-          <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Credentials</h2>
+          <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
           <ul className="mt-12 grid border-t border-line md:grid-cols-2 md:gap-x-16 [&>li]:border-b [&>li]:border-line">
             {certs.map((c) => (
               <li key={c.name} className="flex items-baseline justify-between gap-6 py-5">
