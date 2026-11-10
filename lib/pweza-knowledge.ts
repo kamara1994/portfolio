@@ -190,7 +190,7 @@ export function generateLocalPwezaReply(messages: { role: string; content: strin
       return 'BLUE SOC connects Splunk detections to n8n automation, AI-assisted triage, analyst review, and alert delivery. The useful part is the full workflow: it shows how Joseph thinks about reducing repetitive SOC work while keeping a human in control.'
     }
     if (previous.includes('fortress')) {
-      return 'FORTRESS v2 goes deeper into AWS defense: Terraform builds the environment, GuardDuty and CloudTrail provide visibility, and Lambda workflows automate response. It shows Joseph can connect cloud architecture, detection, and action instead of treating them as separate pieces.'
+      return 'FORTRESS v2 is a verified AWS security monitoring lab: Terraform deploys five resources, synthetic security events flow into CloudWatch Logs, a metric filter and alarm detect them, and SNS delivers the alert by email. Joseph verified each step with evidence, and he is clear that the broader GuardDuty, WAF and Lambda design is not deployed yet.'
     }
     if (previous.includes('blue-x') || previous.includes('blue x')) {
       return 'BLUE-X is Joseph\'s AI-security project. It takes network data through a trained PyTorch model, serves predictions through Flask, and connects the result to AWS and automated alerts, reaching 99.98% accuracy in its controlled dataset.'
@@ -203,7 +203,7 @@ export function generateLocalPwezaReply(messages: { role: string; content: strin
   }
 
   if (includesAny(text, ['cloud security', 'cloud role', 'cloud engineer', 'aws role'])) {
-    return 'Joseph is ready for cloud security roles now, especially where AWS, Terraform, detection, and response automation matter. FORTRESS v2 is the proof point: GuardDuty, CloudTrail, WAF, Lambda response workflows, Security Hub, and 20+ AWS resources deployed as code.'
+    return 'Joseph is ready for cloud security roles now, especially where AWS, Terraform, detection, and response automation matter. FORTRESS v2 is the proof point: a Terraform-deployed AWS monitoring lab where he verified log ingestion, a CloudWatch metric filter and alarm, and SNS email alerting end to end.'
   }
 
   if (includesAny(text, ['pweza', 'voice agent', 'portfolio assistant', 'visitor intelligence'])) {
@@ -230,7 +230,7 @@ export function generateLocalPwezaReply(messages: { role: string; content: strin
   }
 
   if (includesAny(text, ['fortress', 'aws', 'cloud', 'terraform', 'guardduty', 'lambda'])) {
-    return `${projectLine('fortress-v2')} It is one of his clearest cloud security signals because the work is infrastructure-as-code, detection, and response in the same lab.`
+    return `${projectLine('fortress-v2')} It is one of his clearest cloud security signals because the work is infrastructure-as-code, detection, and alerting in one lab, each step verified with evidence.`
   }
 
   if (includesAny(text, ['blue-x', 'blue x', 'machine learning', 'pytorch', 'ai threat', 'classification'])) {
@@ -242,7 +242,7 @@ export function generateLocalPwezaReply(messages: { role: string; content: strin
   }
 
   if (includesAny(text, ['skill', 'stack', 'tools', 'technology', 'tech'])) {
-    return 'His strongest stack is Splunk, Security Onion, AWS GuardDuty, Terraform, Lambda, Python, n8n, Claude/Gemini workflows, Zeek, Suricata, and Cisco networking. He is strongest where security operations, cloud security, automation, and AI meet.'
+    return 'His strongest stack is Splunk, Terraform, AWS CloudWatch and SNS, Python, n8n, Claude/Gemini workflows, Zeek, Suricata, and Cisco networking. He is strongest where security operations, cloud security, automation, and AI meet.'
   }
 
   if (includesAny(text, ['cert', 'certification', 'security+', 'ccna', 'pentest', 'psaa'])) {

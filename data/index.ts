@@ -62,11 +62,9 @@ export const skillGroups: SkillGroup[] = [
   {
     title: 'Cloud Security',
     skills: [
-      'AWS GuardDuty',
-      'AWS Security Hub',
-      'CloudTrail',
-      'WAF',
-      'Lambda Auto-Remediation',
+      'CloudWatch Logs and Alarms',
+      'Amazon SNS',
+      'AWS CLI',
       'IAM Policy Design',
       'S3 Security',
       'CloudWatch Alarms',

@@ -23,7 +23,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
     skills: [
       { name: 'Splunk SIEM', what: 'Alert ingestion and webhooks that feed the AI triage pipeline.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
       { name: 'Alert Triage', what: 'AI-assisted severity classification, reviewed by an analyst.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
-      { name: 'Incident Response', what: 'Response recommendations with analyst-approved containment.', projects: ['blue-soc-p8', 'fortress-v2'], certs: ['TCM PSAA'] },
+      { name: 'Incident Response', what: 'Response recommendations with analyst-approved containment.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
       { name: 'SIEM Detection Rules', what: 'Detection rules that trigger alerts into the automation pipeline.', projects: ['blue-soc-p8'] },
       { name: 'Log Analysis', what: 'Normalizing SIEM events and shipping network logs to S3.', projects: ['blue-soc-p8', 'blue-x'], certs: ['TCM PSAA'] },
       { name: 'Phishing Analysis', what: 'NLP-assisted phishing detection on email metadata.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
@@ -33,16 +33,15 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
   },
   {
     id: 'cloud', title: 'Cloud Security', icon: 'cloud',
-    summary: 'AWS detection and response, deployed as code.',
+    summary: 'AWS security monitoring, deployed as code and verified with evidence.',
     skills: [
-      { name: 'AWS GuardDuty', what: 'Threat detection that triggers isolation recommendations.', projects: ['fortress-v2'] },
-      { name: 'Lambda Auto-Remediation', what: 'Generates EC2 isolation steps on GuardDuty findings.', projects: ['fortress-v2', 'blue-x'] },
-      { name: 'Terraform IaC', what: 'The whole lab deployed as reusable Terraform modules.', projects: ['fortress-v2', 'blue-x'] },
-      { name: 'AWS Security Hub', what: 'Central findings with CIS benchmark scoring.', projects: ['fortress-v2'] },
-      { name: 'CloudTrail and CloudWatch', what: 'API audit logging and alarms.', projects: ['fortress-v2'] },
-      { name: 'AWS WAF', what: 'Web application firewall in front of lab workloads.', projects: ['fortress-v2'] },
-      { name: 'IAM Security', what: 'Tested against a simulated IAM backdoor creation.', projects: ['fortress-v2'] },
-      { name: 'S3 Security', what: 'Detected a simulated S3 exposure scenario.', projects: ['fortress-v2'] },
+      { name: 'Terraform IaC', what: 'Deployed an isolated five-resource AWS lab as code.', projects: ['fortress-v2', 'blue-x'] },
+      { name: 'CloudWatch Logs', what: 'Ingested six synthetic JSON security events into a log group.', projects: ['fortress-v2'] },
+      { name: 'Metric Filters', what: 'JSON metric filter turning matching events into a security metric.', projects: ['fortress-v2'] },
+      { name: 'CloudWatch Alarms', what: 'Threshold alarm with an observed OK-to-ALARM transition.', projects: ['fortress-v2'] },
+      { name: 'Amazon SNS', what: 'Alarm action to an SNS topic with confirmed email delivery.', projects: ['fortress-v2'] },
+      { name: 'AWS CLI', what: 'Queried logs, metric statistics, and alarm history.', projects: ['fortress-v2'] },
+      { name: 'AWS Lambda', what: 'Serverless functions in the threat classification pipeline.', projects: ['blue-x'] },
     ],
   },
   {
@@ -74,7 +73,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
     id: 'offense', title: 'Offensive Security', icon: 'target',
     summary: 'Thinking like the attacker to test defenses.',
     skills: [
-      { name: 'Attack Simulation', what: 'SSH brute force, port scans, and IAM abuse against the AWS lab.', projects: ['fortress-v2'], certs: ['PenTest+'] },
+      { name: 'Attack Simulation', what: 'Planning and running attack scenarios to test defenses.', certs: ['PenTest+'] },
       { name: 'Nmap', what: 'Discovery and port scanning.', certs: ['PenTest+'] },
       { name: 'Metasploit', what: 'Exploitation framework.', certs: ['PenTest+'] },
       { name: 'Burp Suite', what: 'Web application testing.', certs: ['PenTest+'] },
@@ -113,8 +112,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
       { name: 'Zero Trust', what: 'Never trust, always verify architecture.', certs: ['Security+'] },
       { name: 'GRC Fundamentals', what: 'Governance, risk, and compliance.', certs: ['Security+'] },
       { name: 'MITRE ATT&CK', what: 'Mapping adversary techniques during triage.', certs: ['TCM PSAA'] },
-      { name: 'CIS Benchmarks', what: 'Benchmark scoring through Security Hub.', projects: ['fortress-v2'] },
-      { name: 'OWASP Top 10', what: 'Common web application risks.', certs: ['PenTest+'] },
+            { name: 'OWASP Top 10', what: 'Common web application risks.', certs: ['PenTest+'] },
     ],
   },
 ]
@@ -123,5 +121,5 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
 export const UNCONFIRMED = [
   'Security Onion', 'Threat Hunting', 'Malware Triage', 'Network Forensics', 'FortiGate Firewall', 'Scapy',
   'VPN Configuration', 'Exploit Development', 'OSINT Techniques', 'Pinecone Vector DB', 'RAG Pipelines',
-  'Autonomous Agents', 'Bash / PowerShell', 'AWS CLI', 'Kill Chain', 'Diamond Model', 'ISO 27001 Basics',
+  'Autonomous Agents', 'Bash', 'AWS GuardDuty', 'AWS WAF', 'AWS Security Hub', 'CloudTrail', 'Kill Chain', 'Diamond Model', 'ISO 27001 Basics',
 ]
