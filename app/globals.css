@@ -292,3 +292,13 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .reveal-on .rv-lines.in .lr-w { opacity: 1; transform: none; filter: none; }
 .reveal-on .rv-lines:not(.in) .lr-w { transition-delay: 0ms; transition-duration: .3s; }
 .title-accent.lr-w { display: inline-block; }
+
+/* Footer background portrait: black and white, faded into the dark */
+.footer-portrait {
+  position: absolute; left: 46%; top: 0; bottom: 0; width: 300px; transform: translateX(-50%); pointer-events: none;
+  background: url('/profile/joseph-footer.jpg') center top / cover no-repeat;
+  filter: grayscale(1) contrast(1.05); opacity: .28;
+  -webkit-mask-image: radial-gradient(ellipse 50% 70% at 50% 40%, #000 35%, transparent 78%);
+  mask-image: radial-gradient(ellipse 50% 70% at 50% 40%, #000 35%, transparent 78%);
+}
+@media (max-width: 1023px) { .footer-portrait { left: auto; right: -20px; transform: none; width: 220px; opacity: .16; } }

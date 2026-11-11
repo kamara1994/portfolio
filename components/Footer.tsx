@@ -35,8 +35,9 @@ const LINKS: { label: string; href: string; ext?: boolean; icon: React.ReactNode
 /** Compact closing footer: glowing rule, small "Let's connect", contact chips, copyright. */
 export default function Footer() {
   return (
-    <footer id="contact" className="footer-glow relative">
-      <div className="wrap flex flex-col gap-8 py-12 md:flex-row md:items-center md:justify-between">
+    <footer id="contact" className="footer-glow relative overflow-hidden">
+      <div aria-hidden className="footer-portrait" />
+      <div className="wrap relative flex flex-col gap-8 py-12 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
             Let&apos;s <span className="title-accent">connect</span>
@@ -61,7 +62,7 @@ export default function Footer() {
         </ul>
       </div>
 
-      <div className="border-t border-line">
+      <div className="relative border-t border-line">
         <div className="wrap flex flex-col gap-2 pb-24 pt-5 text-[13px] text-smoke/80 sm:flex-row sm:justify-between md:pb-5">
           <p>© {new Date().getFullYear()} Joseph Allan Kamara</p>
           <p>{EMAIL}</p>
