@@ -71,7 +71,7 @@ export default function Work() {
               <p className="mt-6 text-[14px] leading-relaxed text-smoke">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="btn-row mt-8 flex flex-wrap gap-3">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
                 {p.github && (
                   <a href={p.github} target="_blank" rel="noopener" className="btn-ghost">View code</a>

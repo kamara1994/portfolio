@@ -77,7 +77,7 @@ export default function Hero() {
               <br />
               IT Infrastructure
             </p>
-            <div className="mt-8 flex flex-wrap gap-3 lg:flex-nowrap">
+            <div className="btn-row mt-8 flex flex-wrap gap-3 lg:flex-nowrap">
               <SeeMyWork />
               <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Download résumé</a>
             </div>

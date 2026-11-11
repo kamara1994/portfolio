@@ -72,7 +72,7 @@ export default function Skills() {
 
         <div className="mt-12 grid gap-8 lg:grid-cols-12 lg:gap-10">
           {/* Categories */}
-          <div role="tablist" aria-label="Skill categories" aria-orientation="vertical" onKeyDown={onKey} className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-2 lg:col-span-4 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
+          <div role="tablist" aria-label="Skill categories" aria-orientation="vertical" onKeyDown={onKey} className="sk-tabs -mx-6 flex gap-2 overflow-x-auto px-6 pb-2 lg:col-span-4 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
             {SKILL_CATEGORIES.map((c, i) => (
               <button
                 key={c.id}

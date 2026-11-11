@@ -29,6 +29,7 @@ export default function Nav() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
         solid || open ? 'bg-ink/95 backdrop-blur border-b border-line' : 'bg-transparent'
+      } ${open ? 'h-[100dvh] overflow-y-auto md:h-auto' : ''
       }`}
     >
       <nav className="wrap flex h-[72px] items-center justify-between" aria-label="Main">
