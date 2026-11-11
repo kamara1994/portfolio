@@ -7,7 +7,7 @@ export const GITHUB = 'https://github.com/kamara1994'
 
 const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent('Opportunity for Joseph Kamara')}`
 
-const LINKS: { label: string; short: string; href: string; ext?: boolean; icon: string }[] = [
+const LINKS: { label: string; short: string; href: string; ext?: boolean; icon: React.ReactNode }[] = [
   {
     label: 'Email me', short: 'Email',
     href: MAILTO,
@@ -17,7 +17,12 @@ const LINKS: { label: string; short: string; href: string; ext?: boolean; icon: 
     label: 'Connect on LinkedIn', short: 'LinkedIn',
     href: LINKEDIN,
     ext: true,
-    icon: '💼',
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]">
+        <rect width="24" height="24" rx="4" fill="#0A66C2" />
+        <path fill="#fff" d="M7.1 9.6h-2.6V19h2.6V9.6zM5.8 5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM19.5 13.6c0-2.6-1.4-4.2-3.7-4.2-1.3 0-2.2.7-2.6 1.4V9.6h-2.5V19h2.6v-4.9c0-1.3.6-2.2 1.8-2.2s1.7.9 1.7 2.2V19h2.7v-5.4z" />
+      </svg>
+    ),
   },
   {
     label: 'See my code', short: 'GitHub',
@@ -54,7 +59,7 @@ export default function Footer() {
           {LINKS.map((l) => (
             <li key={l.label}>
               <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip">
-                <span aria-hidden className="emoji">{l.icon}</span>
+                {typeof l.icon === 'string' ? <span aria-hidden className="emoji">{l.icon}</span> : l.icon}
                 <span className="sm:hidden">{l.short}</span>
                 <span className="hidden sm:inline">{l.label}</span>
               </a>

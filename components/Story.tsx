@@ -107,8 +107,8 @@ export default function Story() {
                 <span key={i} className={`jt-packet ${i % 2 ? 'alt' : ''}`} style={{ animationDelay: `${d}s` }} />
               ))}
             </div>
+            <span className="jt-lantern"><Lantern /></span>
           </div>
-          <div aria-hidden className="jt-rope"><span className="jt-lantern"><Lantern /></span></div>
 
           <ol className="space-y-5">
             {MILESTONES.map((m) => (
