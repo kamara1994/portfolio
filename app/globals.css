@@ -383,3 +383,9 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   color: #4BE3C8; border: 1px solid rgba(75,227,200,.35); background: rgba(75,227,200,.08); }
 .rs-h { font-size: 13px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #6FD6FF; }
 @media print { body { background: #fff !important; color: #111 !important; } .pz-launch, .pz-panel { display: none !important; } }
+/* Skip layout/paint for below-the-fold sections until they near the viewport */
+.lazy-section { content-visibility: auto; contain-intrinsic-size: auto 1300px; }
+#credentials.lazy-section { contain-intrinsic-size: auto 650px; }
+#experience.lazy-section { contain-intrinsic-size: auto 1150px; }
+@media (max-width: 1023px) { .lazy-section { contain-intrinsic-size: auto 1400px; } #credentials.lazy-section { contain-intrinsic-size: auto 680px; } #experience.lazy-section { contain-intrinsic-size: auto 1350px; } }
+@media (max-width: 639px) { .lazy-section { contain-intrinsic-size: auto 2200px; } #credentials.lazy-section { contain-intrinsic-size: auto 870px; } #experience.lazy-section { contain-intrinsic-size: auto 1770px; } }

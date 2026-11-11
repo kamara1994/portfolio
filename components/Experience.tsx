@@ -2,7 +2,7 @@ import { experiences } from '@/data'
 
 export default function Experience() {
   return (
-    <section id="experience" className="border-t border-line">
+    <section id="experience" className="lazy-section border-t border-line">
       <div className="wrap py-24 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Exper<span className="title-accent">ience</span></h2>
         <ol className="mt-12 divide-y divide-line border-y border-line">

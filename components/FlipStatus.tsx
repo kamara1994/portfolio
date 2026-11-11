@@ -18,7 +18,6 @@ export default function FlipStatus() {
   return (
     <Link
       href="/#contact"
-      aria-label="Open to work. Hire me: contact Joseph"
       className="status-pill"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -26,12 +25,13 @@ export default function FlipStatus() {
       onBlur={() => setPaused(false)}
     >
       <span aria-hidden className="status-dot" />
-      <span aria-hidden className="flip">
+      <span className="flip">
         <span className={`flip-inner ${flipped ? 'is-flipped' : ''}`}>
           <span className="flip-face">Open to work</span>
           <span className="flip-face flip-back">Hire me</span>
         </span>
       </span>
+      <span className="sr-only">, contact Joseph</span>
     </Link>
   )
 }

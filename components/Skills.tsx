@@ -55,7 +55,7 @@ export default function Skills() {
   const built = cat.skills.filter((s) => s.projects?.length).length
 
   return (
-    <section id="skills" className="border-t border-line">
+    <section id="skills" className="lazy-section border-t border-line">
       <div className="wrap py-24 md:py-32">
         <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">Applied skills</p>
         <h2 className="mt-3 font-display text-[clamp(38px,4.4vw,68px)] font-bold uppercase leading-[0.95]">

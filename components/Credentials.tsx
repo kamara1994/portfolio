@@ -9,7 +9,7 @@ const VERIFY: Record<string, string> = {
 
 export default function Credentials() {
   return (
-    <section id="credentials" className="border-t border-line">
+    <section id="credentials" className="lazy-section border-t border-line">
       <div className="wrap grid gap-16 py-24 md:grid-cols-12 md:py-32">
         <div className="md:col-span-12">
           <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
