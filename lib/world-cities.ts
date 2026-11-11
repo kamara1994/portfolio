@@ -1,2 +1,4 @@
-// City positions in the NaturalEarth1 1440x600 projection used by /public/map/world.svg.
-export const CITY: Record<string, [number, number]> = {"philly": [457, 189], "rexburg": [336, 172], "seattle": [308, 156], "saopaulo": [548, 468], "freetown": [670, 328], "london": [720, 139], "frankfurt": [749, 145], "lagos": [733, 336], "capetown": [786, 514], "mumbai": [992, 281], "singapore": [1114, 359], "tokyo": [1217, 208], "sydney": [1262, 514], "dubai": [923, 254]}
+// City positions in the equirectangular 1440x536 map used by /public/map/world.svg.
+export const MAP_W = 1440
+export const MAP_H = 536
+export const CITY: Record<string, [number, number]> = {"philly":[459,152],"rexburg":[313,137],"seattle":[271,122],"saopaulo":[574,406],"freetown":[707,278],"london":[760,106],"frankfurt":[795,112],"lagos":[774,286],"capetown":[834,448],"mumbai":[1052,236],"singapore":[1175,307],"tokyo":[1319,169],"sydney":[1365,447],"dubai":[981,211]}

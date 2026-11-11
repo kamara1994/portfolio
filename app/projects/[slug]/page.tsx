@@ -43,18 +43,18 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       <Nav />
       <main>
         <header className="wrap pb-14 pt-36 md:pt-44">
-          <Link href="/#work" className="text-[15px] text-smoke hover:text-snow">Back to all work</Link>
+          <Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link>
           <p className="mt-10 text-[15px] text-smoke">{p.category}</p>
           <h1 className="mt-3 font-display text-[clamp(52px,9vw,140px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
           <p className="mt-6 max-w-[44ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
-          <div className="mt-10 flex flex-wrap gap-3">
+          <div className="btn-row mt-10 flex flex-wrap gap-3">
             {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
             {p.github && <a href={p.github} target="_blank" rel="noopener" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View code</a>}
             {p.report && <a href={p.report} className="btn-ghost">Download report</a>}
           </div>
         </header>
 
-        <div className="wrap">
+        <div className={`wrap ${p.video || p.screenshot ? '' : 'hidden md:block'}`}>
           <div className="relative aspect-[16/9] overflow-hidden border border-line bg-panel">
             <ProjectMedia project={p} priority />
           </div>

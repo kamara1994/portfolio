@@ -18,7 +18,7 @@ export default function RecruiterPage() {
   return (
     <main className="wrap pb-16 pt-10 md:pt-14 print:pt-0">
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
-        <Link href="/" className="text-[15px] text-smoke hover:text-snow">Back to full portfolio</Link>
+        <Link href="/" className="tap text-[15px] text-smoke hover:text-snow">Back to full portfolio</Link>
         <div className="flex gap-3">
           <a href={`mailto:${EMAIL}`} className="btn-primary">Email Joseph</a>
           <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Résumé</a>
@@ -34,9 +34,9 @@ export default function RecruiterPage() {
           <p className="mt-4 text-[18px] text-snow/85">B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Based in Philadelphia, open to remote.</p>
         </div>
         <dl className="grid gap-1 text-[15px] md:col-span-4 md:text-right">
-          <div><dt className="sr-only">Email</dt><dd><a href={`mailto:${EMAIL}`} className="text-[#8AD4FF] hover:text-white">{EMAIL}</a></dd></div>
-          <div><dt className="sr-only">LinkedIn</dt><dd><a href={LINKEDIN} target="_blank" rel="noopener" className="text-snow/80 hover:text-white">linkedin.com/in/joseph-allan-kamara</a></dd></div>
-          <div><dt className="sr-only">GitHub</dt><dd><a href={GITHUB} target="_blank" rel="noopener" className="text-snow/80 hover:text-white">github.com/kamara1994</a></dd></div>
+          <div><dt className="sr-only">Email</dt><dd><a href={`mailto:${EMAIL}`} className="tap text-[#8AD4FF] hover:text-white">{EMAIL}</a></dd></div>
+          <div><dt className="sr-only">LinkedIn</dt><dd><a href={LINKEDIN} target="_blank" rel="noopener" className="tap text-snow/80 hover:text-white">linkedin.com/in/joseph-allan-kamara</a></dd></div>
+          <div><dt className="sr-only">GitHub</dt><dd><a href={GITHUB} target="_blank" rel="noopener" className="tap text-snow/80 hover:text-white">github.com/kamara1994</a></dd></div>
         </dl>
       </header>
 

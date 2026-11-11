@@ -44,7 +44,7 @@ export default function MobileDock() {
             aria-label="Ask my AI assistant"
             onClick={() => window.dispatchEvent(new Event('pweza:toggle'))}
           >
-            <PwezaMark size={30} />
+            <PwezaMark size={40} />
           </button>
         ) : (
           <a

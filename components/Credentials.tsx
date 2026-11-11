@@ -25,7 +25,7 @@ export default function Credentials() {
                     {c.status === 'earned' ? 'Earned' : 'In progress'}
                   </span>
                   {c.status === 'earned' && VERIFY[c.issuer] && (
-                    <a href={VERIFY[c.issuer]} target="_blank" rel="noopener" className="text-[13px] text-[#6FD6FF] hover:text-white">
+                    <a href={VERIFY[c.issuer]} target="_blank" rel="noopener" className="tap text-[13px] text-[#6FD6FF] hover:text-white">
                       Verify with {c.issuer}
                     </a>
                   )}

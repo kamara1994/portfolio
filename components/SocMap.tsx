@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { CITY } from '@/lib/world-cities'
+import { CITY, MAP_H, MAP_W } from '@/lib/world-cities'
 
 type Kind = 'allow' | 'inspect' | 'block' | 'cloud'
 const COLOR: Record<Kind, string> = { allow: '#4CC9FF', inspect: '#FFB547', block: '#FF5D5D', cloud: '#A78BFA' }
@@ -56,7 +56,7 @@ export default function SocMap() {
 
   return (
     <div ref={root} aria-hidden className="socmap">
-      <svg ref={svg} viewBox="0 0 1440 600" preserveAspectRatio="xMidYMid slice" className="socmap-svg">
+      <svg ref={svg} viewBox={`0 0 ${MAP_W} ${MAP_H}`} preserveAspectRatio="xMidYMid slice" className="socmap-svg">
         <defs>
           {Array.from(new Set(Object.values(HEAT))).map((c) => (
             <radialGradient key={c} id={`sm-heat-${c.slice(1)}`}>
@@ -71,7 +71,7 @@ export default function SocMap() {
           </filter>
         </defs>
 
-        <image href="/map/world.svg" x="0" y="0" width="1440" height="600" />
+        <image href="/map/world.svg" x="0" y="0" width={MAP_W} height={MAP_H} />
 
         {/* Heat halos */}
         {Object.entries(CITY).map(([k, [x, y]]) => (

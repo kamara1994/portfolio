@@ -43,7 +43,7 @@ export default function PrivacyPage() {
       <Nav />
       <main className="wrap pb-24 pt-36 md:pt-44">
         <div className="max-w-[760px]">
-        <Link href="/" className="text-[15px] text-smoke hover:text-snow">Back to home</Link>
+        <Link href="/" className="tap text-[15px] text-smoke hover:text-snow">Back to home</Link>
         <h1 className="mt-8 font-display text-[clamp(44px,6vw,80px)] font-bold uppercase leading-[0.9]">
           Priv<span className="title-accent">acy</span>
         </h1>

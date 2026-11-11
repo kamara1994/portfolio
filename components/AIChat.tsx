@@ -121,14 +121,14 @@ export default function AIChat() {
         tabIndex={visible || open ? 0 : -1}
         className={`pz-launch ${visible || open ? 'is-on' : ''}`}
       >
-        <PwezaMark size={26} />
+        <PwezaMark size={28} />
         {open ? 'Close' : 'Ask my AI assistant'}
       </button>
 
       <section id="pweza-panel" aria-label="PWEZA assistant" className={`pz-panel ${open ? 'is-open' : ''}`} aria-hidden={!open}>
         <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="pz-mark-badge"><PwezaMark size={26} /></span>
+            <PwezaMark size={36} />
             <div>
               <p className="text-[15px] font-semibold text-snow">PWEZA</p>
               <p className="text-[12px] text-smoke">Answers only from verified facts</p>

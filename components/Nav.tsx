@@ -32,6 +32,7 @@ export default function Nav() {
       } ${open ? 'h-[100dvh] overflow-y-auto md:h-auto' : ''
       }`}
     >
+      <span aria-hidden className="scroll-progress" />
       <nav className="wrap flex h-[72px] items-center justify-between" aria-label="Main">
         <FlipStatus />
 
@@ -51,7 +52,7 @@ export default function Nav() {
         </ul>
 
         <button
-          className="md:hidden -mr-2 p-2"
+          className="md:hidden -mr-2 flex h-11 w-11 items-center justify-center"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? 'Close menu' : 'Open menu'}

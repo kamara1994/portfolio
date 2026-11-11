@@ -35,12 +35,16 @@ export default function LineReveal({ parts, as: Tag = 'p', className = '', start
 
   const words: ReactNode[] = []
   parts.forEach((p, pi) => {
-    if (p.attach && words[words.length - 1] === ' ') words.pop() // glue to the previous word (e.g. a period)
     p.text.split(/\s+/).filter(Boolean).forEach((w, wi) => {
-      words.push(
-        <span key={`${pi}-${wi}`} className={`lr-w ${p.className ?? ''}`}>{w}</span>,
-        ' ',
-      )
+      const node = <span key={`${pi}-${wi}`} className={`lr-w ${p.className ?? ''}`}>{w}</span>
+      if (p.attach && wi === 0 && words[words.length - 1] === ' ') {
+        // Glue to the previous word (e.g. a period) so they never wrap apart
+        words.pop()
+        const prev = words.pop()
+        words.push(<span key={`g-${pi}`} className="whitespace-nowrap">{prev}{node}</span>, ' ')
+      } else {
+        words.push(node, ' ')
+      }
     })
   })
 
