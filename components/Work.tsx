@@ -44,7 +44,10 @@ export default function Work() {
             </p>
             <div className="flex gap-5 text-[14px] md:ml-auto">
               {current.id === 'recruiter' && (
-                <a href={RESUME} target="_blank" rel="noopener" className="text-signal hover:text-snow">Download résumé</a>
+                <>
+                  <Link href="/recruiter" className="text-signal hover:text-snow">One-page summary</Link>
+                  <a href={RESUME} target="_blank" rel="noopener" className="text-signal hover:text-snow">Download résumé</a>
+                </>
               )}
               <button type="button" onClick={() => chooseRole(null)} className="text-smoke hover:text-snow">Show everything</button>
             </div>

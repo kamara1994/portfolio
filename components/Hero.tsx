@@ -62,6 +62,10 @@ export default function Hero() {
               I build SOC automation, AWS cloud security labs, and AI tools that catch threats faster.
             </p>
             <p className="mt-3 text-[15px] text-smoke">B.S. Cybersecurity, BYU-Idaho, graduating December 2026</p>
+            <p className="now-line mt-4">
+              <span className="now-tag">Now</span>
+              Final semester, and preparing for the AWS Security Specialty exam.
+            </p>
           </div>
 
           <div className="hero-rise lg:order-3 lg:col-span-4 lg:col-start-9 lg:self-center lg:justify-self-end">
