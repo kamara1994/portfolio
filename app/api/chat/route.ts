@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { synthesizeSpeech } from '@/lib/pweza-voice'
-import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply } from '@/lib/pweza-knowledge'
+import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, type ProofLink } from '@/lib/pweza-knowledge'
 
 const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
 
@@ -11,7 +11,10 @@ PRIMARY MISSION
 - If someone seems like a recruiter or hiring manager, be direct about fit and contact. Do not oversell.
 
 HARD RULES
-- Never invent facts about Joseph. Use the knowledge base below as ground truth.
+- The knowledge base below is the ONLY source of facts about Joseph. Never add numbers, tools, employers, projects, dates, or certifications that are not in it.
+- If the answer is not in the knowledge base, say plainly that you don't have a verified answer and suggest emailing Joseph at kamarajosephallan@gmail.com. Never guess.
+- Only discuss the projects listed under PROJECTS. If asked about anything else he may have built, say it isn't documented on this site.
+- AWS Security Specialty is in progress, never earned. Lab projects are lab projects; never describe them as production.
 - Keep most replies to 1-3 sentences. For technical project explanations, 4 short sentences is allowed.
 - No headings, no markdown tables, no long bullet lists in chat.
 - Never start with canned filler like "Great question", "That's interesting", "Sure", "Certainly", "As an AI", or "I would be happy to".
@@ -40,7 +43,7 @@ async function callGroq(messages: { role: string; content: string }[]) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant', max_tokens: 200, temperature: 0.75,
+      model: 'llama-3.1-8b-instant', max_tokens: 200, temperature: 0.4,
       messages: [{ role: 'system', content: PWEZA_SYSTEM_PROMPT }, ...messages],
     }),
   })
@@ -62,7 +65,7 @@ async function callGemini(messages: { role: string; content: string }[]) {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: PWEZA_SYSTEM_PROMPT }] },
         contents: geminiMessages,
-        generationConfig: { maxOutputTokens: 220, temperature: 0.75 },
+        generationConfig: { maxOutputTokens: 220, temperature: 0.4 },
       }),
     }
   )
@@ -134,10 +137,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No message provided.' }, { status: 400 })
     }
     let text: string | undefined
+    let links: ProofLink[] | undefined
     let usedLocalReply = false
 
     if (shouldUseLocalPwezaReply(messages)) {
-      text = generateLocalPwezaReply(messages)
+      ;({ text, links } = generateLocalPwezaReply(messages))
       usedLocalReply = true
     }
 
@@ -167,12 +171,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (!text) {
-      text = generateLocalPwezaReply(messages)
+      ;({ text, links } = generateLocalPwezaReply(messages))
       usedLocalReply = true
     }
     text = usedLocalReply ? text : polishPwezaReply(text, messages)
+    if (!usedLocalReply) links = linksForText(text)
     const { audio } = wantsAudio ? await synthesizeSpeech(text) : { audio: null }
-    return NextResponse.json({ content: text, audio })
+    return NextResponse.json({ content: text, links: links ?? [], audio })
   } catch (err) {
     console.error('PWEZA error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

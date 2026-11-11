@@ -7,6 +7,7 @@ import '@fontsource/barlow-condensed/700.css'
 import './globals.css'
 import VisitTracker from '@/components/VisitTracker'
 import LiveIcons from '@/components/LiveIcons'
+import AIChat from '@/components/AIChat'
 
 const SITE = 'https://josephkamara.vercel.app'
 const DESCRIPTION =
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <VisitTracker />
         <LiveIcons />
         {children}
+        <AIChat />
       </body>
     </html>
   )

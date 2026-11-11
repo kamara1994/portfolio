@@ -6,7 +6,6 @@ import Experience from '@/components/Experience'
 import Story from '@/components/Story'
 import Skills from '@/components/Skills'
 import Footer from '@/components/Footer'
-import AIChat from '@/components/AIChat'
 
 export default function Home() {
   return (
@@ -21,7 +20,6 @@ export default function Home() {
         <Story />
       </main>
       <Footer />
-      <AIChat />
     </>
   )
 }
