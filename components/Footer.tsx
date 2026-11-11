@@ -39,7 +39,7 @@ export default function Footer() {
     <footer id="contact" className="footer-glow relative overflow-hidden">
       <SocMap />
       <div aria-hidden className="footer-portrait" />
-      <div className="wrap relative z-[2] flex flex-col gap-8 py-16 md:flex-row md:items-center md:justify-between md:py-24">
+      <div className="wrap relative z-[2] flex flex-col gap-8 py-16 md:flex-row md:items-center md:justify-between md:py-24 lg:py-36">
         <div>
           <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
             Let&apos;s <span className="title-accent">connect</span>

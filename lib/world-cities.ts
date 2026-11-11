@@ -1,0 +1,2 @@
+// City positions in the NaturalEarth1 1440x600 projection used by /public/map/world.svg.
+export const CITY: Record<string, [number, number]> = {"philly": [457, 189], "rexburg": [336, 172], "seattle": [308, 156], "saopaulo": [548, 468], "freetown": [670, 328], "london": [720, 139], "frankfurt": [749, 145], "lagos": [733, 336], "capetown": [786, 514], "mumbai": [992, 281], "singapore": [1114, 359], "tokyo": [1217, 208], "sydney": [1262, 514], "dubai": [923, 254]}

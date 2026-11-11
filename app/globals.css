@@ -427,13 +427,15 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .socmap-svg { position: absolute; left: 50%; top: 50%; height: 100%; min-width: 100%; aspect-ratio: 1440 / 600; transform: translate(-50%, -50%); z-index: 0; pointer-events: none;
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent); }
 @media (max-width: 767px) { .socmap-svg { transform: translate(-44%, -50%); } }
-.sm-trail { stroke-dasharray: .16 1.2; stroke-dashoffset: 1.16; animation: sm-trail linear infinite; animation-play-state: paused; filter: drop-shadow(0 0 4px currentColor); }
-@keyframes sm-trail { from { stroke-dashoffset: .16; } to { stroke-dashoffset: -1.04; } }
-.sm-head { filter: drop-shadow(0 0 6px #fff); }
+.sm-trail { stroke-dasharray: .22 1.2; stroke-dashoffset: 1.22; animation: sm-trail linear infinite; animation-play-state: paused; }
+@keyframes sm-trail { from { stroke-dashoffset: .22; } to { stroke-dashoffset: -1; } }
+.sm-head { filter: drop-shadow(0 0 5px #fff); }
+.sm-heat { transform-box: fill-box; transform-origin: center; animation: sm-heat 4.5s ease-in-out infinite; animation-play-state: paused; }
+@keyframes sm-heat { 50% { transform: scale(1.25); opacity: .7; } }
 .sm-ping { transform-box: fill-box; transform-origin: center; animation: sm-ping 3.2s ease-out infinite; animation-play-state: paused; }
 @keyframes sm-ping { 0% { transform: scale(1); opacity: .8; } 70%, 100% { transform: scale(4); opacity: 0; } }
-.socmap.is-live ~ * .sm-trail, .socmap.is-live .sm-trail, .socmap.is-live .sm-ping { animation-play-state: running; }
-@media (prefers-reduced-motion: reduce) { .sm-trail, .sm-ping { animation: none !important; } .sm-head { display: none; } }
+.socmap.is-live ~ * .sm-trail, .socmap.is-live .sm-trail, .socmap.is-live .sm-ping, .socmap.is-live .sm-heat { animation-play-state: running; }
+@media (prefers-reduced-motion: reduce) { .sm-trail, .sm-ping, .sm-heat { animation: none !important; } .sm-head { display: none; } }
 #contact :is(p, h2) { text-shadow: 0 1px 2px rgba(5,8,15,.9), 0 0 18px rgba(5,8,15,.85); }
 .socmap { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
 /* Phone: equal-width, thumb-sized action rows */
