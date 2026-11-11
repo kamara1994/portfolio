@@ -48,12 +48,12 @@ export default function Footer() {
     <footer id="contact" className="footer-glow relative overflow-hidden">
       <SocMap />
       <div aria-hidden className="footer-portrait" />
-      <div className="wrap relative z-[2] flex flex-col gap-7 py-12 md:flex-row md:items-center md:justify-between md:py-16 lg:py-20">
+      <div className="foot-main wrap relative z-[2] flex flex-col gap-7 py-12 md:flex-row md:items-center md:justify-between md:py-16 lg:py-20">
         <div>
           <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
             Let&apos;s <span className="title-accent">connect</span>
           </p>
-          <p className="mt-3 flex items-center gap-2.5 text-[15px] text-smoke">
+          <p className="foot-status mt-3 flex items-center gap-2.5 text-[15px] text-smoke">
             <span aria-hidden className="status-dot" />
             Open to full-time roles. Graduating December 2026. Based in Philadelphia.
           </p>
@@ -73,7 +73,7 @@ export default function Footer() {
       </div>
 
       <div className="relative z-[2] border-t border-line">
-        <div className="wrap flex flex-col gap-2 pb-28 pt-5 text-[13px] text-smoke/80 sm:flex-row sm:justify-between lg:pb-5">
+        <div className="foot-bottom wrap flex flex-col gap-2 pb-28 pt-5 text-[13px] text-smoke/80 sm:flex-row sm:justify-between lg:pb-5">
           <p>© {new Date().getFullYear()} Joseph Allan Kamara · <a href="/privacy" className="underline-offset-4 hover:text-snow hover:underline">Privacy</a></p>
           <p>{EMAIL}</p>
         </div>

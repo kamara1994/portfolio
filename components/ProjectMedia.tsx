@@ -1,4 +1,9 @@
 import type { Project } from '@/data/projects'
+import { BLUR } from '@/lib/blur'
+
+// Slow-network fallback: the blurred preview is the element's background, so it
+// shows until the real image paints over it. No JavaScript involved.
+const ph = (src?: string) => (src && BLUR[src] ? { backgroundImage: `url(${BLUR[src]})`, backgroundSize: 'cover', backgroundPosition: 'top center' } : undefined)
 
 /** Plays the project's 10-second demo loop; falls back to its screenshot, then to a quiet title card. */
 export default function ProjectMedia({ project, priority = false }: { project: Project; priority?: boolean }) {
@@ -16,6 +21,7 @@ export default function ProjectMedia({ project, priority = false }: { project: P
         playsInline
         preload={priority ? 'auto' : 'metadata'}
         aria-label={`${title} demo`}
+        style={ph(screenshot)}
       />
     )
   }
@@ -28,6 +34,8 @@ export default function ProjectMedia({ project, priority = false }: { project: P
         src={screenshot}
         alt={`${title} screenshot`}
         loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        style={ph(screenshot)}
       />
     )
   }

@@ -78,7 +78,7 @@ export const projects: Project[] = [
       'Log Aggregator → SIEM-Ready Format',
     ],
     github: 'https://github.com/kamara1994/python-ids',
-    screenshot: '/screenshots/ids.png',
+    screenshot: '/screenshots/ids.webp',
   },
   {
     id: 'cve-scanner',
@@ -104,7 +104,7 @@ export const projects: Project[] = [
       'Output → PDF Remediation Report',
     ],
     github: 'https://github.com/kamara1994/cve-scanner',
-    screenshot: '/screenshots/vuln-scanner.png',
+    screenshot: '/screenshots/vuln-scanner.webp',
   },
   {
     id: 'threat-intel-dashboard',
@@ -130,7 +130,7 @@ export const projects: Project[] = [
       'Live Dashboard → Charts, Tables, Geo Map',
     ],
     github: 'https://github.com/kamara1994/threat-intel-dashboard',
-    screenshot: '/screenshots/threat-intel.png',
+    screenshot: '/screenshots/threat-intel.webp',
   },
   {
     id: 'blue-v3',
@@ -159,7 +159,7 @@ export const projects: Project[] = [
     github: 'https://github.com/kamara1994/blue-v3',
     demo: 'https://blue-dashboard-ten.vercel.app',
     video: '/demos/blue-v3.mp4',
-    screenshot: '/screenshots/blue-v3.png',
+    screenshot: '/screenshots/blue-v3.webp',
   },
   {
     id: 'security-automation-toolkit',
@@ -184,7 +184,7 @@ export const projects: Project[] = [
       'IP Lookup → AbuseIPDB → Reputation Score',
     ],
     github: 'https://github.com/kamara1994/security-toolkit',
-    screenshot: '/screenshots/toolkit.png',
+    screenshot: '/screenshots/toolkit.webp',
   },
   {
     id: 'elitecom',
@@ -210,7 +210,7 @@ export const projects: Project[] = [
     ],
     github: 'https://github.com/kamara1994',
     demo: 'https://elitecom-site.vercel.app',
-    screenshot: '/screenshots/elitecom.png',
+    screenshot: '/screenshots/elitecom.webp',
   },
   {
     id: 'pandie-foundation',
@@ -293,7 +293,7 @@ export const projects: Project[] = [
     stack: ['PyTorch', 'AWS', 'Zeek', 'Suricata', 'Lambda', 'DynamoDB', 'API Gateway', 'S3', 'Flask', 'n8n', 'Terraform', 'Python'],
     github: 'https://github.com/kamara1994/blue-x',
     featured: true,
-    screenshot: '/screenshots/blue-x.png',
+    screenshot: '/screenshots/blue-x.webp',
   },
   {
     id: 'enterprise-networking',
@@ -322,7 +322,7 @@ export const projects: Project[] = [
     stack: ['Cisco IOS', 'Cisco IOS XE', 'OSPF', 'VRRP', 'LACP', 'VTP', 'EtherChannel', '802.1Q', 'SSH v2', 'DHCP', 'ACL', 'STP'],
     report: '/docs/enterprise-networking-report.docx',
     featured: false,
-    screenshot: '/screenshots/networking.png',
+    screenshot: '/screenshots/networking.webp',
   },
   {
     id: 'pweza-voice-agent',

@@ -1,11 +1,12 @@
 import { RESUME } from './Nav'
 import SeeMyWork from './SeeMyWork'
+import BlurImage from './BlurImage'
 
 const CERTS = [
-  { name: 'Security+', img: '/certs/security-plus.png' },
-  { name: 'PenTest+', img: '/certs/pentest-plus.png' },
+  { name: 'Security+', img: '/certs/security-plus.webp' },
+  { name: 'PenTest+', img: '/certs/pentest-plus.webp' },
   { name: 'CCNA', img: '' },
-  { name: 'PSAA', img: '/certs/tcm-psaa.png' },
+  { name: 'PSAA', img: '/certs/tcm-psaa.webp' },
 ]
 
 export default function Hero() {
@@ -16,8 +17,7 @@ export default function Hero() {
         <div className="grid items-center gap-7 lg:grid-cols-12 lg:gap-6">
           <figure className="hero-rise relative mx-auto w-[56%] max-w-[230px] sm:w-[70%] sm:max-w-[340px] lg:order-2 lg:col-span-4 lg:col-start-5 lg:w-full lg:max-w-[440px]">
             <span aria-hidden className="portrait-glow" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <BlurImage
               src="/profile/joseph-cutout.webp"
               alt="Portrait of Joseph Allan Kamara"
               width={806}

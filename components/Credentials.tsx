@@ -8,10 +8,10 @@ const VERIFY: Record<string, string> = {
 
 // Badge art and the dates already shown in the journey
 const META: Record<string, { img?: string; tile?: { top: string; main: string; bg: string }; when?: string; area: string }> = {
-  'Security+': { img: '/certs/security-plus.png', when: 'Mar 2025', area: 'Threats, risk, cryptography, network security' },
+  'Security+': { img: '/certs/security-plus.webp', when: 'Mar 2025', area: 'Threats, risk, cryptography, network security' },
   CCNA: { tile: { top: 'CISCO', main: 'CCNA', bg: '#0E2A4A' }, area: 'Routing, switching, VLANs, OSPF, SSH hardening' },
-  'Practical SOC Analyst Associate (PSAA)': { img: '/certs/tcm-psaa.png', when: 'Mar 2026', area: 'SOC operations, alert triage, incident response' },
-  'PenTest+': { img: '/certs/pentest-plus.png', when: 'Mar 2026', area: 'Penetration testing and vulnerability assessment' },
+  'Practical SOC Analyst Associate (PSAA)': { img: '/certs/tcm-psaa.webp', when: 'Mar 2026', area: 'SOC operations, alert triage, incident response' },
+  'PenTest+': { img: '/certs/pentest-plus.webp', when: 'Mar 2026', area: 'Penetration testing and vulnerability assessment' },
   'AWS Security Specialty': { tile: { top: 'AWS', main: 'SCS', bg: '#1B2433' }, area: 'Studying now: AWS security services and design' },
 }
 
