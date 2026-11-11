@@ -1,9 +1,10 @@
 import { experiences } from '@/data'
 
-const ICON: Record<string, string> = {
-  'BYU-Idaho Online Learning': '👨‍🏫',
-  'BYU-Idaho IT Help Desk': '🖥️',
-  'ELITECOM Engineers Sierra Leone': '🏗️',
+// Small emoji and the skills each role actually used (taken from its own bullets)
+const META: Record<string, { icon: string; tags: string[] }> = {
+  'BYU-Idaho Online Learning': { icon: '👨‍🏫', tags: ['Security assessments', 'DevOps', 'IT management', 'Teaching'] },
+  'BYU-Idaho IT Help Desk': { icon: '🖥️', tags: ['Windows 10', 'Endpoint support', 'Incident escalation', 'Documentation'] },
+  'ELITECOM Engineers Sierra Leone': { icon: '🏗️', tags: ['Next.js', 'Tailwind CSS', 'Security controls', 'Secure deployment'] },
 }
 
 export default function Experience() {
@@ -15,25 +16,30 @@ export default function Experience() {
           Support, teaching, and building: the work that sits behind the projects.
         </p>
 
-        <ol className="mt-10 grid items-start gap-4 lg:grid-cols-2">
-          {experiences.map((e) => (
-            <li key={e.company + e.role} className={`exp-card ${e.current ? 'is-current' : ''}`}>
-              <div className="flex items-start gap-4">
-                <span className="exp-icon"><span className="emoji">{ICON[e.company] ?? '🤝'}</span></span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <p className="text-[18px] font-semibold leading-snug text-snow">{e.role}</p>
-                    {e.current && <span className="exp-now"><span className="status-dot !h-1.5 !w-1.5" /> Current</span>}
-                  </div>
-                  <p className="mt-0.5 text-[14.5px] text-smoke">{e.company}</p>
-                  {e.dates !== 'Current' && <p className="mt-1 text-[13px] font-medium uppercase tracking-[0.14em] text-[#7FA6FF]">{e.dates}</p>}
+        <ol className="exp-list-wrap mt-10 md:mt-14">
+          {experiences.map((e) => {
+            const m = META[e.company] ?? { icon: '🤝', tags: ['Operations', 'Documentation', 'Coordination'] }
+            return (
+              <li key={e.company + e.role} className="exp-row">
+                <p className="exp-date">
+                  {e.current && <span aria-hidden className="status-dot !h-1.5 !w-1.5" />}
+                  {e.dates === 'Current' ? 'Now' : e.dates}
+                </p>
+                <div className="min-w-0">
+                  <h3 className="exp-title">
+                    <span aria-hidden className="emoji mr-2 text-[17px]">{m.icon}</span>
+                    {e.role} <span className="exp-at">· {e.company}</span>
+                  </h3>
+                  <ul className="exp-points mt-3 space-y-2 text-[15.5px] leading-relaxed text-snow/75">
+                    {e.bullets.map((b) => <li key={b}>{b}</li>)}
+                  </ul>
+                  <ul className="mt-4 flex flex-wrap gap-2" aria-label="Skills used">
+                    {m.tags.map((t) => <li key={t} className="exp-tag">{t}</li>)}
+                  </ul>
                 </div>
-              </div>
-              <ul className="exp-list mt-5 space-y-2.5 text-[15px] leading-relaxed text-snow/80">
-                {e.bullets.map((b) => <li key={b}>{b}</li>)}
-              </ul>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ol>
       </div>
     </section>

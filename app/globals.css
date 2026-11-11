@@ -385,7 +385,7 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 /* Skip layout/paint for below-the-fold sections until they near the viewport */
 .lazy-section { content-visibility: auto; contain-intrinsic-size: auto 1300px; }
 #credentials.lazy-section { contain-intrinsic-size: auto 900px; }
-#experience.lazy-section { contain-intrinsic-size: auto 1150px; }
+#experience.lazy-section { contain-intrinsic-size: auto 1300px; }
 @media (max-width: 1023px) { .lazy-section { contain-intrinsic-size: auto 1400px; } #credentials.lazy-section { contain-intrinsic-size: auto 680px; } #experience.lazy-section { contain-intrinsic-size: auto 1350px; } }
 @media (max-width: 639px) { .lazy-section { contain-intrinsic-size: auto 2200px; } #credentials.lazy-section { contain-intrinsic-size: auto 870px; } #experience.lazy-section { contain-intrinsic-size: auto 1770px; } }
 
@@ -523,16 +523,7 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .cred-status.is-earned { color: #4BE3C8; background: rgba(75,227,200,.08); border-color: rgba(75,227,200,.3); }
 .cred-verify { font-size: 13.5px; font-weight: 600; color: #6FD6FF; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(111,214,255,.3); background: rgba(76,201,255,.06); transition: color .2s, background .2s, border-color .2s; }
 .cred-verify:hover { color: #fff; border-color: #6FD6FF; background: rgba(76,201,255,.15); }
-/* Experience: role cards */
-.exp-card { position: relative; padding: 22px; border-radius: 18px; background: rgba(11,17,29,.7); border: 1px solid rgba(150,170,210,.14); transition: border-color .25s, box-shadow .25s; }
-.exp-card.is-current { border-left: 2px solid #4BE3C8; }
-.exp-card:hover { border-color: rgba(111,214,255,.35); box-shadow: 0 18px 40px -22px rgba(76,201,255,.4); }
-.exp-card.is-current:hover { border-left-color: #4BE3C8; }
-.exp-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; font-size: 22px; background: radial-gradient(circle at 50% 35%, rgba(76,201,255,.16), rgba(8,14,28,.9)); border: 1px solid rgba(120,200,255,.22); }
-.exp-now { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #4BE3C8; }
-.exp-list li { position: relative; padding-left: 18px; }
-.exp-list li::before { content: ''; position: absolute; left: 0; top: .68em; width: 7px; height: 7px; border-radius: 2px; transform: rotate(45deg); background: #6FD6FF; box-shadow: 0 0 8px rgba(76,201,255,.6); }
-@media (max-width: 639px) { .cred-card, .exp-card { padding: 18px; } .exp-list { font-size: 14.5px; } }
+@media (max-width: 639px) { .cred-card { padding: 18px; } }
 /* Skills on phones and tablets: every category visible as a chip grid */
 .sk-cat-icon .emoji { font-size: 19px; }
 @media (max-width: 1023px) {
@@ -557,3 +548,24 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 .jt-beam .jt-lantern { left: 1px; z-index: 5; }
 .jt-row { z-index: 1; }
 @media (max-width: 639px) { .jt-lantern-svg { width: 28px; height: 46px; transform-origin: 14px 0; } .jt-lantern::before { top: 26px; } }
+
+/* Experience: open resume-style list (no boxes). Hover lifts one row and dims the rest. */
+.exp-row { position: relative; display: grid; grid-template-columns: 150px 1fr; gap: 8px 32px; padding: 26px 24px; margin-inline: -24px; border-radius: 16px; transition: background .3s, opacity .3s, box-shadow .3s; }
+.exp-row::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: rgba(150,170,210,.1); }
+.exp-row:last-child::before { display: none; }
+.exp-date { align-self: start; display: flex; align-items: center; gap: 8px; padding-top: 6px; font-size: 12.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #8D97AA; white-space: nowrap; }
+.exp-title { font-size: 19px; font-weight: 600; line-height: 1.35; color: #EEF2F8; transition: color .25s; }
+.exp-at { color: #6FD6FF; font-weight: 500; }
+.exp-points li { position: relative; padding-left: 16px; }
+.exp-points li::before { content: ''; position: absolute; left: 0; top: .72em; width: 6px; height: 6px; border-radius: 50%; background: #4CC9FF; opacity: .7; }
+.exp-tag { font-size: 12.5px; font-weight: 500; padding: 4px 11px; border-radius: 999px; color: #8AD4FF; background: rgba(76,201,255,.08); border: 1px solid rgba(111,214,255,.2); }
+@media (hover: hover) and (min-width: 768px) {
+  .exp-list-wrap:hover .exp-row { opacity: .5; }
+  .exp-list-wrap:hover .exp-row:hover { opacity: 1; background: rgba(18,26,42,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 18px 40px -26px rgba(76,201,255,.45); }
+  .exp-row:hover .exp-title { color: #fff; }
+}
+@media (max-width: 767px) {
+  .exp-row { grid-template-columns: 1fr; padding: 22px 0; margin-inline: 0; gap: 6px; }
+  .exp-title { font-size: 17.5px; }
+  .exp-points { font-size: 15px; }
+}

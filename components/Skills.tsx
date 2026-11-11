@@ -4,10 +4,6 @@ import Link from 'next/link'
 import { SKILL_CATEGORIES, PROJECT_NAMES, type Skill } from '@/data/skills'
 import { useRole } from './roles'
 
-const ALL = SKILL_CATEGORIES.flatMap((c) => c.skills)
-const TOTAL = ALL.length
-const IN_PROJECTS = ALL.filter((s) => s.projects?.length).length
-const CERT_COUNT = new Set(ALL.flatMap((s) => s.certs ?? [])).size
 const ROLE_CATEGORY: Record<string, string> = { recruiter: 'secops', soc: 'secops', engineer: 'cloud' }
 
 const ICONS: Record<string, string> = {
@@ -41,7 +37,6 @@ export default function Skills() {
     tabs.current[j]?.focus()
   }
   const cat = SKILL_CATEGORIES.find((c) => c.id === active)!
-  const built = cat.skills.filter((s) => s.projects?.length).length
 
   return (
     <section id="skills" className="lazy-section border-t border-line">
@@ -53,11 +48,6 @@ export default function Skills() {
         <p className="mt-5 max-w-[60ch] text-[17px] leading-relaxed text-smoke">
           Every skill links to where I used it or the certification that covers it.
         </p>
-        <dl className="sk-stats mt-8">
-          <div><dt>Skills</dt><dd>{TOTAL}</dd></div>
-          <div><dt>Used in real projects</dt><dd>{IN_PROJECTS}</dd></div>
-          <div><dt>Certifications behind them</dt><dd>{CERT_COUNT}</dd></div>
-        </dl>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-12 lg:gap-10">
           {/* Categories */}
@@ -76,7 +66,7 @@ export default function Skills() {
                 <span className="sk-cat-icon"><Icon name={c.icon} className="h-[18px] w-[18px]" /></span>
                 <span className="text-left">
                   <span className="sk-cat-title block whitespace-nowrap text-[15px] font-semibold">{c.title}</span>
-                  <span className="sk-cat-count block text-[12px] text-smoke">{c.skills.length} skills</span>
+                  
                 </span>
               </button>
             ))}
@@ -93,9 +83,6 @@ export default function Skills() {
                     <p className="mt-1.5 text-[15px] text-smoke">{cat.summary}</p>
                   </div>
                 </div>
-                <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#6FD6FF]">
-                  {built} of {cat.skills.length} used in projects
-                </p>
               </div>
 
               <ul className="mt-6 grid gap-4 sm:grid-cols-2">
