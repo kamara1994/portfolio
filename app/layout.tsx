@@ -1,52 +1,68 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+import '@fontsource/barlow/400.css'
+import '@fontsource/barlow/500.css'
+import '@fontsource/barlow/600.css'
+import '@fontsource/barlow-condensed/600.css'
+import '@fontsource/barlow-condensed/700.css'
 import './globals.css'
-import CustomCursor from '@/components/CustomCursor'
 import VisitTracker from '@/components/VisitTracker'
+import LiveIcons from '@/components/LiveIcons'
+import AIChat from '@/components/AIChat'
+import MobileDock from '@/components/MobileDock'
+import CursorLight from '@/components/CursorLight'
+
+const SITE = 'https://josephkamara.vercel.app'
+const DESCRIPTION =
+  'Cybersecurity engineer building SOC automation, AWS cloud security labs, and AI security tools. Security+, PenTest+, CCNA, PSAA. B.S. Cybersecurity, BYU-Idaho, December 2026.'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: 'Joseph Allan Kamara | Cybersecurity Engineer',
-  description: 'Cybersecurity Engineer specializing in SOC automation, AI-assisted threat detection, cloud security, and security operations. Builder of BLUE SOC, FORTRESS v2, and BLUE-X.',
-  keywords: [
-    'Cybersecurity Engineer', 'SOC Analyst', 'Security Engineer',
-    'AI Security', 'Cloud Security', 'Splunk', 'AWS', 'Terraform',
-    'BLUE SOC', 'Joseph Allan Kamara', 'Philadelphia', 'Security+', 'CCNA', 'PenTest+',
-  ],
-  authors: [{ name: 'Joseph Allan Kamara', url: 'https://josephkamara.vercel.app' }],
-  creator: 'Joseph Allan Kamara',
+  description: DESCRIPTION,
+  authors: [{ name: 'Joseph Allan Kamara', url: SITE }],
   openGraph: {
     type: 'website',
-    url: 'https://josephkamara.vercel.app',
+    url: SITE,
     title: 'Joseph Allan Kamara | Cybersecurity Engineer',
-    description: 'SOC automation, AI-assisted threat detection, cloud security, and incident response. Security+ · PenTest+ · CCNA · PSAA certified. B.S. Cybersecurity expected December 2026; available now.',
-    siteName: 'Joseph Allan Kamara Portfolio',
-    images: [{
-      url: 'https://josephkamara.vercel.app/profile/joseph.jpg',
-      width: 800, height: 800,
-      alt: 'Joseph Allan Kamara — Cybersecurity Engineer',
-    }],
+    description: DESCRIPTION,
+    siteName: 'Joseph Allan Kamara',
+    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'Joseph Allan Kamara, cybersecurity. Securing systems. Automating defense.' }],
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Joseph Allan Kamara | Cybersecurity Engineer',
-    description: 'SOC automation, AI-assisted threat detection, and cloud security. B.S. Cybersecurity expected December 2026; available now.',
-    images: ['https://josephkamara.vercel.app/profile/joseph.jpg'],
-  },
+  twitter: { card: 'summary_large_image', title: 'Joseph Allan Kamara | Cybersecurity Engineer', description: DESCRIPTION, images: ['/og.jpg'] },
+  alternates: { canonical: '/' },
   robots: { index: true, follow: true },
-  metadataBase: new URL('https://josephkamara.vercel.app'),
 }
+
+const PERSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Joseph Allan Kamara',
+  url: SITE,
+  image: `${SITE}/profile/joseph-portrait.jpg`,
+  jobTitle: 'Cybersecurity student and engineer',
+  email: 'mailto:kamarajosephallan@gmail.com',
+  address: { '@type': 'PostalAddress', addressLocality: 'Philadelphia', addressRegion: 'PA', addressCountry: 'US' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'Brigham Young University-Idaho' },
+  knowsAbout: ['Security operations', 'SIEM', 'AWS cloud security', 'Terraform', 'Network security', 'Python', 'AI security'],
+  hasCredential: ['CompTIA Security+', 'CompTIA PenTest+', 'Cisco CCNA', 'TCM Security Practical SOC Analyst Associate'].map((name) => ({
+    '@type': 'EducationalOccupationalCredential', name,
+  })),
+  sameAs: ['https://github.com/kamara1994', 'https://linkedin.com/in/joseph-allan-kamara'],
+}
+
+export const viewport: Viewport = { themeColor: '#05080F' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-      </head>
-      <body className="bg-[#020818] text-[#e2eaff] antialiased">
-        <CustomCursor />
+    <html lang="en">
+      <body className="bg-ink font-sans text-snow">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PERSON_LD) }} />
         <VisitTracker />
+        <LiveIcons />
         {children}
+        <AIChat />
+        <MobileDock />
+        <CursorLight />
       </body>
     </html>
   )

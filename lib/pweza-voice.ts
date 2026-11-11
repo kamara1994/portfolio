@@ -10,13 +10,13 @@
 
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts'
 
-export function resolveVoice(): string {
+function resolveVoice(): string {
   return process.env.PWEZA_TTS_VOICE || 'en-US-ChristopherNeural'
 }
 
 // Prosody tunables — overridable from the environment so the voice character
 // can be adjusted without a code deploy.
-export function resolveProsody() {
+function resolveProsody() {
   return {
     pitch: process.env.PWEZA_TTS_PITCH || '-28Hz',
     rate: process.env.PWEZA_TTS_RATE || '-7%',

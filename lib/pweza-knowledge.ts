@@ -1,262 +1,213 @@
-import { certs, experiences, skillGroups } from '@/data'
+/**
+ * PWEZA knowledge: ONLY facts that are shown and verified on the site.
+ * - Projects: those with a `placement` (hidden projects are never mentioned)
+ * - Skills: data/skills.ts (UNCONFIRMED skills are excluded)
+ * - Credentials and experience: data/index.ts, minus figures awaiting confirmation
+ * Every local reply carries proof links so visitors can check the claim.
+ */
+import { certs, experiences } from '@/data'
 import { projects } from '@/data/projects'
+import { SKILL_CATEGORIES, PROJECT_NAMES } from '@/data/skills'
 
-const featuredProjects = projects.filter((project) => project.featured)
+export type ProofLink = { label: string; href: string }
+export type PwezaReply = { text: string; links?: ProofLink[] }
+type Msg = { role: string; content: string }
+
+const EMAIL = 'kamarajosephallan@gmail.com'
+const shown = projects.filter((p) => p.placement)
+const byId = (id: string) => shown.find((p) => p.id === id)
+
+/** Figures still awaiting Joseph's confirmation; kept out of the assistant entirely. */
+const UNCONFIRMED_FIGURES = /10,000\+|95%\+/
+const verifiedBullets = (bullets: string[]) => bullets.filter((b) => !UNCONFIRMED_FIGURES.test(b))
+
+const projectLink = (id: string): ProofLink => ({ label: PROJECT_NAMES[id] ?? id, href: `/projects/${id}` })
+const LINKS = {
+  email: { label: 'Email Joseph', href: `mailto:${EMAIL}` },
+  resume: { label: 'Résumé (PDF)', href: '/resume/Joseph_Allan_Kamara_Resume_v3.pdf' },
+  credentials: { label: 'Credentials', href: '/#credentials' },
+  skills: { label: 'Skills with proof', href: '/#skills' },
+  story: { label: 'His story', href: '/#story' },
+  work: { label: 'All work', href: '/#work' },
+}
 
 export const PWEZA_KNOWLEDGE_CONTEXT = `
 JOSEPH SNAPSHOT
-- Name: Joseph Allan Kamara.
-- Positioning: cybersecurity engineer, security automation builder, AI security builder, and cloud security practitioner.
-- Location: Philadelphia, PA; from Sierra Leone.
-- Education: B.S. Cybersecurity at BYU-Idaho, expected graduation December 2026.
-- Availability: available now for SOC Analyst, Security Engineer, Cloud Security Engineer, AI Security Engineer, and related roles.
-- Contact: kamarajosephallan@gmail.com.
-- GitHub: https://github.com/kamara1994.
-- LinkedIn: https://linkedin.com/in/joseph-allan-kamara.
+- Joseph Allan Kamara. Cybersecurity student and builder: SOC automation, AWS cloud security, AI security tools.
+- Based in Philadelphia, PA; grew up in Freetown, Sierra Leone.
+- B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Available now for full-time roles.
+- Target roles: SOC Analyst, Security Engineer, Cloud Security, IT / Systems.
+- Contact: ${EMAIL}. GitHub: github.com/kamara1994. LinkedIn: linkedin.com/in/joseph-allan-kamara.
 
-CERTIFICATIONS
-${certs.map((cert) => `- ${cert.name} (${cert.issuer}) - ${cert.status}${cert.date ? `, ${cert.date}` : ''}`).join('\n')}
+CREDENTIALS
+${certs.map((c) => `- ${c.name} (${c.issuer}): ${c.status === 'earned' ? 'earned' : 'in progress, not yet earned'}`).join('\n')}
 
-CURRENT EXPERIENCE
-${experiences.map((experience) => `- ${experience.role}, ${experience.company}, ${experience.dates}: ${experience.bullets.join(' ')}`).join('\n')}
+EXPERIENCE
+${experiences.map((e) => `- ${e.role}, ${e.company} (${e.dates}). ${verifiedBullets(e.bullets).join(' ')}`).join('\n')}
 
-FEATURED PROJECTS
-${featuredProjects.map((project) => `- ${project.title}: ${project.subtitle}. Impact: ${project.impact} Stack: ${project.stack.slice(0, 8).join(', ')}.`).join('\n')}
+PROJECTS (the only projects that exist for you to discuss)
+${shown.map((p) => `- ${p.title} [/projects/${p.id}] ${p.subtitle}. ${p.description} Result: ${p.outcome || p.impact} Status: ${p.status ?? 'case study'}. Stack: ${p.stack.join(', ')}.`).join('\n')}
 
-ALL PROJECTS
-${projects.map((project) => `- ${project.title} [${project.category}, ${project.status || 'case-study'}]: ${project.description} Outcome: ${project.outcome || project.impact}`).join('\n')}
-
-SKILL GROUPS
-${skillGroups.map((group) => `- ${group.title}: ${group.skills.join(', ')}`).join('\n')}
-
-SITE ROUTES PWEZA CAN MENTION
-- /projects/blue-soc-p8 for BLUE SOC details.
-- /projects/fortress-v2 for the AWS cloud security lab.
-- /projects/blue-x for the AI threat classification platform.
-- /incident-replay for the Incident Replay Lab.
-- /blue-soc-brief for the BLUE SOC briefing page.
-- /threat-intel for threat intelligence content.
+SKILLS (each with its evidence)
+${SKILL_CATEGORIES.map((c) => `- ${c.title}: ${c.skills.map((s) => `${s.name} (${[...(s.projects ?? []).map((id) => PROJECT_NAMES[id] ?? id), ...(s.certs ?? [])].join(', ')})`).join('; ')}`).join('\n')}
 `.trim()
 
-function latestUserMessage(messages: { role: string; content: string }[]) {
-  return [...messages].reverse().find((message) => message.role === 'user')?.content || ''
+function latest(messages: Msg[]) {
+  return [...messages].reverse().find((m) => m.role === 'user')?.content || ''
+}
+const has = (t: string, words: string[]) => words.some((w) => t.includes(w))
+const lc = (x: string) => x.charAt(0).toLowerCase() + x.slice(1)
+/** Old projects that are not documented on the site (no working repo or evidence yet). */
+const UNDOCUMENTED = ['ids', 'intrusion detection', 'cve', 'vulnerability scanner', 'threat intel', 'blue v3', 'blue-v3', 'toolkit', 'visitor intelligence']
+const isThanks = (t: string) => /\b(thank|thanks|thank you|thank u|appreciate it)\b/.test(t)
+const isGreeting = (t: string) => /^(hello|hi|hey|yo|good (morning|afternoon|evening)|what'?s up|whats up)[!. ]*$/.test(t)
+const isAck = (t: string) => /^(okay|ok|alright|got it|i see|understood|cool|nice|great|perfect|sounds good|makes sense)[.! ]*$/.test(t)
+
+const TOPICS: { keys: string[]; reply: () => PwezaReply }[] = [
+  {
+    keys: [' fit', 'fit ', 'qualified', 'good for', 'suitable', 'right for', 'good match'],
+    reply: () => ({ text: '', links: [] }), // resolved in fitReply()
+  },
+  {
+    keys: ['cert', 'security+', 'ccna', 'pentest', 'psaa', 'credential'],
+    reply: () => {
+      const earned = certs.filter((c) => c.status === 'earned').map((c) => c.name.replace(/ —.*$/, ''))
+      const pending = certs.filter((c) => c.status !== 'earned').map((c) => c.name)
+      return {
+        text: `He holds ${earned.join(', ')}.${pending.length ? ` ${pending.join(', ')} is in progress, not earned yet.` : ''} Each earned cert links to the issuer's verification page.`,
+        links: [LINKS.credentials],
+      }
+    },
+  },
+  {
+    keys: ['hire', 'available', 'job', 'interview', 'contact', 'email', 'reach', 'recruit'],
+    reply: () => ({
+      text: `He's available now for full-time SOC Analyst, Security Engineer, Cloud Security, and IT roles, and graduates in December 2026. The fastest way to reach him is ${EMAIL}.`,
+      links: [LINKS.email, LINKS.resume],
+    }),
+  },
+  {
+    keys: ['fortress', 'aws', 'cloud', 'terraform', 'cloudwatch', 'sns'],
+    reply: () => {
+      const p = byId('fortress-v2')!
+      return {
+        text: `FORTRESS v2 is a verified AWS security monitoring lab. He ${lc(p.impact)} He's upfront that the broader GuardDuty, WAF and Lambda design isn't deployed yet.`,
+        links: [projectLink('fortress-v2'), LINKS.skills],
+      }
+    },
+  },
+  {
+    keys: ['blue-x', 'blue x', 'pytorch', 'machine learning', 'classifier', 'classification'],
+    reply: () => ({
+      text: `BLUE-X is his AI threat classifier. ${byId('blue-x')!.impact}`,
+      links: [projectLink('blue-x')],
+    }),
+  },
+  {
+    keys: ['blue soc', 'soc', 'splunk', 'n8n', 'triage', 'siem'],
+    reply: () => ({
+      text: `BLUE SOC is his AI-assisted SOC pipeline. ${byId('blue-soc-p8')!.impact} It was validated in a controlled lab, with a human approving containment.`,
+      links: [projectLink('blue-soc-p8'), LINKS.skills],
+    }),
+  },
+  {
+    keys: ['pweza', 'who are you', 'what are you', 'voice agent'],
+    reply: () => ({
+      text: "I'm PWEZA, Joseph's portfolio assistant. I only answer from what's verified on this site, and I'll link you to the proof.",
+      links: byId('pweza-voice-agent') ? [projectLink('pweza-voice-agent')] : undefined,
+    }),
+  },
+  {
+    keys: ['skill', 'stack', 'tools', 'technology', 'tech'],
+    reply: () => {
+      const all = SKILL_CATEGORIES.flatMap((c) => c.skills)
+      const built = all.filter((s) => s.projects?.length).length
+      return {
+        text: `${all.length} skills are listed, and ${built} of them were used in real projects: Splunk and SOC triage in BLUE SOC, Terraform and CloudWatch in FORTRESS, PyTorch and Zeek in BLUE-X. Every skill links to its proof.`,
+        links: [LINKS.skills],
+      }
+    },
+  },
+  {
+    keys: ['experience', 'work history', 'background', 'job history'],
+    reply: () => ({
+      text: `${experiences.slice(0, 3).map((e) => `${e.role} at ${e.company}`).join('; ')}.`,
+      links: [{ label: 'Experience', href: '/#experience' }],
+    }),
+  },
+  {
+    keys: ['project', 'built', 'portfolio', 'showcase', 'work'],
+    reply: () => ({
+      text: `His main projects are ${shown.filter((p) => p.placement === 'flagship').map((p) => p.title).join(', ')}. Want the SOC, cloud, or AI one first?`,
+      links: shown.filter((p) => p.placement === 'flagship').map((p) => projectLink(p.id)),
+    }),
+  },
+  {
+    keys: ['graduat', 'degree', 'education', 'byu', 'university', 'school'],
+    reply: () => ({ text: "He's finishing a B.S. in Cybersecurity at BYU-Idaho and graduates in December 2026.", links: [LINKS.story] }),
+  },
+  {
+    keys: ['resume', 'cv', 'download'],
+    reply: () => ({ text: 'Here is his résumé. If you are hiring, email him and mention the role.', links: [LINKS.resume, LINKS.email] }),
+  },
+  {
+    keys: ['sierra leone', 'freetown', 'story', 'about him', 'why security'],
+    reply: () => ({
+      text: 'He grew up in Freetown, Sierra Leone, and saw how much daily life depends on infrastructure that works. That is why he cares about keeping real systems running.',
+      links: [LINKS.story],
+    }),
+  },
+]
+
+function fitReply(t: string): PwezaReply {
+  if (has(t, ['cloud', 'aws'])) return {
+    text: 'For cloud security, the evidence is FORTRESS v2: a Terraform-deployed AWS lab where he verified log ingestion, a CloudWatch alarm, and SNS alerting end to end. His AWS Security Specialty is in progress, not earned yet.',
+    links: [projectLink('fortress-v2'), LINKS.credentials],
+  }
+  if (has(t, ['soc', 'analyst', 'blue team', 'detection'])) return {
+    text: 'For SOC work, he built BLUE SOC, an AI-assisted triage pipeline with Splunk and n8n where a human approves containment, and he holds TCM PSAA and Security+.',
+    links: [projectLink('blue-soc-p8'), LINKS.credentials],
+  }
+  if (has(t, ['network', 'it ', 'help desk', 'system'])) return {
+    text: 'For IT and networking, he holds the CCNA, built a Cisco branch network with OSPF, VRRP and VLANs, and works as a teaching assistant at BYU-Idaho.',
+    links: [projectLink('enterprise-networking'), { label: 'Experience', href: '/#experience' }],
+  }
+  return {
+    text: 'He fits entry-level SOC, security engineering, cloud security, and IT roles. Tell me which role, and I will show you the matching evidence.',
+    links: [LINKS.work, LINKS.skills],
+  }
 }
 
-function includesAny(text: string, words: string[]) {
-  return words.some((word) => text.includes(word))
+/** True when a scripted, fully verified answer exists for the latest message. */
+export function shouldUseLocalPwezaReply(messages: Msg[]) {
+  const t = latest(messages).toLowerCase().trim()
+  return !t || isThanks(t) || isGreeting(t) || isAck(t) || has(` ${t} `, UNDOCUMENTED) || TOPICS.some((x) => has(` ${t} `, x.keys))
 }
 
-function projectLine(projectId: string) {
-  const project = projects.find((item) => item.id === projectId)
-  if (!project) return ''
-  return `${project.title} is ${project.subtitle}: ${project.impact}`
+export function generateLocalPwezaReply(messages: Msg[]): PwezaReply {
+  const t = latest(messages).toLowerCase().trim()
+  if (!t) return { text: 'Ask me about his projects, skills, certifications, or role fit.' }
+  if (isThanks(t)) return { text: "You're welcome. Anything else?" }
+  if (isGreeting(t)) return { text: "Hey, I'm PWEZA. Ask me anything about Joseph's work, and I'll show you the proof." }
+  if (isAck(t)) return { text: 'What would you like to look at next?' }
+  if (has(` ${t} `, UNDOCUMENTED.map((k) => (k.length <= 3 ? ` ${k} ` : k)))) return {
+    text: `That project isn't documented on this site, so I can't speak to it. The documented ones are ${shown.filter((p) => p.placement === 'flagship').map((p) => p.title).join(', ')}.`,
+    links: [LINKS.work, LINKS.email],
+  }
+  if (has(` ${t} `, TOPICS[0].keys)) return fitReply(t)
+  for (const topic of TOPICS.slice(1)) if (has(t, topic.keys)) return topic.reply()
+  return { text: `I don't have a verified answer for that. Joseph can tell you directly at ${EMAIL}.`, links: [LINKS.email] }
 }
 
-function previousAssistantMessage(messages: { role: string; content: string }[]) {
-  return [...messages].reverse().find((message) => message.role === 'assistant')?.content || ''
-}
-
-function isShortAcknowledgement(text: string) {
-  return /^(okay|ok|alright|got it|i see|understood|cool|nice|great|perfect|sounds good|makes sense)[.! ]*$/.test(text)
-}
-
-function isThanks(text: string) {
-  return /\b(thank|thanks|thank you|thank u|appreciate it)\b/.test(text)
-}
-
-function isWellbeingAnswer(text: string) {
-  return /^(i'?m|im|i am)?\s*(doing|feeling)?\s*(good|well|fine|great|okay|ok|alright|not bad)( thanks| thank you)?[.! ]*$/.test(text)
-}
-
-function isCasualGreeting(text: string) {
-  return /^(hello|hi|hey|yo|good morning|good afternoon|good evening|what'?s up|whats up)[!. ]*$/.test(text)
-}
-
-function soundsLikeUnclearVoiceTranscript(text: string) {
-  const words = text.replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(Boolean)
-  const repeatedPhrase = /\b(for my|for me|do you|i mean)\s+\1\b/.test(text)
-  const repeatedWord = words.some((word, index) => index > 0 && word.length > 2 && word === words[index - 1])
-  return repeatedPhrase || repeatedWord || (text.includes('fit') && text.includes('girl'))
-}
-
-export function shouldUseLocalPwezaReply(messages: { role: string; content: string }[]) {
-  const text = latestUserMessage(messages).toLowerCase()
-  if (isThanks(text) || isWellbeingAnswer(text) || isCasualGreeting(text) || soundsLikeUnclearVoiceTranscript(text)) return true
-  return includesAny(text, [
-    'thank',
-    'thanks',
-    'how are you',
-    'who are you',
-    'what are you',
-    'tell me more',
-    'what else',
-    'go on',
-    'hire',
-    'available',
-    'recruit',
-    'job',
-    'role',
-    'interview',
-    'contact',
-    'email',
-    'blue soc',
-    'soc',
-    'splunk',
-    'n8n',
-    'telegram',
-    'pweza',
-    'voice agent',
-    'portfolio assistant',
-    'visitor intelligence',
-    'fortress',
-    'aws',
-    'cloud',
-    'terraform',
-    'guardduty',
-    'lambda',
-    'blue-x',
-    'blue x',
-    'machine learning',
-    'pytorch',
-    'ai threat',
-    'classification',
-    'project',
-    'built',
-    'portfolio',
-    'showcase',
-    'skill',
-    'stack',
-    'tools',
-    'technology',
-    'tech',
-    'cert',
-    'certification',
-    'security+',
-    'ccna',
-    'pentest',
-    'psaa',
-    'experience',
-    'work history',
-    'background',
-    'graduate',
-    'graduation',
-    'degree',
-    'education',
-    'byu',
-    'university',
-    'resume',
-    'download',
-    'cv',
-  ]) || isShortAcknowledgement(text.trim())
-}
-
-export function generateLocalPwezaReply(messages: { role: string; content: string }[]) {
-  const raw = latestUserMessage(messages)
-  const text = raw.toLowerCase()
-
-  if (!raw.trim()) {
-    return 'Ask me about Joseph\'s projects, skills, certifications, or hiring fit, and I\'ll give you the useful version fast.'
+/** Proof links for an AI-written reply, based on what it mentions. */
+export function linksForText(text: string): ProofLink[] {
+  const t = text.toLowerCase()
+  const out: ProofLink[] = []
+  for (const p of shown) {
+    const name = (PROJECT_NAMES[p.id] ?? p.title).toLowerCase()
+    if (t.includes(name.split(' ')[0].toLowerCase()) && name.length > 3) out.push(projectLink(p.id))
   }
-
-  if (isThanks(text)) {
-    return 'You\'re welcome.'
-  }
-
-  if (isShortAcknowledgement(text.trim())) {
-    return 'Got you. What\'s on your mind?'
-  }
-
-  if (includesAny(text, ['how are you', 'how\'s it going', 'how is it going'])) {
-    return 'I\'m doing well, thanks for asking. How are you?'
-  }
-
-  if (isWellbeingAnswer(text.trim())) {
-    return 'Glad to hear it. What\'s on your mind?'
-  }
-
-  if (soundsLikeUnclearVoiceTranscript(text)) {
-    if (text.includes('girl')) {
-      return 'I may have caught that wrong. Did you mean whether Joseph would be a good fit for someone personally, or whether he\'d fit a job or project?'
-    }
-    return 'I may have caught that wrong. Could you say it one more time?'
-  }
-
-  if (includesAny(text, ['who are you', 'what are you'])) {
-    return 'I\'m PWEZA, Joseph\'s AI portfolio assistant. I can talk with you naturally and help you explore his work, experience, and career fit.'
-  }
-
-  if (includesAny(text, ['tell me more', 'what else', 'go on'])) {
-    const previous = previousAssistantMessage(messages).toLowerCase()
-    if (previous.includes('blue soc')) {
-      return 'BLUE SOC connects Splunk detections to n8n automation, AI-assisted triage, analyst review, and alert delivery. The useful part is the full workflow: it shows how Joseph thinks about reducing repetitive SOC work while keeping a human in control.'
-    }
-    if (previous.includes('fortress')) {
-      return 'FORTRESS v2 goes deeper into AWS defense: Terraform builds the environment, GuardDuty and CloudTrail provide visibility, and Lambda workflows automate response. It shows Joseph can connect cloud architecture, detection, and action instead of treating them as separate pieces.'
-    }
-    if (previous.includes('blue-x') || previous.includes('blue x')) {
-      return 'BLUE-X is Joseph\'s AI-security project. It takes network data through a trained PyTorch model, serves predictions through Flask, and connects the result to AWS and automated alerts, reaching 99.98% accuracy in its controlled dataset.'
-    }
-    return 'Absolutely. Which part should I go deeper on: Joseph\'s projects, skills, certifications, experience, or the kind of role he fits best?'
-  }
-
-  if (isCasualGreeting(text.trim())) {
-    return 'Hey, I\'m PWEZA. How\'s it going?'
-  }
-
-  if (includesAny(text, ['cloud security', 'cloud role', 'cloud engineer', 'aws role'])) {
-    return 'Joseph is ready for cloud security roles now, especially where AWS, Terraform, detection, and response automation matter. FORTRESS v2 is the proof point: GuardDuty, CloudTrail, WAF, Lambda response workflows, Security Hub, and 20+ AWS resources deployed as code.'
-  }
-
-  if (includesAny(text, ['pweza', 'voice agent', 'portfolio assistant', 'visitor intelligence'])) {
-    if (includesAny(text, ['visitor', 'location', 'tracking', 'telegram alert'])) {
-      return `${projectLine('pweza-visitor-intelligence')} It uses server-derived, approximate network location and organization context rather than device GPS, then sends a structured Telegram alert with duplicate suppression and graceful fallbacks.`
-    }
-    return `${projectLine('pweza-voice-agent')} It combines persistent voice conversations, portfolio-grounded local replies, Groq and Gemini routing, Claude fallback, neural speech, and interruption-safe microphone control.`
-  }
-
-  if (includesAny(text, ['recruit', 'hiring manager', 'should know'])) {
-    return 'Recruiters should know Joseph backs his skills with documented systems: BLUE SOC demonstrates SOC automation, FORTRESS v2 demonstrates AWS cloud defense, and BLUE-X demonstrates AI threat classification at 99.98% accuracy in a controlled dataset. He graduates in December 2026, is available now, and the fastest contact is kamarajosephallan@gmail.com.'
-  }
-
-  if (includesAny(text, ['graduate', 'graduation', 'degree', 'education', 'byu', 'university'])) {
-    return 'Joseph is completing a B.S. in Cybersecurity at BYU-Idaho and expects to graduate in December 2026. He is available now for SOC Analyst, Security Engineer, Cloud Security, and AI Security opportunities.'
-  }
-
-  if (includesAny(text, ['hire', 'available', 'job', 'role', 'interview', 'contact', 'email'])) {
-    return 'Joseph is available now for SOC Analyst, Security Engineer, Cloud Security Engineer, and AI Security Engineer roles. The fastest way to reach him is kamarajosephallan@gmail.com.'
-  }
-
-  if (includesAny(text, ['blue soc', 'soc', 'splunk', 'n8n', 'telegram'])) {
-    return `${projectLine('blue-soc-p8')} It shows Joseph can connect SIEM alerts, AI triage, analyst review, and notification workflows into one practical SOC automation pipeline.`
-  }
-
-  if (includesAny(text, ['fortress', 'aws', 'cloud', 'terraform', 'guardduty', 'lambda'])) {
-    return `${projectLine('fortress-v2')} It is one of his clearest cloud security signals because the work is infrastructure-as-code, detection, and response in the same lab.`
-  }
-
-  if (includesAny(text, ['blue-x', 'blue x', 'machine learning', 'pytorch', 'ai threat', 'classification'])) {
-    return `${projectLine('blue-x')} That project is the best proof of his AI-security direction because it connects packet data, AWS services, a Flask inference API, and automated alerting.`
-  }
-
-  if (includesAny(text, ['project', 'built', 'portfolio', 'showcase'])) {
-    return `Joseph's portfolio contains ${projects.length} documented projects across security operations, cloud defense, AI agents, networking, penetration testing, and production web platforms. BLUE SOC P8, FORTRESS v2, BLUE-X, and PWEZA are the flagship systems, with the full project gallery available on this site.`
-  }
-
-  if (includesAny(text, ['skill', 'stack', 'tools', 'technology', 'tech'])) {
-    return 'His strongest stack is Splunk, Security Onion, AWS GuardDuty, Terraform, Lambda, Python, n8n, Claude/Gemini workflows, Zeek, Suricata, and Cisco networking. He is strongest where security operations, cloud security, automation, and AI meet.'
-  }
-
-  if (includesAny(text, ['cert', 'certification', 'security+', 'ccna', 'pentest', 'psaa'])) {
-    return 'Joseph has Security+, PenTest+, CCNA, and Practical SOC Analyst Associate, with AWS Security Specialty in progress. That gives him a strong blend of SOC, networking, offensive security, and cloud-security direction.'
-  }
-
-  if (includesAny(text, ['experience', 'work history', 'background'])) {
-    return 'Joseph currently works in IT support at BYU-Idaho supporting a large Windows environment, and he also leads web security development for ELITECOM Engineers in Sierra Leone. That mix gives him real user-support discipline plus builder-level security experience.'
-  }
-
-  if (includesAny(text, ['resume', 'download', 'cv'])) {
-    return 'The resume link is in the contact section as Download Resume. If you are hiring, email Joseph directly at kamarajosephallan@gmail.com and mention the role you have in mind.'
-  }
-
-  return 'I may have missed what you meant. Say it another way and I\'ll follow you.'
+  if (/certif|security\+|ccna|pentest|psaa/.test(t)) out.push(LINKS.credentials)
+  if (/email|contact|reach|hire|available/.test(t)) out.push(LINKS.email)
+  return out.slice(0, 3)
 }

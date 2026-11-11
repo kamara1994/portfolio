@@ -1,150 +1,74 @@
-'use client'
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { RESUME } from './Nav'
+import SocMap from './SocMap'
 
-const quickLinks = [
-  { label: 'Incident Lab', href: '/incident-replay', highlight: true },
-  { label: 'BLUE SOC', href: '/#projects' },
-  { label: 'Projects', href: '/#projects' },
-  { label: 'Skills', href: '/#skills' },
-  { label: 'Certs', href: '/#certs' },
-  { label: 'Contact', href: '/#contact' },
+export const EMAIL = 'kamarajosephallan@gmail.com'
+export const LINKEDIN = 'https://linkedin.com/in/joseph-allan-kamara'
+export const GITHUB = 'https://github.com/kamara1994'
+
+const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent('Opportunity for Joseph Kamara')}`
+
+const LINKS: { label: string; short: string; href: string; ext?: boolean; icon: React.ReactNode }[] = [
+  {
+    label: 'Email me', short: 'Email',
+    href: MAILTO,
+    icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
+  },
+  {
+    label: 'Connect on LinkedIn', short: 'LinkedIn',
+    href: LINKEDIN,
+    ext: true,
+    icon: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 014 0v4M12 10v7" /></>,
+  },
+  {
+    label: 'See my code', short: 'GitHub',
+    href: GITHUB,
+    ext: true,
+    icon: <path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 00-.8-2.3c2.7-.3 5.5-1.3 5.5-6a4.7 4.7 0 00-1.3-3.2 4.3 4.3 0 00-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 00-6 0C6.5 2.5 5.5 2.8 5.5 2.8a4.3 4.3 0 00-.1 3.2A4.7 4.7 0 004 9.2c0 4.6 2.8 5.7 5.5 6a3 3 0 00-.8 2.3V21" />,
+  },
+  {
+    label: 'Get my résumé', short: 'Résumé',
+    href: RESUME,
+    ext: true,
+    icon: <><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>,
+  },
 ]
 
-const socialLinks = [
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/joseph-allan-kamara', color: '#0077b5' },
-  { label: 'GitHub', href: 'https://github.com/kamara1994', color: '#00f5d4' },
-  { label: 'Email', href: 'mailto:kamarajosephallan@gmail.com', color: '#00d4ff' },
-]
-
+/** Compact closing footer: glowing rule, small "Let's connect", contact chips, copyright. */
 export default function Footer() {
-  const [copied, setCopied] = useState(false)
-
-  const shareOnLinkedIn = () => {
-    const text = encodeURIComponent(
-      `Check out this cybersecurity portfolio by Joseph Allan Kamara — Security+ · PenTest+ · CCNA · PSAA certified. Built BLUE SOC, FORTRESS v2, and an interactive Incident Replay Lab. Available for SOC Analyst and Security Engineer roles. josephkamara.vercel.app`
-    )
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://josephkamara.vercel.app')}&summary=${text}`, '_blank')
-  }
-
-  const copyLink = () => {
-    navigator.clipboard.writeText('https://josephkamara.vercel.app')
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
-    <footer className="relative z-10 border-t border-[rgba(0,212,255,0.1)] px-6 pt-12 pb-6"
-      style={{ background: 'rgba(2,8,24,0.8)' }}>
-      <div className="max-w-7xl mx-auto">
-
-        {/* Top row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
-
-          {/* Brand */}
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 border border-[rgba(0,212,255,0.4)] flex items-center justify-center">
-                <span className="font-orbitron text-[10px] font-black text-cyan">JAK</span>
-              </div>
-              <div>
-                <div className="font-mono text-[12px] text-[#e2eaff] tracking-[2px]">JOSEPH KAMARA</div>
-                <div className="font-mono text-[9px] text-muted tracking-[1px] uppercase">Cybersecurity Engineer</div>
-              </div>
-            </div>
-            <p className="font-mono text-[11px] text-muted leading-relaxed mb-4">
-              Building AI-assisted security systems from Sierra Leone to Philadelphia.
-              Available for SOC Analyst, Security Engineer, and Cloud Security roles.
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-neon animate-pulse" />
-              <span className="font-mono text-[10px] text-neon">Available Now · Remote-First</span>
-            </div>
-          </div>
-
-          {/* Quick links */}
-          <div>
-            <div className="font-mono text-[9px] text-muted tracking-[3px] uppercase mb-4">Quick Links</div>
-            <div className="grid grid-cols-2 gap-2">
-              {quickLinks.map(link => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className={`font-mono text-[11px] transition-colors flex items-center gap-1.5 ${
-                    link.highlight ? 'text-neon hover:text-cyan' : 'text-muted hover:text-cyan'
-                  }`}
-                >
-                  {link.highlight && <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse shrink-0" />}
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Share + Social */}
-          <div>
-            <div className="font-mono text-[9px] text-muted tracking-[3px] uppercase mb-4">Connect & Share</div>
-
-            {/* Social links */}
-            <div className="space-y-2 mb-6">
-              {socialLinks.map(link => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  className="flex items-center justify-between font-mono text-[11px] px-3 py-2 border border-[rgba(0,212,255,0.08)] hover:border-[rgba(0,212,255,0.25)] transition-all group"
-                >
-                  <span style={{ color: link.color }}>{link.label}</span>
-                  <span className="text-muted group-hover:text-cyan transition-colors text-[10px]">↗</span>
-                </a>
-              ))}
-            </div>
-
-            {/* Share buttons */}
-            <div className="flex gap-2">
-              <motion.button
-                onClick={shareOnLinkedIn}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 font-mono text-[9px] tracking-[1.5px] uppercase px-3 py-2 border border-[rgba(0,119,181,0.4)] text-[#0077b5] hover:bg-[rgba(0,119,181,0.08)] transition-colors"
-              >
-                Share on LinkedIn
-              </motion.button>
-              <motion.button
-                onClick={copyLink}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="font-mono text-[9px] tracking-[1.5px] uppercase px-3 py-2 border border-[rgba(0,212,255,0.2)] text-cyan hover:bg-[rgba(0,212,255,0.06)] transition-colors"
-              >
-                {copied ? '✓ Copied' : 'Copy Link'}
-              </motion.button>
-            </div>
-          </div>
+    <footer id="contact" className="footer-glow relative overflow-hidden">
+      <SocMap />
+      <div aria-hidden className="footer-portrait" />
+      <div className="wrap relative z-[2] flex flex-col gap-7 py-12 md:flex-row md:items-center md:justify-between md:py-16 lg:py-20">
+        <div>
+          <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
+            Let&apos;s <span className="title-accent">connect</span>
+          </p>
+          <p className="mt-3 flex items-center gap-2.5 text-[15px] text-smoke">
+            <span aria-hidden className="status-dot" />
+            Open to full-time roles. Graduating December 2026. Based in Philadelphia.
+          </p>
         </div>
 
-        {/* Divider */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[rgba(0,212,255,0.2)] to-transparent mb-6" />
+        <ul className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
+          {LINKS.map((l) => (
+            <li key={l.label}>
+              <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip">
+                <svg aria-hidden viewBox="0 0 24 24" className="icon-live h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  {l.icon}
+                </svg>
+                <span className="sm:hidden">{l.short}</span>
+                <span className="hidden sm:inline">{l.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-        {/* Bottom row */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="font-mono text-[10px] text-muted">
-            © 2026 Joseph Allan Kamara — Built with Next.js, Tailwind, Framer Motion
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/incident-replay"
-              className="font-mono text-[9px] text-neon hover:text-cyan transition-colors flex items-center gap-1.5">
-              <span className="w-1 h-1 rounded-full bg-neon" />
-              Incident Replay Lab
-            </Link>
-            <a href="/resume/Joseph_Allan_Kamara_Resume_v3.pdf" target="_blank"
-              className="font-mono text-[9px] text-muted hover:text-cyan transition-colors">
-              ↓ Resume
-            </a>
-            <span className="font-mono text-[9px] text-[rgba(0,212,255,0.3)]">
-              Security+ · PenTest+ · CCNA · PSAA
-            </span>
-          </div>
+      <div className="relative z-[2] border-t border-line">
+        <div className="wrap flex flex-col gap-2 pb-28 pt-5 text-[13px] text-smoke/80 sm:flex-row sm:justify-between lg:pb-5">
+          <p>© {new Date().getFullYear()} Joseph Allan Kamara · <a href="/privacy" className="underline-offset-4 hover:text-snow hover:underline">Privacy</a></p>
+          <p>{EMAIL}</p>
         </div>
       </div>
     </footer>

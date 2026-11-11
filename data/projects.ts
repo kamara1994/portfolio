@@ -9,7 +9,9 @@ export interface Project {
   approach: string
   outcome: string
   stack: string[]
-  github: string
+  github?: string
+  /** 'flagship' = full-screen panel on home, 'more' = compact list. Unset = not shown until rebuilt. */
+  placement?: 'flagship' | 'more'
   demo?: string
   video?: string
   report?: string
@@ -25,6 +27,7 @@ export interface Project {
 export const projects: Project[] = [
   {
     id: 'blue-soc-p8',
+    placement: 'flagship',
     num: '01',
     title: 'BLUE SOC P8',
     subtitle: 'AI-Assisted Security Operations Center — Controlled Lab',
@@ -51,7 +54,6 @@ export const projects: Project[] = [
     github: 'https://github.com/kamara1994/bluesoc',
     demo: 'https://blue-dashboard-ten.vercel.app',
     featured: true,
-    screenshot: '/screenshots/blue-soc.png',
   },
   {
     id: 'python-ids',
@@ -186,6 +188,7 @@ export const projects: Project[] = [
   },
   {
     id: 'elitecom',
+    placement: 'more',
     num: '07',
     title: 'ELITECOM Engineers Web Platform',
     subtitle: 'Secure Web Architecture for Multi-Sector Engineering Firm',
@@ -211,6 +214,7 @@ export const projects: Project[] = [
   },
   {
     id: 'pandie-foundation',
+    placement: 'more',
     num: '08',
     title: 'Pandie Foundation Website',
     subtitle: 'Web Platform for Sierra Leone Nonprofit Organization',
@@ -232,10 +236,10 @@ export const projects: Project[] = [
     ],
     github: 'https://github.com/kamara1994/pandie-site',
     demo: 'https://pandiefoundation.org',
-    screenshot: '/screenshots/pandie.png',
   },
   {
     id: 'fortress-v2',
+    placement: 'flagship',
     num: '09',
     title: 'FORTRESS v2',
     subtitle: 'AWS Security Monitoring | Verified Learner Lab',
@@ -260,10 +264,10 @@ export const projects: Project[] = [
     stack: ['AWS', 'Terraform', 'CloudWatch Logs', 'CloudWatch Alarms', 'Amazon SNS', 'AWS CLI', 'PowerShell', 'GitHub Actions'],
     github: 'https://github.com/kamara1994/fortress-v2',
     featured: true,
-    screenshot: '/screenshots/fortress.png',
   },
   {
     id: 'blue-x',
+    placement: 'flagship',
     num: '10',
     title: 'BLUE-X',
     subtitle: 'AI-Powered Network Threat Classification Platform',
@@ -293,6 +297,7 @@ export const projects: Project[] = [
   },
   {
     id: 'enterprise-networking',
+    placement: 'more',
     num: '11',
     title: 'Enterprise Network Architecture',
     subtitle: 'Cisco Multi-Site Branch Network — Cape Town 2',
@@ -315,13 +320,13 @@ export const projects: Project[] = [
       'SSH v2 Only → VTY ACL restricting management access',
     ],
     stack: ['Cisco IOS', 'Cisco IOS XE', 'OSPF', 'VRRP', 'LACP', 'VTP', 'EtherChannel', '802.1Q', 'SSH v2', 'DHCP', 'ACL', 'STP'],
-    github: 'https://github.com/kamara1994/enterprise-networking',
     report: '/docs/enterprise-networking-report.docx',
     featured: false,
     screenshot: '/screenshots/networking.png',
   },
   {
     id: 'pweza-voice-agent',
+    placement: 'flagship',
     num: '12',
     title: 'PWEZA Voice AI Agent',
     subtitle: 'Voice-First Multi-Model Portfolio & Recruiter Assistant',

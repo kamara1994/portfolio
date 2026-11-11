@@ -14,7 +14,7 @@ export const certs: Cert[] = [
     status: 'earned',
   },
   {
-    name: 'CCNA — Certified Network Associate',
+    name: 'CCNA',
     issuer: 'Cisco',
     status: 'earned',
   },
@@ -62,11 +62,9 @@ export const skillGroups: SkillGroup[] = [
   {
     title: 'Cloud Security',
     skills: [
-      'AWS GuardDuty',
-      'AWS Security Hub',
-      'CloudTrail',
-      'WAF',
-      'Lambda Auto-Remediation',
+      'CloudWatch Logs and Alarms',
+      'Amazon SNS',
+      'AWS CLI',
       'IAM Policy Design',
       'S3 Security',
       'CloudWatch Alarms',
@@ -179,6 +177,15 @@ export interface Experience {
 }
 
 export const experiences: Experience[] = [
+  {
+    company: 'BYU-Idaho Online Learning',
+    role: 'Online Teaching Assistant',
+    dates: 'Current',
+    current: true,
+    bullets: [
+      'Teaching assistant for ITM 375 (Security Assessments & DevOps) and ITM 350 (IT Management)',
+    ],
+  },
   {
     company: 'BYU-Idaho IT Help Desk',
     role: 'IT Support Technician',
