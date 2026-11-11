@@ -22,10 +22,15 @@ export default function MobileDock() {
     const onScroll = () => {
       setShown(window.scrollY > 200)
       let cur = ''
+      const mid = window.innerHeight * 0.5
       for (const id of ids) {
-        const el = document.getElementById(id)
-        if (el && el.getBoundingClientRect().top < window.innerHeight * 0.5) cur = id
+        const r = document.getElementById(id)?.getBoundingClientRect()
+        if (r && r.top < mid && r.bottom > mid) cur = id
       }
+      // The footer is short: count it once it is on screen
+      const f = document.getElementById('contact')?.getBoundingClientRect()
+      if (f && f.top < window.innerHeight * 0.8) cur = 'contact'
+
       setActive(cur)
     }
     onScroll()

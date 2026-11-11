@@ -17,18 +17,18 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: 'Joseph Allan Kamara | Cybersecurity Engineer',
+  title: 'Joseph Allan Kamara | Cybersecurity · SOC & Cloud Security',
   description: DESCRIPTION,
   authors: [{ name: 'Joseph Allan Kamara', url: SITE }],
   openGraph: {
     type: 'website',
     url: SITE,
-    title: 'Joseph Allan Kamara | Cybersecurity Engineer',
+    title: 'Joseph Allan Kamara | Cybersecurity · SOC & Cloud Security',
     description: DESCRIPTION,
     siteName: 'Joseph Allan Kamara',
     images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'Joseph Allan Kamara, cybersecurity. Securing systems. Automating defense.' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Joseph Allan Kamara | Cybersecurity Engineer', description: DESCRIPTION, images: ['/og.jpg'] },
+  twitter: { card: 'summary_large_image', title: 'Joseph Allan Kamara | Cybersecurity · SOC & Cloud Security', description: DESCRIPTION, images: ['/og.jpg'] },
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
 }
@@ -39,7 +39,7 @@ const PERSON_LD = {
   name: 'Joseph Allan Kamara',
   url: SITE,
   image: `${SITE}/profile/joseph-portrait.jpg`,
-  jobTitle: 'Cybersecurity student and engineer',
+  jobTitle: 'Cybersecurity student',
   email: 'mailto:kamarajosephallan@gmail.com',
   address: { '@type': 'PostalAddress', addressLocality: 'Philadelphia', addressRegion: 'PA', addressCountry: 'US' },
   alumniOf: { '@type': 'CollegeOrUniversity', name: 'Brigham Young University-Idaho' },
@@ -56,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="bg-ink font-sans text-snow">
+        <a href="#main" className="skip-link">Skip to content</a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PERSON_LD) }} />
         <VisitTracker />
         <LiveIcons />

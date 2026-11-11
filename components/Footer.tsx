@@ -11,25 +11,34 @@ const LINKS: { label: string; short: string; href: string; ext?: boolean; icon: 
   {
     label: 'Email me', short: 'Email',
     href: MAILTO,
-    icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
+    icon: '✉️',
   },
   {
     label: 'Connect on LinkedIn', short: 'LinkedIn',
     href: LINKEDIN,
     ext: true,
-    icon: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 014 0v4M12 10v7" /></>,
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]">
+        <rect width="24" height="24" rx="4" fill="#0A66C2" />
+        <path fill="#fff" d="M7.1 9.6h-2.6V19h2.6V9.6zM5.8 5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM19.5 13.6c0-2.6-1.4-4.2-3.7-4.2-1.3 0-2.2.7-2.6 1.4V9.6h-2.5V19h2.6v-4.9c0-1.3.6-2.2 1.8-2.2s1.7.9 1.7 2.2V19h2.7v-5.4z" />
+      </svg>
+    ),
   },
   {
     label: 'See my code', short: 'GitHub',
     href: GITHUB,
     ext: true,
-    icon: <path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 00-.8-2.3c2.7-.3 5.5-1.3 5.5-6a4.7 4.7 0 00-1.3-3.2 4.3 4.3 0 00-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 00-6 0C6.5 2.5 5.5 2.8 5.5 2.8a4.3 4.3 0 00-.1 3.2A4.7 4.7 0 004 9.2c0 4.6 2.8 5.7 5.5 6a3 3 0 00-.8 2.3V21" />,
+    icon: (
+      <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="#fff">
+        <path d="M12 .5a11.5 11.5 0 00-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 015.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0012 .5z" />
+      </svg>
+    ),
   },
   {
     label: 'Get my résumé', short: 'Résumé',
     href: RESUME,
     ext: true,
-    icon: <><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>,
+    icon: '📄',
   },
 ]
 
@@ -54,9 +63,7 @@ export default function Footer() {
           {LINKS.map((l) => (
             <li key={l.label}>
               <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip">
-                <svg aria-hidden viewBox="0 0 24 24" className="icon-live h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  {l.icon}
-                </svg>
+                {typeof l.icon === 'string' ? <span aria-hidden className="emoji">{l.icon}</span> : l.icon}
                 <span className="sm:hidden">{l.short}</span>
                 <span className="hidden sm:inline">{l.label}</span>
               </a>

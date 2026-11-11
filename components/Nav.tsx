@@ -17,9 +17,22 @@ export const RESUME = '/resume/Joseph_Allan_Kamara_Resume_v3.pdf'
 export default function Nav() {
   const [solid, setSolid] = useState(false)
   const [open, setOpen] = useState(false)
+  const [current, setCurrent] = useState('')
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 24)
+    const ids = ['work', 'skills', 'credentials', 'experience', 'story', 'contact']
+    const onScroll = () => {
+      setSolid(window.scrollY > 24)
+      // Highlight the section in view
+      const line = window.innerHeight * 0.35
+      let cur = ''
+      for (const id of ids) {
+        const r = document.getElementById(id)?.getBoundingClientRect()
+        if (r && r.top <= line && r.bottom > line) cur = id
+      }
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) cur = 'contact'
+      setCurrent(cur)
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -39,7 +52,11 @@ export default function Nav() {
         <ul className="hidden items-center gap-9 md:flex">
           {LINKS.map((l) => (
             <li key={l.href}>
-              <a href={l.href} className="nav-link text-[15px] font-medium text-snow/80 transition-colors hover:text-snow">
+              <a
+                href={l.href}
+                aria-current={current === l.href.slice(2) ? 'true' : undefined}
+                className={`nav-link text-[15px] font-medium transition-colors hover:text-snow ${current === l.href.slice(2) ? 'is-current text-snow' : 'text-snow/80'}`}
+              >
                 {l.label}
               </a>
             </li>
