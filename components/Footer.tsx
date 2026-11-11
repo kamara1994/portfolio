@@ -64,7 +64,7 @@ export default function Footer() {
 
       <div className="relative border-t border-line">
         <div className="wrap flex flex-col gap-2 pb-24 pt-5 text-[13px] text-smoke/80 sm:flex-row sm:justify-between md:pb-5">
-          <p>© {new Date().getFullYear()} Joseph Allan Kamara</p>
+          <p>© {new Date().getFullYear()} Joseph Allan Kamara · <a href="/privacy" className="underline-offset-4 hover:text-snow hover:underline">Privacy</a></p>
           <p>{EMAIL}</p>
         </div>
       </div>

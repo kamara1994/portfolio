@@ -21,8 +21,8 @@ export default function ProjectMedia({ project, priority = false }: { project: P
   }
 
   if (screenshot) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         className="h-full w-full object-cover object-top"
         src={screenshot}
