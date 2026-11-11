@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import PwezaMark from './PwezaMark'
 import Link from 'next/link'
 import { useRole } from './roles'
 
@@ -53,6 +54,11 @@ export default function AIChat() {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+  }, [])
+  useEffect(() => {
+    const toggle = () => setOpen((o) => !o)
+    window.addEventListener('pweza:toggle', toggle)
+    return () => window.removeEventListener('pweza:toggle', toggle)
   }, [])
   useEffect(() => { if (!open) { audioRef.current?.pause(); recRef.current?.stop?.() } }, [open])
 
@@ -115,14 +121,14 @@ export default function AIChat() {
         tabIndex={visible || open ? 0 : -1}
         className={`pz-launch ${visible || open ? 'is-on' : ''}`}
       >
-        <span aria-hidden className="status-dot" />
-        {open ? 'Close' : <><span className="md:hidden">Ask AI</span><span className="hidden md:inline">Ask my AI assistant</span></>}
+        <PwezaMark size={26} />
+        {open ? 'Close' : 'Ask my AI assistant'}
       </button>
 
       <section id="pweza-panel" aria-label="PWEZA assistant" className={`pz-panel ${open ? 'is-open' : ''}`} aria-hidden={!open}>
         <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div className="flex items-center gap-3">
-            <span aria-hidden className="pz-orb" />
+            <span className="pz-mark-badge"><PwezaMark size={26} /></span>
             <div>
               <p className="text-[15px] font-semibold text-snow">PWEZA</p>
               <p className="text-[12px] text-smoke">Answers only from verified facts</p>

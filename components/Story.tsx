@@ -73,8 +73,8 @@ export default function Story() {
   }, [])
 
   return (
-    <section ref={root} id="story" className="wrap pb-20 pt-24 md:pb-24 md:pt-32">
-      <div className="grid gap-14 lg:grid-cols-12 lg:gap-14">
+    <section ref={root} id="story" className="wrap pb-16 pt-16 md:pb-24 md:pt-32">
+      <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
             <div className="rv-lines">

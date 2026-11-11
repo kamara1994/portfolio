@@ -8,6 +8,7 @@ import './globals.css'
 import VisitTracker from '@/components/VisitTracker'
 import LiveIcons from '@/components/LiveIcons'
 import AIChat from '@/components/AIChat'
+import MobileDock from '@/components/MobileDock'
 
 const SITE = 'https://josephkamara.vercel.app'
 const DESCRIPTION =
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LiveIcons />
         {children}
         <AIChat />
+        <MobileDock />
       </body>
     </html>
   )

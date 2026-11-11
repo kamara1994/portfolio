@@ -10,11 +10,11 @@ const CERTS = [
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-line pb-14 pt-24 md:pb-16 md:pt-24">
+    <section className="relative overflow-hidden border-b border-line pb-12 pt-20 md:pb-16 md:pt-24">
       <div className="wrap relative">
         {/* Name | portrait | focus */}
-        <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-6">
-          <figure className="hero-rise relative mx-auto w-[78%] max-w-[360px] lg:order-2 lg:col-span-4 lg:col-start-5 lg:w-full lg:max-w-[440px]">
+        <div className="grid items-center gap-7 lg:grid-cols-12 lg:gap-6">
+          <figure className="hero-rise relative mx-auto w-[56%] max-w-[230px] sm:w-[70%] sm:max-w-[340px] lg:order-2 lg:col-span-4 lg:col-start-5 lg:w-full lg:max-w-[440px]">
             <span aria-hidden className="portrait-glow" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -25,9 +25,9 @@ export default function Hero() {
               fetchPriority="high"
               className="cutout relative w-full"
             />
-            <ul className="relative -mt-4 flex justify-center gap-3" aria-label="Certifications">
+            <ul className="relative -mt-4 flex justify-center gap-2 sm:gap-3" aria-label="Certifications">
               {CERTS.map((c, i) => (
-                <li key={c.name} className="cert-in w-[72px] text-center" style={{ animationDelay: `${0.9 + i}s` }}>
+                <li key={c.name} className="cert-in w-[60px] text-center sm:w-[72px]" style={{ animationDelay: `${0.9 + i}s` }}>
                   <div className="cert-box">
                     {c.img ? (
                       // eslint-disable-next-line @next/next/no-img-element

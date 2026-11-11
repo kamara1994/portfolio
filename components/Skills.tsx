@@ -56,7 +56,7 @@ export default function Skills() {
 
   return (
     <section id="skills" className="lazy-section border-t border-line">
-      <div className="wrap py-24 md:py-32">
+      <div className="wrap py-16 md:py-32">
         <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">Applied skills</p>
         <h2 className="mt-3 font-display text-[clamp(38px,4.4vw,68px)] font-bold uppercase leading-[0.95]">
           Skills with <span className="title-accent">proof</span>

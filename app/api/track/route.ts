@@ -95,19 +95,21 @@ async function geolocate(ip: string): Promise<Geo> {
     return {} // local / private address — nothing to resolve
   }
   try {
-    const fields = 'status,message,country,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,hosting,query'
-    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=${fields}`, {
-      // don't let a slow geo lookup hang the request
+    // HTTPS lookup for the visitor's network owner (e.g. a company office).
+    // Works without a key at low volume; set IPINFO_TOKEN in Vercel for more.
+    const token = process.env.IPINFO_TOKEN ? `?token=${process.env.IPINFO_TOKEN}` : ''
+    const res = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}/json${token}`, {
       signal: AbortSignal.timeout(3500),
     })
     if (!res.ok) return {}
     const d = await res.json()
-    if (d.status !== 'success') return {}
+    if (d.bogon) return {}
+    const [lat, lon] = String(d.loc || '').split(',').map(Number)
+    const org = typeof d.org === 'string' ? d.org.replace(/^AS\d+\s+/, '') : undefined
     return {
-      city: d.city, region: d.regionName, country: d.country, zip: d.zip,
-      lat: d.lat, lon: d.lon, timezone: d.timezone,
-      isp: d.isp, org: d.org, as: d.as,
-      proxy: d.proxy, hosting: d.hosting, mobile: d.mobile,
+      city: d.city, region: d.region, country: d.country, zip: d.postal,
+      lat: Number.isFinite(lat) ? lat : undefined, lon: Number.isFinite(lon) ? lon : undefined,
+      timezone: d.timezone, isp: org, org, as: typeof d.org === 'string' ? d.org.split(' ')[0] : undefined,
     }
   } catch {
     return {}

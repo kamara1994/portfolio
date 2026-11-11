@@ -65,7 +65,7 @@ export default function Work() {
                 {splitTitle(p.title)[0]}
                 {splitTitle(p.title)[1] && <span className="title-accent">{splitTitle(p.title)[1]}</span>}
               </h2>
-              <p className="mt-6 max-w-[46ch] text-[19px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
+              <p className="mt-4 max-w-[46ch] text-[17px] md:mt-6 md:text-[19px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
               {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
               <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-smoke">{p.impact}</p>
               <p className="mt-6 text-[14px] leading-relaxed text-smoke">
@@ -79,7 +79,7 @@ export default function Work() {
               </div>
             </div>
 
-            <div className={`order-first md:col-span-7 ${i % 2 ? 'md:order-1' : 'md:order-none'}`}>
+            <div className={`order-first md:col-span-7 ${i % 2 ? 'md:order-1' : 'md:order-none'} ${p.video || p.screenshot ? '' : 'hidden md:block'}`}>
               <div className="relative aspect-[16/10] overflow-hidden border border-line bg-panel">
                 <ProjectMedia project={p} priority={i === 0} />
               </div>
@@ -90,7 +90,7 @@ export default function Work() {
 
       {more.length > 0 && (
         <div className="border-t border-line">
-          <div className="wrap py-24 md:py-32">
+          <div className="wrap py-16 md:py-32">
             <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More <span className="title-accent">work</span></h2>
             <ul className="mt-12 divide-y divide-line border-y border-line">
               {more.map((p) => (

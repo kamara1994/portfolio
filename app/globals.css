@@ -389,3 +389,43 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
 #experience.lazy-section { contain-intrinsic-size: auto 1150px; }
 @media (max-width: 1023px) { .lazy-section { contain-intrinsic-size: auto 1400px; } #credentials.lazy-section { contain-intrinsic-size: auto 680px; } #experience.lazy-section { contain-intrinsic-size: auto 1350px; } }
 @media (max-width: 639px) { .lazy-section { contain-intrinsic-size: auto 2200px; } #credentials.lazy-section { contain-intrinsic-size: auto 870px; } #experience.lazy-section { contain-intrinsic-size: auto 1770px; } }
+
+/* PWEZA mark */
+.pz-mark { overflow: visible; filter: drop-shadow(0 0 6px rgba(76,201,255,.55)); }
+.pz-mark-orbit { transform-origin: 20px 20px; animation: pzm-orbit 9s linear infinite; }
+.pz-mark-spark { transform-origin: 20px 20px; animation: pzm-spark 2.8s ease-in-out infinite; }
+@keyframes pzm-orbit { to { transform: rotate(360deg); } }
+@keyframes pzm-spark { 50% { transform: scale(.78) rotate(45deg); opacity: .8; } }
+.pz-mark-badge { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px;
+  background: radial-gradient(circle at 50% 40%, rgba(76,201,255,.18), rgba(8,16,30,.9)); border: 1px solid rgba(120,200,255,.28); }
+.pz-launch { padding-left: 12px; }
+
+/* Phone dock */
+.dock { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 61; height: 64px;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; padding: 0 6px; border-radius: 20px;
+  background: rgba(8,13,25,.86); border: 1px solid rgba(120,200,255,.18); backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 18px 40px -12px rgba(0,0,0,.85);
+  transform: translateY(120%); opacity: 0; transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s; }
+.dock::before { content: ''; position: absolute; top: -1px; left: 18%; right: 18%; height: 1px; background: linear-gradient(90deg, transparent, #6FD6FF, #A78BFA, transparent); }
+.dock.is-on { transform: none; opacity: 1; }
+.dock-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; font-size: 10.5px; font-weight: 500; letter-spacing: .02em; color: #8D97AA; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+.dock-item:active { transform: scale(.94); }
+.dock-item.is-active { color: #EEF2F8; }
+.dock-item.is-active::after { content: ''; position: absolute; bottom: 1px; width: 16px; height: 2px; border-radius: 2px; background: #6FD6FF; box-shadow: 0 0 8px #4CC9FF; }
+.dock-ai { justify-self: center; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-top: -26px; border-radius: 18px;
+  background: radial-gradient(circle at 50% 30%, #17375E, #08111F 75%); border: 1px solid rgba(140,215,255,.5);
+  box-shadow: 0 0 0 5px rgba(5,8,15,.9), 0 10px 26px -6px rgba(76,201,255,.65); -webkit-tap-highlight-color: transparent; transition: transform .2s; }
+.dock-ai:active { transform: scale(.92); }
+@media (max-width: 1023px) {
+  .pz-launch { display: none; }
+  .pz-panel { right: 10px; left: 10px; width: auto; bottom: calc(86px + env(safe-area-inset-bottom)); height: min(560px, calc(100svh - 170px)); transform-origin: bottom center; }
+}
+@media (prefers-reduced-motion: reduce) { .pz-mark-orbit, .pz-mark-spark { animation: none; } }
+
+/* Footer cyber backdrop: fills the whole footer, behind the portrait and text */
+.cyber-backdrop { position: absolute; inset: 0; pointer-events: none; opacity: .9;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 70%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 22%, #000 70%, transparent); }
+.cb-pulse { fill: #6FD6FF; transform-box: fill-box; transform-origin: center; animation: cb-pulse 5.5s ease-out infinite; }
+@keyframes cb-pulse { 0% { transform: scale(1); opacity: .9; } 60%, 100% { transform: scale(4.5); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cb-pulse { animation: none; opacity: .5; } }

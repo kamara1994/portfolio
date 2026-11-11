@@ -1,4 +1,5 @@
 import { RESUME } from './Nav'
+import CyberBackdrop from './CyberBackdrop'
 
 export const EMAIL = 'kamarajosephallan@gmail.com'
 export const LINKEDIN = 'https://linkedin.com/in/joseph-allan-kamara'
@@ -36,6 +37,7 @@ const LINKS: { label: string; href: string; ext?: boolean; icon: React.ReactNode
 export default function Footer() {
   return (
     <footer id="contact" className="footer-glow relative overflow-hidden">
+      <CyberBackdrop />
       <div aria-hidden className="footer-portrait" />
       <div className="wrap relative flex flex-col gap-8 py-12 md:flex-row md:items-center md:justify-between">
         <div>

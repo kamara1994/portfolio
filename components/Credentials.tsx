@@ -10,7 +10,7 @@ const VERIFY: Record<string, string> = {
 export default function Credentials() {
   return (
     <section id="credentials" className="lazy-section border-t border-line">
-      <div className="wrap grid gap-16 py-24 md:grid-cols-12 md:py-32">
+      <div className="wrap grid gap-10 py-16 md:grid-cols-12 md:gap-16 md:py-32">
         <div className="md:col-span-12">
           <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
           <ul className="mt-12 grid border-t border-line md:grid-cols-2 md:gap-x-16 [&>li]:border-b [&>li]:border-line">

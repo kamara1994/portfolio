@@ -13,7 +13,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
     h: 'Visit notifications',
     body: [
       'When you open a page, the site records the page, the referring site, your screen size, and your browser language.',
-      'The server uses your IP address to look up an approximate city, region, and network provider (through ip-api.com), so I can see roughly where visits come from, for example a university or a company network. It never uses your device GPS.',
+      'The server uses your IP address to look up an approximate city, region, and network provider (through Vercel and ipinfo.io, over an encrypted connection), so I can see roughly where visits come from, for example a university or a company network. It never uses your device GPS.',
       'I receive this as a private notification. It is not sold, shared, or used for advertising.',
     ],
   },
