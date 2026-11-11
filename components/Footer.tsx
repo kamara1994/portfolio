@@ -37,8 +37,9 @@ const LINKS: { label: string; short: string; href: string; ext?: boolean; icon: 
 export default function Footer() {
   return (
     <footer id="contact" className="footer-glow relative overflow-hidden">
+      <SocMap />
       <div aria-hidden className="footer-portrait" />
-      <div className="wrap relative z-[2] flex flex-col gap-8 pt-14 md:flex-row md:items-center md:justify-between md:pt-20">
+      <div className="wrap relative z-[2] flex flex-col gap-8 py-16 md:flex-row md:items-center md:justify-between md:py-24">
         <div>
           <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
             Let&apos;s <span className="title-accent">connect</span>
@@ -62,10 +63,6 @@ export default function Footer() {
             </li>
           ))}
         </ul>
-      </div>
-
-      <div className="wrap flex pb-10 pt-10 md:pb-14 md:pt-14 lg:justify-end">
-        <SocMap />
       </div>
 
       <div className="relative z-[2] border-t border-line">
