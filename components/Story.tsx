@@ -9,34 +9,24 @@ type Milestone = {
   sub: string
   desc: string
   color: string
-  icon: React.ReactNode
+  icon: string
   now?: boolean
 }
 
-const I = {
-  globe: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" /></>,
-  cap: <><path d="M2 9l10-5 10 5-10 5z" /><path d="M6 11v5c3 2 9 2 12 0v-5" /></>,
-  award: <><circle cx="12" cy="9" r="5" /><path d="M8.5 13l-1.5 8 5-3 5 3-1.5-8" /></>,
-  net: <><rect x="9" y="3" width="6" height="5" rx="1" /><rect x="3" y="16" width="6" height="5" rx="1" /><rect x="15" y="16" width="6" height="5" rx="1" /><path d="M12 8v4M6 16v-4h12v4" /></>,
-  lock: <><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 018 0v4" /></>,
-  shield: <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3zM9 12l2 2 4-4" />,
-  rocket: <><path d="M5 15c-1 1-2 4-2 6 2 0 5-1 6-2M14 4c3-1 6-1 6-1s0 3-1 6l-7 7-5-5z" /><circle cx="15" cy="9" r="1.5" /></>,
-}
-
 const MILESTONES: Milestone[] = [
-  { when: 'Early years', tag: 'Origin', title: 'Freetown, Sierra Leone', sub: 'Where it started', color: '#F5A524', icon: I.globe,
+  { when: 'Early years', tag: 'Origin', title: 'Freetown, Sierra Leone', sub: 'Where it started', color: '#F5A524', icon: '🌍',
     desc: 'Born and raised in Freetown. Fascinated by technology from an early age: taking computers apart and learning how networks work.' },
-  { when: 'Sep 2023', tag: 'Education', title: 'BYU-Idaho', sub: 'B.S. Cybersecurity program', color: '#4CC9FF', icon: I.cap,
+  { when: 'Sep 2023', tag: 'Education', title: 'BYU-Idaho', sub: 'B.S. Cybersecurity program', color: '#4CC9FF', icon: '🎓',
     desc: 'Started the Cybersecurity degree: networking, operating systems, cryptography, and security fundamentals.' },
-  { when: 'Mar 2025', tag: 'Certification', title: 'CompTIA Security+', sub: 'First security certification', color: '#4BE3C8', icon: I.award,
+  { when: 'Mar 2025', tag: 'Certification', title: 'CompTIA Security+', sub: 'First security certification', color: '#4BE3C8', icon: '🏅',
     desc: 'Validated core security skills: threat detection, risk management, cryptography, and network security.' },
-  { when: 'Earned', tag: 'Certification', title: 'Cisco CCNA', sub: 'Enterprise networking', color: '#38BDF8', icon: I.net,
+  { when: 'Earned', tag: 'Certification', title: 'Cisco CCNA', sub: 'Enterprise networking', color: '#38BDF8', icon: '🌐',
     desc: 'Routing, switching, and segmentation. Built enterprise branch networks with OSPF, VRRP, EtherChannel, VLANs, and SSH hardening.' },
-  { when: 'Mar 2026', tag: 'Certification', title: 'PenTest+ and TCM PSAA', sub: 'Offense and defense', color: '#F97316', icon: I.lock,
+  { when: 'Mar 2026', tag: 'Certification', title: 'PenTest+ and TCM PSAA', sub: 'Offense and defense', color: '#F97316', icon: '🔓',
     desc: 'Penetration testing on one side; SOC operations, alert triage, and incident response on the other.' },
-  { when: '2026', tag: 'Projects', title: 'BLUE SOC, FORTRESS, BLUE-X, PWEZA', sub: 'Security and AI systems built', color: '#7FA6FF', icon: I.shield,
+  { when: '2026', tag: 'Projects', title: 'BLUE SOC, FORTRESS, BLUE-X, PWEZA', sub: 'Security and AI systems built', color: '#7FA6FF', icon: '🛡️',
     desc: 'AI-assisted SOC automation, an AWS defense lab deployed with Terraform, a PyTorch threat classifier, and PWEZA, a voice-first portfolio agent.' },
-  { when: 'Dec 2026', tag: 'Now', title: 'B.S. Cybersecurity', sub: 'Graduating from BYU-Idaho', color: '#4BE3C8', icon: I.rocket, now: true,
+  { when: 'Dec 2026', tag: 'Now', title: 'B.S. Cybersecurity', sub: 'Graduating from BYU-Idaho', color: '#4BE3C8', icon: '🚀', now: true,
     desc: 'Based in Philadelphia and available for SOC Analyst, Security Engineer, Cloud Security, and IT roles.' },
 ]
 
@@ -57,6 +47,7 @@ export default function Story() {
 
     // Draw the beam down with the scroll
     const jt = el.querySelector<HTMLElement>('.jt')
+    const rows = Array.from(el.querySelectorAll('.jt-row'))
     let raf = 0
     const draw = () => {
       raf = 0
@@ -64,6 +55,11 @@ export default function Story() {
       const r = jt.getBoundingClientRect()
       const p = Math.min(1, Math.max(0, (window.innerHeight * 0.78 - r.top) / r.height))
       jt.style.setProperty('--fill', String(p))
+      // Light the milestone the lantern is passing
+      const ly = r.top + p * r.height
+      let best: Element | null = null
+      rows.forEach((row) => { if (row.getBoundingClientRect().top + 22 <= ly + 30) best = row })
+      rows.forEach((row) => row.classList.toggle('is-lit', row === best && p > 0.01))
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(draw) }
     draw()
@@ -112,14 +108,13 @@ export default function Story() {
               ))}
             </div>
           </div>
+          <div aria-hidden className="jt-rope"><span className="jt-lantern"><Lantern /></span></div>
 
           <ol className="space-y-5">
             {MILESTONES.map((m) => (
               <li key={m.title} className="jt-row group" style={{ ['--c' as string]: m.color }}>
                 <span className={`jt-node ${m.now ? 'is-now' : ''}`}>
-                  <svg aria-hidden viewBox="0 0 24 24" className="icon-live h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                    {m.icon}
-                  </svg>
+                  <span aria-hidden className="jt-emoji">{m.icon}</span>
                   {m.now && <><span aria-hidden className="jt-ring" /><span aria-hidden className="jt-ring r2" /></>}
                 </span>
 
@@ -144,5 +139,27 @@ export default function Story() {
         </div>
       </div>
     </section>
+  )
+}
+
+/** Small hanging lantern that rides the journey line. */
+function Lantern() {
+  return (
+    <svg aria-hidden viewBox="0 0 28 46" width="36" height="59" className="jt-lantern-svg">
+      <path d="M14 0v6" stroke="#9AA6BA" strokeWidth="1.2" />
+      <circle cx="14" cy="8" r="2.4" fill="none" stroke="#C9A36A" strokeWidth="1.4" />
+      <path d="M7 14h14l-2-4H9z" fill="#3A2A18" stroke="#C9A36A" strokeWidth="1" strokeLinejoin="round" />
+      <rect x="8" y="14" width="12" height="20" rx="2.5" fill="url(#lt-glass)" stroke="#C9A36A" strokeWidth="1" />
+      <path d="M11 14v20M17 14v20" stroke="#C9A36A" strokeOpacity=".55" strokeWidth=".8" />
+      <path className="jt-flame" d="M14 19c2.2 2.6 2.6 4.6 1.6 6.6-.6 1.2-1.7 1.8-1.6 1.8s-1.1-.6-1.6-1.8c-1-2 .2-4.4 1.6-6.6z" fill="#FFD27A" />
+      <path d="M6.5 34h15l-1.6 4H8.1z" fill="#3A2A18" stroke="#C9A36A" strokeWidth="1" strokeLinejoin="round" />
+      <defs>
+        <radialGradient id="lt-glass" cx="50%" cy="58%" r="60%">
+          <stop stopColor="#FFE3A3" stopOpacity=".95" />
+          <stop offset=".55" stopColor="#F5A524" stopOpacity=".55" />
+          <stop offset="1" stopColor="#7A4A10" stopOpacity=".35" />
+        </radialGradient>
+      </defs>
+    </svg>
   )
 }
