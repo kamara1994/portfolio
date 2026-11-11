@@ -569,3 +569,10 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   .exp-title { font-size: 17.5px; }
   .exp-points { font-size: 15px; }
 }
+/* Final polish */
+section[id], footer[id] { scroll-margin-top: 76px; }
+.nav-link.is-current::after { width: 120%; }
+.skip-link { position: fixed; left: 16px; top: -60px; z-index: 100; padding: 10px 16px; border-radius: 10px; font-weight: 600; color: #05080F; background: #6FD6FF; transition: top .2s; }
+.skip-link:focus { top: 12px; }
+.row-hide { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); }
+.row-hide.row-in { opacity: 1; transform: none; }

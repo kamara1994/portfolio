@@ -1,4 +1,5 @@
 import { experiences } from '@/data'
+import RevealRows from './RevealRows'
 
 // Small emoji and the skills each role actually used (taken from its own bullets)
 const META: Record<string, { icon: string; tags: string[] }> = {
@@ -16,6 +17,7 @@ export default function Experience() {
           Support, teaching, and building: the work that sits behind the projects.
         </p>
 
+        <RevealRows selector=".exp-row" />
         <ol className="exp-list-wrap mt-10 md:mt-14">
           {experiences.map((e) => {
             const m = META[e.company] ?? { icon: '🤝', tags: ['Operations', 'Documentation', 'Coordination'] }
