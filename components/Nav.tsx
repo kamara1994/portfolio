@@ -52,7 +52,7 @@ export default function Nav() {
         </ul>
 
         <button
-          className="md:hidden -mr-2 flex h-11 w-11 items-center justify-center"
+          className="md:hidden -mr-2 flex h-11 w-11 flex-col items-center justify-center"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? 'Close menu' : 'Open menu'}

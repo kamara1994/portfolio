@@ -10,7 +10,7 @@ const CERTS = [
 
 export default function Hero() {
   return (
-    <section className="hero-grid relative overflow-hidden border-b border-line pb-12 pt-20 md:pb-16 md:pt-24">
+    <section className="relative overflow-hidden border-b border-line pb-12 pt-20 md:pb-16 md:pt-24">
       <div className="wrap relative">
         {/* Name | portrait | focus */}
         <div className="grid items-center gap-7 lg:grid-cols-12 lg:gap-6">

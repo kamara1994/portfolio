@@ -9,6 +9,7 @@ import VisitTracker from '@/components/VisitTracker'
 import LiveIcons from '@/components/LiveIcons'
 import AIChat from '@/components/AIChat'
 import MobileDock from '@/components/MobileDock'
+import CursorLight from '@/components/CursorLight'
 
 const SITE = 'https://josephkamara.vercel.app'
 const DESCRIPTION =
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <AIChat />
         <MobileDock />
+        <CursorLight />
       </body>
     </html>
   )
