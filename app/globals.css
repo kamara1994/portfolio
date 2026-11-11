@@ -468,8 +468,6 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   .sk-tabs::-webkit-scrollbar { display: none; }
   .sk-tabs > * { scroll-snap-align: start; }
 }
-@media (max-width: 767px) { .socmap::before { background:
-  linear-gradient(180deg, rgba(5,8,15,.72), rgba(5,8,15,.45) 38%, transparent 60%, rgba(5,8,15,.6)); } }
 /* Bigger invisible tap area for small text links on touch screens */
 .tap { position: relative; }
 @media (pointer: coarse) { .tap::after { content: ''; position: absolute; inset: -12px -8px; } .sk-proof-link { padding-block: 7px; } }
@@ -576,3 +574,23 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .skip-link:focus { top: 12px; }
 .row-hide { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); }
 .row-hide.row-in { opacity: 1; transform: none; }
+/* Slow-network image previews */
+.blur-wrap { position: relative; display: block; }
+.blur-ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(14px) saturate(1.1); transform: scale(1.02); transition: opacity .5s ease; pointer-events: none; }
+.blur-ph.is-gone { opacity: 0; }
+.blur-real { position: relative; display: block; }
+
+/* Phone footer: a centered closing card, like the desktop feel */
+@media (max-width: 767px) {
+  #contact .footer-portrait { left: 50%; right: auto; top: 0; bottom: auto; height: 340px; width: 260px; transform: translateX(-50%); opacity: .26;
+    -webkit-mask-image: radial-gradient(ellipse 50% 60% at 50% 38%, #000 30%, transparent 75%); mask-image: radial-gradient(ellipse 50% 60% at 50% 38%, #000 30%, transparent 75%); }
+  .socmap::before { background: radial-gradient(90% 55% at 50% 30%, rgba(5,8,15,.5), transparent 70%), linear-gradient(180deg, rgba(5,8,15,.35), transparent 30%, transparent 75%, rgba(5,8,15,.7)); }
+  .foot-main { align-items: center; text-align: center; padding-top: 72px; }
+  .foot-main p:first-child { font-size: 40px; }
+  .foot-status { justify-content: center; max-width: 30ch; margin-inline: auto; }
+  .foot-main ul { width: 100%; }
+  .foot-chip { background: rgba(8,14,26,.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(140,200,255,.22); }
+  .foot-bottom { align-items: center; text-align: center; }
+}
+@media (max-width: 639px) { .cert-box { width: 60px; height: 60px; border-radius: 12px; } }
+@media (max-width: 767px) { .foot-status { display: block; } .foot-status .status-dot { display: inline-block; margin-right: 8px; vertical-align: middle; } }
