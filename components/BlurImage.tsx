@@ -10,7 +10,7 @@ import { BLUR } from '@/lib/blur'
  * no blurred halo behind).
  */
 export default function BlurImage(props: React.ImgHTMLAttributes<HTMLImageElement> & { src: string }) {
-  const { src, className = '', ...rest } = props
+  const { src, alt = '', className = '', ...rest } = props
   const [loaded, setLoaded] = useState(false)
   const ref = useRef<HTMLImageElement>(null)
   const blur = BLUR[src]
@@ -25,7 +25,7 @@ export default function BlurImage(props: React.ImgHTMLAttributes<HTMLImageElemen
         <img aria-hidden alt="" src={blur} className={`blur-ph ${loaded ? 'is-gone' : ''}`} />
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img ref={ref} src={src} onLoad={() => setLoaded(true)} className={`blur-real ${className}`} {...rest} />
+      <img ref={ref} src={src} alt={alt} onLoad={() => setLoaded(true)} className={`blur-real ${className}`} {...rest} />
     </span>
   )
 }
