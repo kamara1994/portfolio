@@ -117,7 +117,7 @@ export default function Story() {
             {MILESTONES.map((m) => (
               <li key={m.title} className="jt-row group" style={{ ['--c' as string]: m.color }}>
                 <span className={`jt-node ${m.now ? 'is-now' : ''}`}>
-                  <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <svg aria-hidden viewBox="0 0 24 24" className="icon-live h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     {m.icon}
                   </svg>
                   {m.now && <><span aria-hidden className="jt-ring" /><span aria-hidden className="jt-ring r2" /></>}

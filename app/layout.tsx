@@ -6,6 +6,7 @@ import '@fontsource/barlow-condensed/600.css'
 import '@fontsource/barlow-condensed/700.css'
 import './globals.css'
 import VisitTracker from '@/components/VisitTracker'
+import LiveIcons from '@/components/LiveIcons'
 
 const SITE = 'https://josephkamara.vercel.app'
 const DESCRIPTION =
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="bg-ink font-sans text-snow">
         <VisitTracker />
+        <LiveIcons />
         {children}
       </body>
     </html>

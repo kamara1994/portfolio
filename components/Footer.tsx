@@ -52,7 +52,7 @@ export default function Footer() {
           {LINKS.map((l) => (
             <li key={l.label}>
               <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip">
-                <svg aria-hidden viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <svg aria-hidden viewBox="0 0 24 24" className="icon-live h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   {l.icon}
                 </svg>
                 {l.label}

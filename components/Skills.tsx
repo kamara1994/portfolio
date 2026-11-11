@@ -23,7 +23,7 @@ const ICONS: Record<string, React.ReactNode> = {
 
 function Icon({ name, className = 'h-5 w-5' }: { name: string; className?: string }) {
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg aria-hidden viewBox="0 0 24 24" className={`icon-live ${className}`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       {ICONS[name]}
     </svg>
   )

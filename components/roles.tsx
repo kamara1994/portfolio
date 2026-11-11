@@ -73,7 +73,7 @@ export function chooseRole(role: Role | null) {
 export function RoleIcon({ role, className = 'h-5 w-5' }: { role: Role; className?: string }) {
   const r = ROLES.find((x) => x.id === role)!
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg aria-hidden viewBox="0 0 24 24" className={`icon-live ${className}`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       {r.icon}
     </svg>
   )

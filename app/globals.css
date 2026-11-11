@@ -302,3 +302,25 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   mask-image: radial-gradient(ellipse 50% 70% at 50% 40%, #000 35%, transparent 78%);
 }
 @media (max-width: 1023px) { .footer-portrait { left: auto; right: -20px; transform: none; width: 220px; opacity: .16; } }
+
+/* Live icons: strokes draw in on hover / selection / reveal, then glow */
+.icon-live { transition: filter .35s, transform .35s cubic-bezier(.3,1.5,.5,1); overflow: visible; }
+.icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse) { stroke-dasharray: 1; stroke-dashoffset: 0; }
+@keyframes icon-draw { 0% { stroke-dashoffset: 1; } 100% { stroke-dashoffset: 0; } }
+:is(.foot-chip, .branch-item, .sk-cat, .sk-card):hover .icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse),
+.sk-cat.is-active .icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse),
+.sk-panel-in .icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse),
+.jt-row.in .icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse) {
+  animation: icon-draw .9s cubic-bezier(.4,0,.2,1) both;
+}
+.jt-row.in .icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse) { animation-delay: .25s; animation-duration: 1.1s; }
+:is(.foot-chip, .branch-item, .sk-cat):hover .icon-live, .sk-cat.is-active .icon-live, .jt-row.in .icon-live { filter: drop-shadow(0 0 5px currentColor); }
+.foot-chip:hover .icon-live { transform: translateY(-1px) scale(1.12); }
+.branch-item:hover .icon-live { transform: translateX(2px) scale(1.1); }
+.sk-cat:hover .icon-live { transform: scale(1.12) rotate(-6deg); }
+.sk-cat.is-active .sk-cat-icon { box-shadow: 0 0 16px -2px rgba(76,201,255,.55); border-color: rgba(111,214,255,.6); }
+.group:hover .jt-node .icon-live { transform: scale(1.15); }
+@media (prefers-reduced-motion: reduce) {
+  .icon-ready :is(path, circle, rect, line, polyline, polygon, ellipse) { animation: none !important; }
+  .icon-live { transition: none; }
+}
