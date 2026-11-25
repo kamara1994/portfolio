@@ -595,3 +595,23 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 }
 @media (max-width: 639px) { .cert-box { width: 60px; height: 60px; border-radius: 12px; } }
 @media (max-width: 767px) { .foot-status { display: block; } .foot-status .status-dot { display: inline-block; margin-right: 8px; vertical-align: middle; } }
+
+/* Next-project navigation: a restrained, left-to-right color wave inside the letters. */
+@keyframes next-project-color-wave {
+  from { background-position: 100% 50%; }
+  to { background-position: 0% 50%; }
+}
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  @media (prefers-reduced-motion: no-preference) {
+    .next-project-title.is-visible {
+      background-image: repeating-linear-gradient(90deg,
+        #EEF2F8 0%, #EEF2F8 8%, #75DEFF 15%, #8EA8FF 22%,
+        #C4A5FF 29%, #65E5CF 36%, #F6D68E 43%, #EEF2F8 50%);
+      background-size: 200% 100%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: next-project-color-wave 5s linear infinite;
+    }
+  }
+}
