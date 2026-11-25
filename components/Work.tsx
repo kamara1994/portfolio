@@ -34,7 +34,7 @@ export default function Work() {
   return (
     <section id="work" aria-label="Work">
       {current && (
-        <div className="wrap pt-8">
+        <div className="wrap project-wrap pt-8">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border border-line bg-panel/70 px-5 py-4">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-raised text-signal">
               <RoleIcon role={current.id} />
@@ -55,7 +55,7 @@ export default function Work() {
         </div>
       )}
       {flagship.map((p, i) => (
-        <article key={p.id} className="wrap max-w-[1300px] py-4 md:py-6">
+        <article key={p.id} className="wrap project-wrap py-4 md:py-6">
           <div className="hud-frame grid items-center gap-5 p-5 sm:p-7 lg:grid-cols-12 lg:gap-8 lg:p-8">
             <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
             <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
@@ -90,7 +90,7 @@ export default function Work() {
 
       {more.length > 0 && (
         <div className="border-t border-line">
-          <div className="wrap max-w-[1300px] py-12 md:py-16">
+          <div className="wrap project-wrap py-12 md:py-16">
             <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More <span className="title-accent">work</span></h2>
             <ul className="mt-7 divide-y divide-line border-y border-line">
               {more.map((p) => (
