@@ -6,6 +6,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ProjectMedia from '@/components/ProjectMedia'
 import ProjectSource from '@/components/ProjectSource'
+import NextProjectTitle from '@/components/NextProjectTitle'
 
 const shown = projects.filter((p) => p.placement)
 
@@ -111,7 +112,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <Link href={`/projects/${next.id}`} className="group block border-t border-line transition-colors hover:bg-panel">
           <div className="wrap project-wrap py-10 md:py-14">
             <p className="text-[15px] text-smoke">Next project</p>
-            <p className="mt-3 font-display text-[clamp(40px,6vw,88px)] font-bold uppercase leading-none">{next.title}</p>
+            <NextProjectTitle title={next.title} />
           </div>
         </Link>
       </main>
