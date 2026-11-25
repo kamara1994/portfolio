@@ -1,3 +1,5 @@
+'use client'
+import { useState } from 'react'
 import type { Project } from '@/data/projects'
 import { BLUR } from '@/lib/blur'
 
@@ -9,12 +11,15 @@ const ph = (src?: string) => (src && BLUR[src] ? { backgroundImage: `url(${BLUR[
 export default function ProjectMedia({ project, priority = false }: { project: Project; priority?: boolean }) {
   const { video, screenshot, title } = project
 
-  if (video) {
+  const [failed, setFailed] = useState(false)
+  if (video && !failed) {
     return (
       <video
         className="h-full w-full object-cover"
         src={video}
         poster={screenshot}
+        onError={() => setFailed(true)}
+        controls
         autoPlay
         muted
         loop

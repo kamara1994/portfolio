@@ -5,6 +5,7 @@ import { projects, type Project } from '@/data/projects'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ProjectMedia from '@/components/ProjectMedia'
+import ProjectSource from '@/components/ProjectSource'
 
 const shown = projects.filter((p) => p.placement)
 
@@ -49,7 +50,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <p className="mt-6 max-w-[44ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
           <div className="btn-row mt-10 flex flex-wrap gap-3">
             {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
-            {p.github && <a href={p.github} target="_blank" rel="noopener" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View code</a>}
+            <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>
             {p.report && <a href={p.report} className="btn-ghost">Download report</a>}
           </div>
         </header>
@@ -74,7 +75,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             </div>
           </dl>
 
-          <div className="space-y-14 md:col-span-7 md:col-start-6">
+          <div className="min-w-0 space-y-14 md:col-span-7 md:col-start-6">
             <p className="text-[20px] leading-relaxed text-snow/90">{p.description}</p>
             {[
               ['The problem', p.problem],
@@ -86,6 +87,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                 <p className="mt-4 text-[17px] leading-[1.7] text-snow/80">{body}</p>
               </div>
             ))}
+            <ProjectSource project={p} />
             {p.architecture && (
               <div>
                 <h2 className="font-display text-[32px] font-bold uppercase leading-none">How data flows</h2>

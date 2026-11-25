@@ -21,7 +21,7 @@ const byId = (id: string) => shown.find((p) => p.id === id)
 const UNCONFIRMED_FIGURES = /10,000\+|95%\+/
 const verifiedBullets = (bullets: string[]) => bullets.filter((b) => !UNCONFIRMED_FIGURES.test(b))
 
-const projectLink = (id: string): ProofLink => ({ label: PROJECT_NAMES[id] ?? id, href: `/projects/${id}` })
+const projectLink = (id: string): ProofLink => ({ label: PROJECT_NAMES[id] ?? byId(id)?.title ?? id, href: `/projects/${id}` })
 const LINKS = {
   email: { label: 'Email Joseph', href: `mailto:${EMAIL}` },
   resume: { label: 'Résumé (PDF)', href: '/resume/Joseph_Allan_Kamara_Resume_v3.pdf' },
@@ -95,6 +95,13 @@ const TOPICS: { keys: string[]; reply: () => PwezaReply }[] = [
         links: [projectLink('fortress-v2'), LINKS.skills],
       }
     },
+  },
+  {
+    keys: ['aegis', 'salone aegis', 'salone-aegis', 'agies', 'network lab', 'packet tracer'],
+    reply: () => ({
+      text: 'SALONE AEGIS is his open-source CCNA learning and network lab platform, with interactive lessons, practice exams, simulated networking and a development FastAPI backend. Live infrastructure integration is still in development.',
+      links: [projectLink('salone-aegis')],
+    }),
   },
   {
     keys: ['blue-x', 'blue x', 'pytorch', 'machine learning', 'classifier', 'classification'],
