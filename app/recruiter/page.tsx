@@ -77,8 +77,10 @@ export default function RecruiterPage() {
                 </div>
                 <p className="mt-2 text-[15.5px] leading-relaxed text-snow/85">{p.impact}</p>
                 <p className="mt-2 text-[13.5px] text-smoke">{p.stack.slice(0, 6).join(', ')}</p>
-                <div className="mt-3 flex gap-2 print:hidden">
+                <div className="mt-3 flex flex-wrap gap-2 print:hidden">
                   <Link href={`/projects/${p.id}`} className="sk-proof sk-proof-link">Case study</Link>
+                  <Link href={`/projects/${p.id}#evidence`} className="sk-proof sk-proof-link">Evidence</Link>
+                  <Link href={`/projects/${p.id}#source-code`} className="sk-proof sk-proof-link">Source excerpts</Link>
                   {p.github && <a href={p.github} target="_blank" rel="noopener" className="sk-proof sk-proof-link">Code</a>}
                 </div>
               </li>
