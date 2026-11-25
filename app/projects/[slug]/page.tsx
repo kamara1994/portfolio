@@ -6,7 +6,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ProjectMedia from '@/components/ProjectMedia'
 import ProjectSource from '@/components/ProjectSource'
-import NextProjectTitle, { ProjectTitleArt } from '@/components/NextProjectTitle'
+import NextProjectTitle, { ProjectTitleArt, TitleMotionControl } from '@/components/NextProjectTitle'
 
 const shown = projects.filter((p) => p.placement)
 
@@ -45,7 +45,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       <Nav />
       <main>
         <header className="wrap project-wrap pb-7 pt-28 md:pt-32">
-          <Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link>
+          <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link><TitleMotionControl /></div>
           <div className="mt-5 grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <div className="min-w-0 lg:col-span-5">
               <p className="text-[15px] text-smoke">{p.category}</p>
@@ -109,12 +109,12 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           </div>
         </section>
 
-        <Link href={`/projects/${next.id}`} className="group block border-t border-line transition-colors hover:bg-panel">
+        <div className="group border-t border-line transition-colors hover:bg-panel">
           <div className="wrap project-wrap py-10 md:py-14">
-            <p className="text-[15px] text-smoke">Next project</p>
-            <NextProjectTitle title={next.title} projectId={next.id} />
+            <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[15px] text-smoke">Next project</p><TitleMotionControl /></div>
+            <Link href={`/projects/${next.id}`} className="block"><NextProjectTitle title={next.title} projectId={next.id} /></Link>
           </div>
-        </Link>
+        </div>
       </main>
       <Footer />
     </>
