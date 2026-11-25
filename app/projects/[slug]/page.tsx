@@ -45,42 +45,41 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       <main>
         <header className="wrap project-wrap pb-7 pt-28 md:pt-32">
           <Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link>
-          <p className="mt-5 text-[15px] text-smoke">{p.category}</p>
-          <h1 className="mt-3 font-display text-[clamp(38px,5vw,76px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
-          <p className="mt-4 max-w-[60ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
-          <div className="btn-row mt-5 flex flex-wrap gap-3">
-            {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
-            <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>
-            {p.report && <a href={p.report} className="btn-ghost">Download report</a>}
+          <div className="mt-5 grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
+            <div className="min-w-0 lg:col-span-5">
+              <p className="text-[15px] text-smoke">{p.category}</p>
+              <h1 className="mt-3 font-display text-[clamp(38px,5vw,76px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
+              <p className="mt-4 max-w-[60ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
+              <div className="btn-row mt-5 flex flex-wrap gap-3">
+                {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
+                <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>
+                {p.report && <a href={p.report} className="btn-ghost">Download report</a>}
+              </div>
+              <p className="mt-6 text-[18px] leading-relaxed text-snow/90">{p.description}</p>
+            </div>
+            <div className="min-w-0 lg:col-span-7">
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-line bg-panel">
+                <ProjectMedia project={p} priority />
+              </div>
+              <dl className="mt-5 grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-3">
+                {facts.map(([k, v]) => (
+                  <div key={k} className="min-w-0">
+                    <dt className="text-[14px] text-smoke">{k}</dt>
+                    <dd className="mt-1 text-[16px] leading-relaxed">{v}</dd>
+                  </div>
+                ))}
+                <div className="sm:col-span-3">
+                  <dt className="text-[14px] text-smoke">Built with</dt>
+                  <dd className="mt-1 text-[16px] leading-relaxed">{p.stack.join(', ')}</dd>
+                </div>
+              </dl>
+            </div>
           </div>
         </header>
 
-        <div className="wrap project-wrap">
-          {p.video || p.screenshot ? (
-            <div className="relative mx-auto aspect-video w-full max-w-[720px] overflow-hidden rounded-lg border border-line bg-panel">
-              <ProjectMedia project={p} priority />
-            </div>
-          ) : (
-            <div className="rounded-lg border border-line bg-panel px-5 py-4 text-sm text-smoke">Project demo video coming soon. Explore the implementation and source code below.</div>
-          )}
-        </div>
-
-        <section className="wrap project-wrap grid gap-8 py-10 md:grid-cols-12 md:py-14">
-          <dl className="space-y-6 md:col-span-4">
-            {facts.map(([k, v]) => (
-              <div key={k}>
-                <dt className="text-[14px] text-smoke">{k}</dt>
-                <dd className="mt-1 text-[17px]">{v}</dd>
-              </div>
-            ))}
-            <div>
-              <dt className="text-[14px] text-smoke">Built with</dt>
-              <dd className="mt-1 text-[17px] leading-relaxed">{p.stack.join(', ')}</dd>
-            </div>
-          </dl>
-
-          <div className="min-w-0 space-y-9 md:col-span-7 md:col-start-6">
-            <p className="text-[20px] leading-relaxed text-snow/90">{p.description}</p>
+        <section className="wrap project-wrap py-10 md:py-14">
+          <div className="min-w-0 space-y-9">
+            <div className="grid gap-8 lg:grid-cols-3">
             {[
               ['The problem', p.problem],
               ['What I built', p.approach],
@@ -91,6 +90,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                 <p className="mt-4 text-[17px] leading-[1.7] text-snow/80">{body}</p>
               </div>
             ))}
+            </div>
             <ProjectSource project={p} />
             {p.architecture && (
               <div>
