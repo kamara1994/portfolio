@@ -29,6 +29,33 @@ export interface Project {
 
 const projectList: Project[] = [
   {
+    id: 'salone-aegis',
+    placement: 'flagship',
+    num: '14',
+    title: 'SALONE AEGIS',
+    subtitle: 'Open-Source IT Certification Learning & Interactive Network Lab',
+    category: 'Network Engineering · Cybersecurity · EdTech',
+    duration: '2026 – Present',
+    role: 'Creator & Platform Developer',
+    status: 'in-development',
+    description: 'AEGIS is an open-source learning and network-lab platform focused initially on Cisco CCNA. It combines an interactive study book, flashcards, practice exams, AI-assisted tutoring, a browser-based network lab and graded troubleshooting exercises. Its Next.js interface can run independently in simulated mock mode; an integrated FastAPI operator backend is also under development.',
+    problem: 'IT certification learners need a way to move from theory to practical configuration, troubleshooting and assessment without switching between disconnected learning tools.',
+    approach: 'Built an integrated learning and lab experience with drag-and-drop devices, cable connections, IOS-style configuration, physical and rack views, packet inspection and step-by-step OSI simulation. The operator backend separates API, orchestration, AI, telemetry and outbox processes and persists evidence and events.',
+    outcome: 'The public repository contains a runnable offline study and simulated lab interface, assessment features and an integrated development backend. Live infrastructure integration and production acceptance remain unfinished; no production readiness is claimed.',
+    impact: 'Connects certification study with hands-on network configuration, packet simulation, graded labs and troubleshooting. Open source under AGPL-3.0.',
+    stack: ['Next.js', 'React', 'TypeScript', 'Python', 'FastAPI', 'PostgreSQL', 'Redis Streams', 'Docker Compose', 'Keycloak'],
+    architecture: [
+      'Next.js learning interface → CCNA lessons, practice exams and scenario exercises',
+      'Browser network lab → device topology, cabling and IOS-style simulated configuration',
+      'Mock lab → packet inspection and step-by-step simulation',
+      'Live-mode frontend proxy → FastAPI gateway (development)',
+      'FastAPI → PostgreSQL records, jobs and audit evidence',
+      'Separate workers → orchestration, AI, telemetry and Redis Streams outbox',
+    ],
+    github: 'https://github.com/kamara1994/salone-aegis-platform',
+    featured: true,
+  },
+  {
     id: 'blue-soc-p8',
     placement: 'flagship',
     num: '01',
