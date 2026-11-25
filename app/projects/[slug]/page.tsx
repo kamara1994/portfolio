@@ -43,7 +43,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
     <>
       <Nav />
       <main>
-        <header className="wrap max-w-[1300px] pb-7 pt-28 md:pt-32">
+        <header className="wrap project-wrap pb-7 pt-28 md:pt-32">
           <Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link>
           <p className="mt-5 text-[15px] text-smoke">{p.category}</p>
           <h1 className="mt-3 font-display text-[clamp(38px,5vw,76px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
@@ -55,7 +55,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           </div>
         </header>
 
-        <div className="wrap max-w-[1300px]">
+        <div className="wrap project-wrap">
           {p.video || p.screenshot ? (
             <div className="relative mx-auto aspect-video w-full max-w-[720px] overflow-hidden rounded-lg border border-line bg-panel">
               <ProjectMedia project={p} priority />
@@ -65,7 +65,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           )}
         </div>
 
-        <section className="wrap max-w-[1300px] grid gap-8 py-10 md:grid-cols-12 md:py-14">
+        <section className="wrap project-wrap grid gap-8 py-10 md:grid-cols-12 md:py-14">
           <dl className="space-y-6 md:col-span-4">
             {facts.map(([k, v]) => (
               <div key={k}>
@@ -109,7 +109,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         </section>
 
         <Link href={`/projects/${next.id}`} className="group block border-t border-line transition-colors hover:bg-panel">
-          <div className="wrap max-w-[1300px] py-10 md:py-14">
+          <div className="wrap project-wrap py-10 md:py-14">
             <p className="text-[15px] text-smoke">Next project</p>
             <p className="mt-3 font-display text-[clamp(40px,6vw,88px)] font-bold uppercase leading-none">{next.title}</p>
           </div>
