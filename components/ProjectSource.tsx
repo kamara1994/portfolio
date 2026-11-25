@@ -3,7 +3,7 @@ import { useState } from 'react'
 import samples from '@/data/project-source-samples.json'
 import type { Project } from '@/data/projects'
 
-type Sample = { title: string; description: string; path: string; language: string; start: number; source: string; code: string }
+type Sample = { title: string; description: string; path: string; language: string; start: number; source: string; code: string; license?: string }
 const catalog: Record<string, Sample[]> = samples
 
 // Render source as escaped React text, not executable HTML.
@@ -49,6 +49,7 @@ export default function ProjectSource({ project }: { project: Project }) {
               <button type="button" className="rounded border border-line px-3 py-2 text-sm text-snow hover:text-signal" onClick={copyCode}>Copy code</button>
             </div>
             <p className="text-sm text-smoke">{selected.description}</p>
+            {selected.license && <p className="text-xs text-slate-400">{selected.license}</p>}
             <span aria-live="polite" className="text-sm text-signal">{copyStatus}</span>
           </div>
           <pre tabIndex={0} aria-label={selected.title + ' source code'} className="max-h-[440px] overflow-auto p-4 text-[13px] leading-6 text-slate-200"><code className="block w-max min-w-full">{selected.code.split('\n').map((line, i) => <span key={i} className="block"><span aria-hidden="true" className="mr-4 inline-block w-8 select-none text-right text-slate-500">{selected.start + i}</span><Highlight line={line} />{'\n'}</span>)}</code></pre>
