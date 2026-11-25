@@ -49,5 +49,27 @@
       "source": "https://github.com/kamara1994/pandie-site/blob/main/app/lib/currency.ts#L1-L16",
       "code": "// Currencies where the display amount equals the smallest unit (no ×100).\n// Follows Stripe's zero-decimal definition.\nconst ZERO_DECIMAL = new Set([\n  \"BIF\",\"CLP\",\"DJF\",\"GNF\",\"JPY\",\"KMF\",\"KRW\",\"MGA\",\n  \"PYG\",\"RWF\",\"UGX\",\"VND\",\"VUV\",\"XAF\",\"XOF\",\"XPF\",\n]);\n\n// Convert a display amount (e.g. 50.00 USD or 5000 JPY) to the minor unit\n// stored in the donations table (cents for USD, yen for JPY, etc.).\nexport function toMinorUnit(amount: string | number, currency: string): number {\n  const n = typeof amount === \"string\" ? parseFloat(amount) : amount;\n  if (!isFinite(n) || n < 0) return 0;\n  return ZERO_DECIMAL.has(currency.toUpperCase())\n    ? Math.round(n)\n    : Math.round(n * 100);\n}"
     }
+  ],
+  "salone-aegis": [
+    {
+      "title": "Scenario assessment scoring",
+      "description": "Scores a learner’s triage decisions, evidence collection, documentation and time.",
+      "path": "apps/web/src/content/scoring.ts",
+      "language": "typescript",
+      "start": 34,
+      "source": "https://github.com/kamara1994/salone-aegis-platform/blob/main/apps/web/src/content/scoring.ts#L34-L66",
+      "code": "export function scoreCase(c: GameCase, s: PlayState) {\n  const b: Record<Category, number> = { urgency: 0, impact: 0, questions: 0, evidence: 0, diagnosis: 0, fix: 0, escalation: 0, documentation: 0, communication: 0, time: 0 };\n  b.urgency = ladder(URGENCY, s.urgency, c.urgency, MAX.urgency);\n  b.impact = ladder(IMPACT, s.impact, c.impact, MAX.impact);\n\n  const useful = c.questions.filter((q) => q.useful);\n  const askedUseful = useful.filter((q) => s.asked.includes(q.id)).length;\n  const askedWaste = c.questions.filter((q) => !q.useful && s.asked.includes(q.id)).length;\n  b.questions = Math.max(0, Math.round((useful.length ? askedUseful / useful.length : 1) * MAX.questions) - askedWaste * 2);\n\n  const key = c.evidence.filter((e) => e.key);\n  const openedKey = key.filter((e) => s.opened.includes(e.id)).length;\n  const openedExtra = c.evidence.filter((e) => !e.key && s.opened.includes(e.id)).length;\n  b.evidence = Math.max(0, Math.round((key.length ? openedKey / key.length : 1) * MAX.evidence) - openedExtra);\n\n  b.diagnosis = c.diagnoses.find((d) => d.id === s.diagnosis)?.correct ? MAX.diagnosis : 0;\n  b.fix = c.fixes.find((f) => f.id === s.fix)?.correct ? MAX.fix : 0;\n  b.escalation = s.escalation === c.escalation.correct ? MAX.escalation : 0;\n\n  const note = s.note.toLowerCase();\n  const hits = c.noteKeywords.filter((k) => note.includes(k.toLowerCase()));\n  b.documentation = c.noteKeywords.length ? Math.round((hits.length / c.noteKeywords.length) * MAX.documentation) : MAX.documentation;\n\n  const sentences = s.note.split(/[.!?\\n]+/).filter((x) => x.trim().split(/\\s+/).length >= 3).length;\n  b.communication = BLAME.test(s.note) ? 0 : sentences >= 2 ? MAX.communication : sentences === 1 ? 2 : 0;\n\n  const mins = s.elapsedMs / 60000;\n  b.time = mins <= c.minutes ? MAX.time : mins <= c.minutes * 2 ? 1 : 0;\n\n  const hintPenalty = s.hintsUsed * 3;\n  const raw = Object.values(b).reduce((a, x) => a + x, 0);\n  return { breakdown: b, hintPenalty, missedKeywords: c.noteKeywords.filter((k) => !hits.includes(k)), score: Math.max(0, raw - hintPenalty), max: 100 };\n}",
+      "license": "AGPL-3.0-only · Copyright (c) 2026 Joseph Allan Kamara"
+    },
+    {
+      "title": "Audit evidence verification",
+      "description": "Recomputes SHA-256 hashes to detect changes within an evidence chain.",
+      "path": "services/evidence/service.py",
+      "language": "python",
+      "start": 33,
+      "source": "https://github.com/kamara1994/salone-aegis-platform/blob/main/services/evidence/service.py#L33-L41",
+      "code": "def verify_chain(items):\n    previous = '0' * 64\n    for item in items:\n        record = {k: v for k, v in item.items() if k not in ('hash', 'previous_hash')}\n        digest = hashlib.sha256((previous + canonical(record)).encode()).hexdigest()\n        if item['previous_hash'] != previous or item['hash'] != digest:\n            return False\n        previous = digest\n    return True",
+      "license": "AGPL-3.0-only · Copyright (c) 2026 Joseph Allan Kamara"
+    }
   ]
 }
