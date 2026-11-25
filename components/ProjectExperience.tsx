@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import type { Project } from '@/data/projects'
 import ProjectMedia from './ProjectMedia'
+import nextProjectPreviews from '@/data/next-project-previews.json'
+const actualPreviews: Record<string, string> = nextProjectPreviews
 import NextProjectTitle, { TitleMotionControl } from './NextProjectTitle'
 
 export function ProjectReadingProgress() {
@@ -117,7 +119,7 @@ const previewThemes: Record<string, string> = {
 export function ProjectNextNavigation({ project }: { project: Project }) {
   const [failed, setFailed] = useState(false)
   const theme = previewThemes[project.id] ?? 'network'
-  const screenshot = project.screenshot
+  const screenshot = actualPreviews[project.id] ?? project.screenshot
   return <div className="group pe-next border-t border-line" data-next-theme={theme}>
     <div className="pe-next-backdrop" aria-hidden="true">
       {screenshot && !failed ? (
