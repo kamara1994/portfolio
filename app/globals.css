@@ -596,22 +596,32 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 @media (max-width: 639px) { .cert-box { width: 60px; height: 60px; border-radius: 12px; } }
 @media (max-width: 767px) { .foot-status { display: block; } .foot-status .status-dot { display: inline-block; margin-right: 8px; vertical-align: middle; } }
 
-/* Next-project navigation: a restrained, left-to-right color wave inside the letters. */
-@keyframes next-project-color-wave {
-  from { background-position: 100% 50%; }
-  to { background-position: 0% 50%; }
+/* Project title imagery: one left-to-right sweep, then original white text. */
+.project-title-art { display: block; }
+.project-title-art[data-art="soc"] { --title-art-image: url('/title-art/soc.svg'); }
+.project-title-art[data-art="network"] { --title-art-image: url('/title-art/network.svg'); }
+.project-title-art[data-art="enterprise"] { --title-art-image: url('/title-art/enterprise.svg'); }
+.project-title-art[data-art="cloud"] { --title-art-image: url('/title-art/cloud.svg'); }
+.project-title-art[data-art="threat"] { --title-art-image: url('/title-art/threat.svg'); }
+.project-title-art[data-art="voice"] { --title-art-image: url('/title-art/voice.svg'); }
+.project-title-art[data-art="engineering"] { --title-art-image: url('/title-art/engineering.svg'); }
+.project-title-art[data-art="community"] { --title-art-image: url('/title-art/community.svg'); }
+@keyframes project-title-art-sweep {
+  from { background-position: 100% 50%, 0% 50%; }
+  to { background-position: 0% 50%, 100% 50%; }
 }
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   @media (prefers-reduced-motion: no-preference) {
-    .next-project-title.is-visible {
-      background-image: repeating-linear-gradient(90deg,
-        #EEF2F8 0%, #EEF2F8 8%, #75DEFF 15%, #8EA8FF 22%,
-        #C4A5FF 29%, #65E5CF 36%, #F6D68E 43%, #EEF2F8 50%);
-      background-size: 200% 100%;
-      background-clip: text;
+    .project-title-art.title-art-active {
+      background-image: linear-gradient(90deg, #EEF2F8 0%, #EEF2F8 39%, rgba(238,242,248,.88) 43%, rgba(238,242,248,.12) 49%, rgba(238,242,248,.12) 51%, rgba(238,242,248,.88) 57%, #EEF2F8 61%, #EEF2F8 100%), var(--title-art-image);
+      background-size: 300% 100%, auto 140%;
+      background-repeat: no-repeat, repeat-x;
+      background-position: 100% 50%, 0% 50%;
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
-      animation: next-project-color-wave 5s linear infinite;
+      -webkit-text-fill-color: transparent;
+      animation: project-title-art-sweep 5s linear 1;
     }
   }
 }

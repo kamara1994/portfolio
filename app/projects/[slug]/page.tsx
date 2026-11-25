@@ -6,7 +6,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ProjectMedia from '@/components/ProjectMedia'
 import ProjectSource from '@/components/ProjectSource'
-import NextProjectTitle from '@/components/NextProjectTitle'
+import NextProjectTitle, { ProjectTitleArt } from '@/components/NextProjectTitle'
 
 const shown = projects.filter((p) => p.placement)
 
@@ -49,7 +49,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <div className="mt-5 grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <div className="min-w-0 lg:col-span-5">
               <p className="text-[15px] text-smoke">{p.category}</p>
-              <h1 className="mt-3 font-display text-[clamp(38px,5vw,76px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
+              <h1 className="mt-3 font-display text-[clamp(38px,5vw,76px)] font-bold uppercase leading-[0.88]"><ProjectTitleArt title={p.title} projectId={p.id} /></h1>
               <p className="mt-4 max-w-[60ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
               <div className="btn-row mt-5 flex flex-wrap gap-3">
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
@@ -112,7 +112,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <Link href={`/projects/${next.id}`} className="group block border-t border-line transition-colors hover:bg-panel">
           <div className="wrap project-wrap py-10 md:py-14">
             <p className="text-[15px] text-smoke">Next project</p>
-            <NextProjectTitle title={next.title} />
+            <NextProjectTitle title={next.title} projectId={next.id} />
           </div>
         </Link>
       </main>
