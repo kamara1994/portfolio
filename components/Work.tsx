@@ -74,8 +74,10 @@ export default function Work() {
               <div className="btn-row mt-8 flex flex-wrap gap-3">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
                 {p.github && (
-                  <a href={p.github} target="_blank" rel="noopener" className="btn-ghost">View code</a>
+                  <a href={p.github} target="_blank" rel="noopener" className="btn-ghost">View source code</a>
                 )}
+                {p.sourceAccess && <span className="self-center text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
+                {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="btn-ghost">Live demo</a>}
               </div>
             </div>
 
@@ -95,16 +97,19 @@ export default function Work() {
             <ul className="mt-12 divide-y divide-line border-y border-line">
               {more.map((p) => (
                 <li key={p.id}>
-                  <Link
-                    href={`/projects/${p.id}`}
-                    className="group grid gap-2 py-7 transition-colors hover:bg-panel md:grid-cols-12 md:items-baseline md:gap-8 md:px-4"
-                  >
-                    <span className="font-display text-[28px] font-semibold uppercase leading-tight md:col-span-4">
-                      {p.title}
-                    </span>
-                    <span className="text-[16px] leading-relaxed text-snow/80 md:col-span-6">{p.subtitle}</span>
-                    <span className="text-[15px] text-smoke md:col-span-2 md:text-right">{p.category}</span>
-                  </Link>
+                  <div className="grid gap-5 py-7 md:grid-cols-12 md:items-center md:px-4">
+                    <div className="relative aspect-video overflow-hidden border border-line bg-panel md:col-span-4"><ProjectMedia project={p} /></div>
+                    <div className="md:col-span-8">
+                      <Link href={`/projects/${p.id}`} className="font-display text-[28px] font-semibold uppercase leading-tight hover:text-signal">{p.title}</Link>
+                      <p className="mt-2 text-smoke">{p.subtitle}</p>
+                      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                        <Link href={`/projects/${p.id}`} className="text-signal">How it works</Link>
+                        {p.github && <a href={p.github} target="_blank" rel="noopener noreferrer" className="text-signal">View source code</a>}
+                        {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="text-signal">Live demo</a>}
+                        {p.sourceAccess && <span className="text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
+                      </div>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
