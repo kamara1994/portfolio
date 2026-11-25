@@ -73,9 +73,7 @@ export default function Work() {
               </p>
               <div className="btn-row mt-8 flex flex-wrap gap-3">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
-                {p.github && (
-                  <a href={p.github} target="_blank" rel="noopener" className="btn-ghost">View source code</a>
-                )}
+                <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>
                 {p.sourceAccess && <span className="self-center text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="btn-ghost">Live demo</a>}
               </div>
@@ -104,7 +102,7 @@ export default function Work() {
                       <p className="mt-2 text-smoke">{p.subtitle}</p>
                       <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                         <Link href={`/projects/${p.id}`} className="text-signal">How it works</Link>
-                        {p.github && <a href={p.github} target="_blank" rel="noopener noreferrer" className="text-signal">View source code</a>}
+                        <Link href={`/projects/${p.id}#source-code`} className="text-signal">View source code</Link>
                         {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="text-signal">Live demo</a>}
                         {p.sourceAccess && <span className="text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
                       </div>
