@@ -108,12 +108,32 @@ export function ProjectSectionNav({ architecture }: { architecture: boolean }) {
   return <nav aria-label="Project sections" className="pe-section-nav"><a href="#project-overview">Overview</a><a href="#project-media">Media</a><a href="#project-details">Case study</a><a href="#evidence">Evidence</a><a href="#source-code">Code</a>{architecture&&<a href="#architecture">Architecture</a>}</nav>
 }
 
+const previewThemes: Record<string, string> = {
+  'blue-soc-p8': 'soc', 'salone-aegis': 'network', 'enterprise-networking': 'enterprise',
+  'fortress-v2': 'cloud', 'blue-x': 'threat', 'pweza-voice-agent': 'voice',
+  'elitecom': 'engineering', 'pandie-foundation': 'community',
+}
+
 export function ProjectNextNavigation({ project }: { project: Project }) {
-  return <div className="group pe-next border-t border-line">
-    <div className="wrap project-wrap py-10 md:py-14">
+  const [failed, setFailed] = useState(false)
+  const theme = previewThemes[project.id] ?? 'network'
+  const screenshot = project.screenshot
+  return <div className="group pe-next border-t border-line" data-next-theme={theme}>
+    <div className="pe-next-backdrop" aria-hidden="true">
+      {screenshot && !failed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="pe-next-image" src={screenshot} alt="" loading="lazy" decoding="async" onError={()=>setFailed(true)} />
+      ) : project.video && !failed ? (
+        <video className="pe-next-image" src={project.video} muted playsInline preload="metadata" tabIndex={-1} onError={()=>setFailed(true)} />
+      ) : (
+        <div className="pe-next-abstract"><div className="pe-next-grid"/><span className="pe-next-orbit pe-next-orbit-one"/><span className="pe-next-orbit pe-next-orbit-two"/><span className="pe-next-orbit pe-next-orbit-three"/></div>
+      )}
+    </div>
+    <div className="wrap project-wrap pe-next-inner py-10 md:py-14">
       <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[15px] text-smoke">Next project</p><TitleMotionControl /></div>
       <Link href={'/projects/'+project.id} className="pe-next-link">
-        <div className="min-w-0"><NextProjectTitle title={project.title} projectId={project.id}/><p className="mt-3 text-smoke">{project.subtitle}</p></div><span className="pe-next-arrow" aria-hidden="true">↗</span>
+        <div className="pe-next-copy min-w-0"><NextProjectTitle title={project.title} projectId={project.id}/><p className="mt-3 max-w-[60ch] text-smoke">{project.subtitle}</p></div>
+        <span className="pe-next-arrow" aria-hidden="true">↗</span>
       </Link>
     </div>
   </div>

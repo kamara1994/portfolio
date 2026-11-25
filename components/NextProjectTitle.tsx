@@ -56,15 +56,12 @@ export function ProjectTitleArt({ title, projectId }: { title: string; projectId
       else stop()
     }, { threshold: 0.15 })
     const changed = () => { if (motion.matches || motionDisabled()) stop(); else if (visible) play() }
-    const onEnd = (event: AnimationEvent) => { if (event.animationName === 'project-title-art-sweep') stop() }
     observer.observe(el)
-    el.addEventListener('animationend', onEnd)
     el.addEventListener('pointerenter', play)
     motion.addEventListener('change', changed)
     window.addEventListener(motionEvent, changed)
     return () => {
       observer.disconnect()
-      el.removeEventListener('animationend', onEnd)
       el.removeEventListener('pointerenter', play)
       motion.removeEventListener('change', changed)
       window.removeEventListener(motionEvent, changed)
