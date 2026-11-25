@@ -1,0 +1,29 @@
+name: Capture authentic portfolio previews
+on:
+  push:
+    branches: [feature/authentic-project-previews]
+    paths:
+      - '.github/workflows/capture-project-previews.yml'
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/capture-project-previews.cjs
+      - name: Save captured public pages
+        run: |
+          git add public/screenshots data/next-project-previews.json
+          if git diff --cached --quiet; then
+            echo "No verified images captured"
+          else
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "Capture actual public project websites"
+            git push origin HEAD:feature/authentic-project-previews
+          fi
