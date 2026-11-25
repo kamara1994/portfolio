@@ -45,11 +45,12 @@ export default function MobileDock() {
           <button
             key="ai"
             type="button"
-            className="dock-ai"
+            className="dock-ai relative"
             aria-label="Ask my AI assistant"
             onClick={() => window.dispatchEvent(new Event('pweza:toggle'))}
           >
             <PwezaMark size={40} />
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-[17px] left-1/2 -translate-x-1/2 text-[11px] font-semibold leading-none tracking-wide text-snow">Ask</span>
           </button>
         ) : (
           <a
