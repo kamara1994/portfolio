@@ -4,9 +4,9 @@ import { notFound } from 'next/navigation'
 import { projects, type Project } from '@/data/projects'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
-import ProjectMedia from '@/components/ProjectMedia'
 import ProjectSource from '@/components/ProjectSource'
-import NextProjectTitle, { ProjectTitleArt, TitleMotionControl } from '@/components/NextProjectTitle'
+import { ProjectTitleArt, TitleMotionControl } from '@/components/NextProjectTitle'
+import { ProjectReadingProgress, ProjectMediaStage, ProjectArchitecture, ProjectEvidence, ProjectSectionNav, ProjectNextNavigation } from '@/components/ProjectExperience'
 
 const shown = projects.filter((p) => p.placement)
 
@@ -43,8 +43,9 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   return (
     <>
       <Nav />
-      <main>
-        <header className="wrap project-wrap pb-7 pt-28 md:pt-32">
+      <main key={p.id} className="pe-project-page" data-project={p.id}>
+        <ProjectReadingProgress />
+        <header id="project-overview" className="wrap project-wrap pb-7 pt-28 md:pt-32">
           <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link><TitleMotionControl /></div>
           <div className="mt-5 grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <div className="min-w-0 lg:col-span-5">
@@ -59,9 +60,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               <p className="mt-6 text-[18px] leading-relaxed text-snow/90">{p.description}</p>
             </div>
             <div className="min-w-0 lg:col-span-7">
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-line bg-panel">
-                <ProjectMedia project={p} priority />
-              </div>
+              <div id="project-media" className="scroll-mt-28"><ProjectMediaStage project={p} /></div>
               <dl className="mt-5 grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-3">
                 {facts.map(([k, v]) => (
                   <div key={k} className="min-w-0">
@@ -78,7 +77,8 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           </div>
         </header>
 
-        <section className="wrap project-wrap py-10 md:py-14">
+        <div className="wrap project-wrap"><ProjectSectionNav architecture={Boolean(p.architecture?.length)} /></div>
+        <section id="project-details" className="wrap project-wrap py-10 md:py-14">
           <div className="min-w-0 space-y-9">
             <div className="grid gap-8 lg:grid-cols-3">
             {[
@@ -92,29 +92,13 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               </div>
             ))}
             </div>
-            <ProjectSource project={p} />
-            {p.architecture && (
-              <div>
-                <h2 className="font-display text-[32px] font-bold uppercase leading-none">How data flows</h2>
-                <ol className="mt-6 divide-y divide-line border-y border-line">
-                  {p.architecture.map((step, i) => (
-                    <li key={step} className="grid grid-cols-[2.5rem_1fr] py-4 text-[16px] leading-relaxed text-snow/85">
-                      <span className="text-smoke">{i + 1}</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
+            <ProjectEvidence project={p} />
+            <ProjectSource key={p.id} project={p} />
+            {p.architecture && <ProjectArchitecture key={p.id} steps={p.architecture} />}
           </div>
         </section>
 
-        <div className="group border-t border-line transition-colors hover:bg-panel">
-          <div className="wrap project-wrap py-10 md:py-14">
-            <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[15px] text-smoke">Next project</p><TitleMotionControl /></div>
-            <Link href={`/projects/${next.id}`} className="block"><NextProjectTitle title={next.title} projectId={next.id} /></Link>
-          </div>
-        </div>
+        <ProjectNextNavigation project={next} />
       </main>
       <Footer />
     </>
