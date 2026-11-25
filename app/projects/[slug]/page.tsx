@@ -43,25 +43,29 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
     <>
       <Nav />
       <main>
-        <header className="wrap pb-14 pt-36 md:pt-44">
+        <header className="wrap project-wrap pb-7 pt-28 md:pt-32">
           <Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link>
-          <p className="mt-10 text-[15px] text-smoke">{p.category}</p>
-          <h1 className="mt-3 font-display text-[clamp(52px,9vw,140px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
-          <p className="mt-6 max-w-[44ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
-          <div className="btn-row mt-10 flex flex-wrap gap-3">
+          <p className="mt-5 text-[15px] text-smoke">{p.category}</p>
+          <h1 className="mt-3 font-display text-[clamp(38px,5vw,76px)] font-bold uppercase leading-[0.88]">{p.title}</h1>
+          <p className="mt-4 max-w-[60ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
+          <div className="btn-row mt-5 flex flex-wrap gap-3">
             {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
             <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>
             {p.report && <a href={p.report} className="btn-ghost">Download report</a>}
           </div>
         </header>
 
-        <div className={`wrap ${p.video || p.screenshot ? '' : 'hidden md:block'}`}>
-          <div className="relative aspect-[16/9] overflow-hidden border border-line bg-panel">
-            <ProjectMedia project={p} priority />
-          </div>
+        <div className="wrap project-wrap">
+          {p.video || p.screenshot ? (
+            <div className="relative mx-auto aspect-video w-full max-w-[720px] overflow-hidden rounded-lg border border-line bg-panel">
+              <ProjectMedia project={p} priority />
+            </div>
+          ) : (
+            <div className="rounded-lg border border-line bg-panel px-5 py-4 text-sm text-smoke">Project demo video coming soon. Explore the implementation and source code below.</div>
+          )}
         </div>
 
-        <section className="wrap grid gap-14 py-20 md:grid-cols-12 md:py-28">
+        <section className="wrap project-wrap grid gap-8 py-10 md:grid-cols-12 md:py-14">
           <dl className="space-y-6 md:col-span-4">
             {facts.map(([k, v]) => (
               <div key={k}>
@@ -75,7 +79,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             </div>
           </dl>
 
-          <div className="min-w-0 space-y-14 md:col-span-7 md:col-start-6">
+          <div className="min-w-0 space-y-9 md:col-span-7 md:col-start-6">
             <p className="text-[20px] leading-relaxed text-snow/90">{p.description}</p>
             {[
               ['The problem', p.problem],
@@ -105,7 +109,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         </section>
 
         <Link href={`/projects/${next.id}`} className="group block border-t border-line transition-colors hover:bg-panel">
-          <div className="wrap py-16 md:py-24">
+          <div className="wrap project-wrap py-10 md:py-14">
             <p className="text-[15px] text-smoke">Next project</p>
             <p className="mt-3 font-display text-[clamp(40px,6vw,88px)] font-bold uppercase leading-none">{next.title}</p>
           </div>

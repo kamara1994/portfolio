@@ -34,7 +34,7 @@ export default function Work() {
   return (
     <section id="work" aria-label="Work">
       {current && (
-        <div className="wrap pt-8">
+        <div className="wrap project-wrap pt-8">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border border-line bg-panel/70 px-5 py-4">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-raised text-signal">
               <RoleIcon role={current.id} />
@@ -55,23 +55,23 @@ export default function Work() {
         </div>
       )}
       {flagship.map((p, i) => (
-        <article key={p.id} className="wrap py-8 md:py-10">
-          <div className="hud-frame grid gap-10 p-6 sm:p-10 md:grid-cols-12 md:gap-12 md:p-12">
+        <article key={p.id} className="wrap project-wrap py-4 md:py-6">
+          <div className="hud-frame grid items-center gap-5 p-5 sm:p-7 lg:grid-cols-12 lg:gap-8 lg:p-8">
             <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
             <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
-            <div className={`md:col-span-5 md:self-end ${i % 2 ? 'md:order-2' : ''}`}>
+            <div className={`min-w-0 lg:col-span-5 ${i % 2 ? 'lg:order-2' : ''}`}>
               <p className="text-[15px] text-smoke">{p.category}</p>
-              <h2 className="mt-3 font-display text-[clamp(44px,6vw,92px)] font-bold uppercase leading-[0.9]">
+              <h2 className="mt-3 font-display text-[clamp(32px,3.5vw,56px)] font-bold uppercase leading-[0.9]">
                 {splitTitle(p.title)[0]}
                 {splitTitle(p.title)[1] && <span className="title-accent">{splitTitle(p.title)[1]}</span>}
               </h2>
-              <p className="mt-4 max-w-[46ch] text-[17px] md:mt-6 md:text-[19px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
+              <p className="mt-3 max-w-[46ch] text-[17px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
               {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
-              <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-smoke">{p.impact}</p>
-              <p className="mt-6 text-[14px] leading-relaxed text-smoke">
+              <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-smoke">{p.impact}</p>
+              <p className="mt-3 text-[13px] leading-relaxed text-smoke">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
-              <div className="btn-row mt-8 flex flex-wrap gap-3">
+              <div className="btn-row mt-5 flex flex-wrap gap-3">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
                 <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>
                 {p.sourceAccess && <span className="self-center text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
@@ -79,8 +79,8 @@ export default function Work() {
               </div>
             </div>
 
-            <div className={`order-first md:col-span-7 ${i % 2 ? 'md:order-1' : 'md:order-none'} ${p.video || p.screenshot ? '' : 'hidden md:block'}`}>
-              <div className="relative aspect-[16/10] overflow-hidden border border-line bg-panel">
+            <div className={`order-first min-w-0 lg:col-span-7 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>
+              <div className="relative mx-auto aspect-video w-full max-w-[700px] overflow-hidden rounded-lg border border-line bg-panel">
                 <ProjectMedia project={p} priority={i === 0} />
               </div>
             </div>
@@ -90,13 +90,13 @@ export default function Work() {
 
       {more.length > 0 && (
         <div className="border-t border-line">
-          <div className="wrap py-16 md:py-32">
+          <div className="wrap project-wrap py-12 md:py-16">
             <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More <span className="title-accent">work</span></h2>
-            <ul className="mt-12 divide-y divide-line border-y border-line">
+            <ul className="mt-7 divide-y divide-line border-y border-line">
               {more.map((p) => (
                 <li key={p.id}>
-                  <div className="grid gap-5 py-7 md:grid-cols-12 md:items-center md:px-4">
-                    <div className="relative aspect-video overflow-hidden border border-line bg-panel md:col-span-4"><ProjectMedia project={p} /></div>
+                  <div className="grid gap-5 py-5 md:grid-cols-12 md:items-center md:px-4">
+                    <div className="relative aspect-video w-full max-w-[420px] overflow-hidden rounded-lg border border-line bg-panel md:col-span-4"><ProjectMedia project={p} /></div>
                     <div className="md:col-span-8">
                       <Link href={`/projects/${p.id}`} className="font-display text-[28px] font-semibold uppercase leading-tight hover:text-signal">{p.title}</Link>
                       <p className="mt-2 text-smoke">{p.subtitle}</p>
