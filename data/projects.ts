@@ -1,3 +1,5 @@
+import previewManifest from './project-previews.json'
+
 export interface Project {
   id: string
   num: string
@@ -10,6 +12,7 @@ export interface Project {
   outcome: string
   stack: string[]
   github?: string
+  sourceAccess?: 'private' | 'unavailable'
   /** 'flagship' = full-screen panel on home, 'more' = compact list. Unset = not shown until rebuilt. */
   placement?: 'flagship' | 'more'
   demo?: string
@@ -24,7 +27,7 @@ export interface Project {
   status?: 'lab-validated' | 'live-demo' | 'case-study' | 'in-development' | 'verified'
 }
 
-export const projects: Project[] = [
+const projectList: Project[] = [
   {
     id: 'blue-soc-p8',
     placement: 'flagship',
@@ -51,7 +54,7 @@ export const projects: Project[] = [
       'Telegram Bot → Real-time Analyst Notification',
       'Dashboard → Live Metrics & Threat Visualization',
     ],
-    github: 'https://github.com/kamara1994/bluesoc',
+    sourceAccess: 'private',
     demo: 'https://blue-dashboard-ten.vercel.app',
     featured: true,
   },
@@ -158,7 +161,6 @@ export const projects: Project[] = [
     ],
     github: 'https://github.com/kamara1994/blue-v3',
     demo: 'https://blue-dashboard-ten.vercel.app',
-    video: '/demos/blue-v3.mp4',
     screenshot: '/screenshots/blue-v3.webp',
   },
   {
@@ -208,7 +210,7 @@ export const projects: Project[] = [
       'Vercel → CDN & Edge Deployment',
       'Security Headers → CSP, HSTS, XSS Protection',
     ],
-    github: 'https://github.com/kamara1994',
+    sourceAccess: 'private',
     demo: 'https://elitecom-site.vercel.app',
     screenshot: '/screenshots/elitecom.webp',
   },
@@ -262,7 +264,7 @@ export const projects: Project[] = [
       'SNS → Confirmed email subscription; manual delivery test',
     ],
     stack: ['AWS', 'Terraform', 'CloudWatch Logs', 'CloudWatch Alarms', 'Amazon SNS', 'AWS CLI', 'PowerShell', 'GitHub Actions'],
-    github: 'https://github.com/kamara1994/fortress-v2',
+    sourceAccess: 'private',
     featured: true,
   },
   {
@@ -291,7 +293,7 @@ export const projects: Project[] = [
       'BLUE-X AI Agent → Telegram Bot with Authentication',
     ],
     stack: ['PyTorch', 'AWS', 'Zeek', 'Suricata', 'Lambda', 'DynamoDB', 'API Gateway', 'S3', 'Flask', 'n8n', 'Terraform', 'Python'],
-    github: 'https://github.com/kamara1994/blue-x',
+    sourceAccess: 'unavailable',
     featured: true,
     screenshot: '/screenshots/blue-x.webp',
   },
@@ -320,6 +322,7 @@ export const projects: Project[] = [
       'SSH v2 Only → VTY ACL restricting management access',
     ],
     stack: ['Cisco IOS', 'Cisco IOS XE', 'OSPF', 'VRRP', 'LACP', 'VTP', 'EtherChannel', '802.1Q', 'SSH v2', 'DHCP', 'ACL', 'STP'],
+    sourceAccess: 'unavailable',
     report: '/docs/enterprise-networking-report.docx',
     featured: false,
     screenshot: '/screenshots/networking.webp',
@@ -384,3 +387,9 @@ export const projects: Project[] = [
     featured: false,
   },
 ]
+
+const previews: Record<string, string> = previewManifest
+export const projects: Project[] = projectList.map((project) => ({
+  ...project,
+  video: previews[project.id] ?? project.video,
+}))
