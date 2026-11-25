@@ -1,0 +1,53 @@
+{
+  "blue-soc-p8": [
+    {
+      "title": "Workflow status renderer",
+      "description": "Public dashboard excerpt; not the private SOC backend.",
+      "path": "index.html",
+      "language": "javascript",
+      "start": 848,
+      "source": "https://github.com/kamara1994/bluesoc/blob/main/index.html#L848-L855",
+      "code": "function renderSteps(done=0,running=-1){\n  document.getElementById('wf-steps').innerHTML=STEPS.map((s,i)=>{\n    let cls='',sc='ss-ready',st2='READY',ic='';\n    if(i<done){cls='done';sc='ss-done';st2='✓ DONE';ic='done';}\n    if(i===running){cls='running';sc='ss-running';st2='▶ RUN';ic='running';}\n    return`<div class=\"wf-step ${cls}\"><div class=\"wf-icon ${ic}\">${s.i}</div><div class=\"wf-info\"><div class=\"wf-name\">${s.n}</div><div class=\"wf-detail\">${s.d}</div></div><div class=\"wf-status ${sc}\">${st2}</div></div>`;\n  }).join('');\n}"
+    }
+  ],
+  "pweza-voice-agent": [
+    {
+      "title": "Neural speech synthesis",
+      "description": "Collects streamed audio, returns a data URL, and handles failures.",
+      "path": "lib/pweza-voice.ts",
+      "language": "typescript",
+      "start": 26,
+      "source": "https://github.com/kamara1994/portfolio/blob/main/lib/pweza-voice.ts#L26-L55",
+      "code": "export interface SynthResult {\n  audio: string | null\n  error?: string\n}\n\n// Returns a base64 data URL for the spoken text, or null with a reason. Never\n// throws — callers can always fall back to browser speech synthesis.\nexport async function synthesizeSpeech(text: string): Promise<SynthResult> {\n  const tts = new MsEdgeTTS()\n  try {\n    await tts.setMetadata(resolveVoice(), OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3)\n    const { audioStream } = tts.toStream(text, resolveProsody())\n\n    const chunks: Buffer[] = []\n    for await (const chunk of audioStream) {\n      chunks.push(chunk as Buffer)\n    }\n    const buffer = Buffer.concat(chunks)\n    if (buffer.length === 0) {\n      console.warn('Edge TTS returned no audio')\n      return { audio: null, error: 'edge-tts-empty' }\n    }\n    return { audio: `data:audio/mpeg;base64,${buffer.toString('base64')}` }\n  } catch (e: any) {\n    console.warn('Edge TTS error:', e?.message || e)\n    return { audio: null, error: 'edge-tts-failed' }\n  } finally {\n    try { tts.close() } catch {}\n  }\n}"
+    },
+    {
+      "title": "Speech API route",
+      "description": "Validates text and invokes the shared synthesis module.",
+      "path": "app/api/tts/route.ts",
+      "language": "typescript",
+      "start": 1,
+      "source": "https://github.com/kamara1994/portfolio/blob/main/app/api/tts/route.ts#L1-L18",
+      "code": "import { NextRequest, NextResponse } from 'next/server'\nimport { synthesizeSpeech } from '@/lib/pweza-voice'\n\nexport async function POST(req: NextRequest) {\n  try {\n    const { text } = await req.json()\n    if (!text || typeof text !== 'string') {\n      return NextResponse.json({ error: 'text required' }, { status: 400 })\n    }\n    // hard cap so a giant payload can't be turned into a huge synthesis bill\n    const clipped = text.slice(0, 800)\n    const { audio, error } = await synthesizeSpeech(clipped)\n    return NextResponse.json({ audio, ...(error ? { error } : {}) })\n  } catch (e) {\n    console.error('TTS route error:', e)\n    return NextResponse.json({ audio: null, error: 'bad-request' })\n  }\n}"
+    }
+  ],
+  "pandie-foundation": [
+    {
+      "title": "Scroll-aware program interface",
+      "description": "Uses an IntersectionObserver and releases it when the component unmounts.",
+      "path": "app/components/CoreServices.tsx",
+      "language": "tsx",
+      "start": 12,
+      "source": "https://github.com/kamara1994/pandie-site/blob/main/app/components/CoreServices.tsx#L12-L24",
+      "code": "function useInView(threshold = 0.15) {\n  const ref = useRef<HTMLDivElement>(null);\n  const [inView, setInView] = useState(false);\n  useEffect(() => {\n    const obs = new IntersectionObserver(\n      ([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } },\n      { threshold }\n    );\n    if (ref.current) obs.observe(ref.current);\n    return () => obs.disconnect();\n  }, [threshold]);\n  return { ref, inView };\n}"
+    },
+    {
+      "title": "Donation amount conversion",
+      "description": "Normalizes display amounts into integer minor units for donation processing.",
+      "path": "app/lib/currency.ts",
+      "language": "typescript",
+      "start": 1,
+      "source": "https://github.com/kamara1994/pandie-site/blob/main/app/lib/currency.ts#L1-L16",
+      "code": "// Currencies where the display amount equals the smallest unit (no ×100).\n// Follows Stripe's zero-decimal definition.\nconst ZERO_DECIMAL = new Set([\n  \"BIF\",\"CLP\",\"DJF\",\"GNF\",\"JPY\",\"KMF\",\"KRW\",\"MGA\",\n  \"PYG\",\"RWF\",\"UGX\",\"VND\",\"VUV\",\"XAF\",\"XOF\",\"XPF\",\n]);\n\n// Convert a display amount (e.g. 50.00 USD or 5000 JPY) to the minor unit\n// stored in the donations table (cents for USD, yen for JPY, etc.).\nexport function toMinorUnit(amount: string | number, currency: string): number {\n  const n = typeof amount === \"string\" ? parseFloat(amount) : amount;\n  if (!isFinite(n) || n < 0) return 0;\n  return ZERO_DECIMAL.has(currency.toUpperCase())\n    ? Math.round(n)\n    : Math.round(n * 100);\n}"
+    }
+  ]
+}
