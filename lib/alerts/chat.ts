@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { tgConfigured, sendMessage, esc } from './telegram'
 import { getSettings, isHushed } from './settings'
 import { flag } from './format'
-import { bump, logQuestion } from './store'
+import { bump, logQuestion, once, hasDb } from './store'
 import { linkChat, touch } from './live'
 
 // 💬 Sends each PWEZA question (and the start of its answer) to the bot's chat topic.
@@ -44,4 +44,21 @@ export async function forwardLive(req: NextRequest, sid: string, message: string
   })
   if (sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
   await touch(sid)
+}
+
+/** Visitor asked to talk to Joseph: buzz his phone with a one-tap takeover (once per chat per 10 min). */
+export async function requestJoseph(req: NextRequest, sid: string, message: string): Promise<'pinged' | 'recent' | 'unavailable'> {
+  if (!tgConfigured() || !hasDb()) return 'unavailable'
+  if (!(await once(`ping:${sid}`, 600))) return 'recent'
+  const settings = await getSettings()
+  const city = req.headers.get('x-vercel-ip-city')
+  const country = req.headers.get('x-vercel-ip-country') || ''
+  let place = ''
+  try { place = [city && decodeURIComponent(city), country].filter(Boolean).join(', ') } catch { place = country }
+  const sent = await sendMessage(
+    `🙋 <b>A visitor wants to talk to you</b>\n❓ ${esc(message.slice(0, 500))}${place ? `\n📍 ${esc(place)} ${flag(country)}` : ''}\n\n<i>Tap below to join their PWEZA chat — they're waiting in the chat window.</i>`,
+    { thread: settings.topics?.chats || settings.topics?.priority, silent: isHushed(settings), buttons: [[{ text: '🎙 Join the chat now', callback_data: `live:${sid}` }]] },
+  )
+  if (sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
+  return sent.ok ? 'pinged' : 'unavailable'
 }

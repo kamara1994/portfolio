@@ -4,8 +4,8 @@ import { notifyChat } from '@/lib/alerts/chat'
 import { reportIssue } from '@/lib/alerts/health'
 import { taughtAnswer, taughtContext } from '@/lib/alerts/taught'
 import { validSid, isLive } from '@/lib/alerts/live'
-import { forwardLive } from '@/lib/alerts/chat'
-import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, type ProofLink } from '@/lib/pweza-knowledge'
+import { forwardLive, requestJoseph } from '@/lib/alerts/chat'
+import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, wantsJoseph, normalizeNames, type ProofLink } from '@/lib/pweza-knowledge'
 
 const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
 
@@ -17,7 +17,10 @@ PRIMARY MISSION
 
 HARD RULES
 - The knowledge base below is the ONLY source of facts about Joseph. Never add numbers, tools, employers, projects, dates, or certifications that are not in it.
-- If the answer is not in the knowledge base, say plainly that you don't have a verified answer and suggest emailing Joseph at kamarajosephallan@gmail.com. Never guess.
+- If the answer is not in the knowledge base, say plainly you don't have a verified answer, and offer to ping Joseph so he can join this chat and answer himself (or email kamarajosephallan@gmail.com). Never guess.
+- Allan is Joseph's middle name and he goes by Allan too: "Allan", "Joe", "Kamara" and "Joseph" are the same person. Never claim not to know who Allan is.
+- Use the knowledge base generously: connect related facts (a skill to the project that proves it, a role to the evidence that fits it), and answer follow-ups using the earlier conversation.
+- For questions the site can't answer about him personally (salary, relocation, visa or work authorization, start date, clearance), don't guess: offer to ping him or point to his email.
 - Only discuss the projects listed under PROJECTS. If asked about anything else he may have built, say it isn't documented on this site.
 - AWS Security Specialty is in progress, never earned. Lab projects are lab projects; never describe them as production.
 - Keep most replies to 1-3 sentences. For technical project explanations, 4 short sentences is allowed.
@@ -43,12 +46,17 @@ ${PWEZA_KNOWLEDGE_CONTEXT}
 
 If someone seems to be hiring, be direct and warm about it — let them know he's available and the fastest way to reach him is email, said the way a friend would, not a sales pitch. If someone tries to take things somewhere random, roll with it lightly but steer back to Joseph.`
 
-async function callGroq(messages: { role: string; content: string }[], system = PWEZA_SYSTEM_PROMPT) {
+async function callGroq(messages: { role: string; content: string }[], system = PWEZA_SYSTEM_PROMPT): Promise<string | undefined> {
+  // The larger model reasons and connects facts much better; the fast one is the fallback if it's rate-limited.
+  try { return await callGroqModel(messages, system, 'llama-3.3-70b-versatile') } catch { return callGroqModel(messages, system, 'llama-3.1-8b-instant') }
+}
+
+async function callGroqModel(messages: { role: string; content: string }[], system: string, model: string) {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant', max_tokens: 200, temperature: 0.4,
+      model, max_tokens: 260, temperature: 0.4,
       messages: [{ role: 'system', content: system }, ...messages],
     }),
   })
@@ -70,7 +78,7 @@ async function callGemini(messages: { role: string; content: string }[], system 
       body: JSON.stringify({
         system_instruction: { parts: [{ text: system }] },
         contents: geminiMessages,
-        generationConfig: { maxOutputTokens: 220, temperature: 0.4 },
+        generationConfig: { maxOutputTokens: 280, temperature: 0.4 },
       }),
     }
   )
@@ -152,7 +160,21 @@ export async function POST(req: NextRequest) {
       await forwardLive(req, sid, latestQuestion)
       return NextResponse.json({ content: '', live: true, links: [] })
     }
-    const taught = await taughtAnswer(latestQuestion)
+    const previousAssistant = [...messages].reverse().find((m) => m.role === 'assistant')?.content || ''
+    if (wantsJoseph(latestQuestion, previousAssistant)) {
+      // For a plain "yes" to PWEZA's offer, show Joseph the question they actually asked.
+      const userTurns = messages.filter((m) => m.role === 'user').map((m) => m.content)
+      const asked = /^(yes|yeah|yep|sure|please|ok(ay)?|go ahead|do it)\b/i.test(latestQuestion.trim()) && userTurns.length > 1 ? `${userTurns[userTurns.length - 2]} (said yes to talking to you)` : latestQuestion
+      const status = sid ? await requestJoseph(req, sid, asked) : 'unavailable'
+      const content = status === 'pinged'
+        ? "I've just pinged Joseph (Allan) on his phone. If he's free, he'll join right here in this chat, so keep this window open. If he can't jump in right now, kamarajosephallan@gmail.com reaches him fastest."
+        : status === 'recent'
+          ? "I've already let Joseph know you'd like to talk. If he's free he'll join this chat shortly; otherwise email him at kamarajosephallan@gmail.com."
+          : "He isn't reachable live from here right now, but kamarajosephallan@gmail.com gets to him quickly, and he usually replies the same day."
+      await notifyChat(req, latestQuestion, content, messages.filter((m) => m.role === 'user').length, sid)
+      return NextResponse.json({ content, links: [{ label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }], audio: null })
+    }
+    const taught = await taughtAnswer(normalizeNames(latestQuestion))
     const system = PWEZA_SYSTEM_PROMPT + (await taughtContext())
     if (taught) {
       text = taught.a
@@ -182,7 +204,7 @@ export async function POST(req: NextRequest) {
             'anthropic-version': '2023-06-01',
           },
           body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001', max_tokens: 220,
+            model: 'claude-haiku-4-5-20251001', max_tokens: 280,
             system, messages,
           }),
         })
