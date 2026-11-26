@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { tgConfigured, sendMessage, sendPhoto, editMessage, hmac, SITE } from '@/lib/alerts/telegram'
 import { getSettings, ensureTopics, isHushed } from '@/lib/alerts/settings'
 import { clientIp, locate, matchTarget, watchMatch, viaSlug, classifyReferrer, parseUA, crawlerName, leadScore, pageName, ACTIONS, SECTION_LABELS, type Step } from '@/lib/alerts/intel'
+import { sendSms } from '@/lib/integrations/sms'
+import { intelButton, searchConfigured } from '@/lib/integrations/search'
 import { renderVisit, visitButtons, renderLead, renderAction, dur, location, who, type Ctx, type Live } from '@/lib/alerts/format'
 import { aiBrief } from '@/lib/alerts/brief'
 import { stripUrl } from '@/lib/alerts/strip'
@@ -203,10 +205,11 @@ export async function POST(req: NextRequest) {
       const r = await sendMessage(renderLead(ctx, live, score, brief || undefined), {
         thread: settings.topics?.leads || settings.topics?.priority,
         silent: hushed,
-        buttons: visitButtons(ctx, live).slice(0, 1),
+        buttons: [...visitButtons(ctx, live).slice(0, 1), ...(searchConfigured() && orgOf(ctx) ? [[intelButton(orgOf(ctx))]] : [])],
       })
       lead = r.ok
       if (lead) await bump('leads', settings.tz)
+      if (lead && score >= 85) await sendSms(`PWEZA hot lead (${score}/100): ${who(ctx).replace(/<[^>]+>/g, '')} spent ${dur(live.durMs)} on your portfolio. Details in Telegram.`, `hot:${ctx.sid}`)
       // A picture of the visit: time per page, scroll depth, sections read.
       if (lead) {
         await sendPhoto(stripUrl(ctx, live, score), `🗺 Visit map · ${who(ctx).replace(/[<>&]/g, '')}`, {
@@ -219,4 +222,10 @@ export async function POST(req: NextRequest) {
     // never surface internals or fail the visitor's page for an alert problem
     return NextResponse.json({ ok: true, error: 'handled' })
   }
+}
+
+/** Employer-looking organisation for a visit (not a consumer ISP). */
+function orgOf(ctx: Ctx): string {
+  const g = ctx.geo
+  return g.company?.name || ctx.target || (g.org && !/comcast|verizon|at&t|spectrum|charter|t-mobile|cox|frontier|centurylink|lumen|xfinity|mobile|wireless|telecom|broadband|cable|amazon|google|microsoft|digitalocean|hosting|cloud/i.test(g.org) ? g.org : '')
 }

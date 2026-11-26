@@ -1,3 +1,4 @@
+import { sendSms } from '@/lib/integrations/sms'
 import type { NextRequest } from 'next/server'
 import { tgConfigured, sendMessage, esc } from './telegram'
 import { getSettings, isHushed } from './settings'
@@ -60,6 +61,7 @@ export async function requestJoseph(req: NextRequest, sid: string, message: stri
     { thread: settings.topics?.chats || settings.topics?.priority, silent: isHushed(settings), buttons: [[{ text: '🎙 Join the chat now', callback_data: `live:${sid}` }]] },
   )
   if (sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
+  await sendSms(`PWEZA: a visitor${place ? ` in ${place}` : ''} wants to talk to you now. Open Telegram to join the chat.`, `ping:${sid}`)
   return sent.ok ? 'pinged' : 'unavailable'
 }
 

@@ -14,7 +14,7 @@ type Triage = { verdict: string; severity: 'Low' | 'Medium' | 'High' | 'Critical
 type Card = { title: string; subtitle: string; href: string; image: string | null; status: string; stack: string[] }
 type Msg = {
   role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[]; sources?: Source[]; fit?: Fit; checked?: boolean; streaming?: boolean; href?: string
-  triage?: Triage; card?: Card; nav?: string | null; voice?: string; q?: string; vote?: 'up' | 'down'; jobPost?: string
+  triage?: Triage; card?: Card; hrefLabel?: string; nav?: string | null; voice?: string; q?: string; vote?: 'up' | 'down'; jobPost?: string
 }
 
 // Same sample as the server's SAMPLE_ALERT: Word spawning hidden, encoded PowerShell that calls out to a Tor exit node.
@@ -323,6 +323,7 @@ export default function AIChat() {
       const r = await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: f.get('email'), name: f.get('name'), company: f.get('company'), note: f.get('note'), consent: true, sid: chatSid() }) })
       const d = await r.json()
       setLeadSent(true); setLeadOpen(false)
+      if (d.ok && d.book) { setMessages((cur) => [...cur, { role: 'system', content: 'Sent. Joseph got your details on his phone. Want to skip the back-and-forth? Book a time on his calendar.', href: d.book, hrefLabel: '📅 Pick a time' }]); return }
       setMessages((cur) => [...cur, { role: 'system', content: d.ok ? 'Sent. Joseph got your details on his phone and will reply by email.' : d.error === 'invalid' ? 'That email doesn\'t look right. Try again?' : 'Couldn\'t send that right now. You can email kamarajosephallan@gmail.com.' }])
       if (!d.ok && d.error === 'invalid') { setLeadSent(false); setLeadOpen(true) }
     } catch { setMessages((cur) => [...cur, { role: 'system', content: 'Couldn\'t send that right now. You can email kamarajosephallan@gmail.com.' }]) }
@@ -335,7 +336,7 @@ export default function AIChat() {
       const r = await fetch('/api/resume/tailor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target, sid: chatSid() }) })
       const d = await r.json()
       setMessages((cur) => [...cur, d.url
-        ? { role: 'system', content: `A one-page résumé tailored to ${d.role} is ready. Every line comes from verified facts.`, href: d.url }
+        ? { role: 'system', content: `A one-page résumé tailored to ${d.role} is ready. Every line comes from verified facts.`, href: d.url, hrefLabel: '📄 Open résumé' }
         : { role: 'system', content: d.error === 'slow-down' ? 'One moment, then try again.' : "Couldn't build the tailored résumé right now. The standard one is in the links above." }])
     } catch { setMessages((cur) => [...cur, { role: 'system', content: "Couldn't build the tailored résumé right now." }]) }
     finally { setCvBusy(false) }
@@ -428,7 +429,7 @@ export default function AIChat() {
             <div key={i} className={m.role === 'user' ? 'pz-msg pz-user' : m.role === 'joseph' ? 'pz-msg pz-bot pz-joseph' : m.role === 'system' ? 'pz-system' : 'pz-msg pz-bot'}>
               {m.role === 'joseph' && <span className="pz-joseph-name"><img src="/profile/joseph-cutout.webp" alt="" className="pz-joseph-avatar" /> Joseph</span>}
               {m.role === 'system' && m.href ? (
-                <p>{m.content} <a href={m.href} target="_blank" rel="noopener" className="pz-proof">Open briefing</a></p>
+                <p>{m.content} <a href={m.href} target="_blank" rel="noopener" className="pz-proof">{m.hrefLabel || 'Open briefing'}</a></p>
               ) : (
                 <p className={m.streaming ? 'pz-streaming' : undefined}>{m.role === 'assistant' ? withCitations(m.content, m.sources, () => setOpen(false)) : m.content}</p>
               )}

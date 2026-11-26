@@ -11,6 +11,9 @@ import { answerFromData } from '@/lib/alerts/askdata'
 import { rate, learnedSummary } from '@/lib/alerts/learn'
 import { hasDb, lookupMessage, getVisit, teach, forget, teachings } from '@/lib/alerts/store'
 import { liveOn, liveOff, pushOut, lastLive, linkChat, validSid } from '@/lib/alerts/live'
+import { companyIntel, renderIntel, searchConfigured } from '@/lib/integrations/search'
+import { smsConfigured, smsEnabled, setSms, sendSms } from '@/lib/integrations/sms'
+import { bookingUrl } from '@/lib/integrations/booking'
 import { stashedQuestion, setOnline, isOnline } from '@/lib/pweza/extras'
 import { safe as dbSafe, mapMessage } from '@/lib/alerts/store'
 import { getSettings, saveSettings, ensureTopics, describe, fmtDuration, validTz, isHushed } from '@/lib/alerts/settings'
@@ -43,6 +46,9 @@ const HELP = [
   '📈 /score — what the self-learning lead score has learned from your 👍/👎',
   '🟢 /online · /offline — show visitors you\'re available to chat live',
   '🎙 Reply with a voice note to a live chat and the visitor hears it',
+  '🔎 /intel Company — research an employer (also a button on leads)',
+  '📱 /sms on · off · test — text alerts for the most important moments',
+  '📅 /book — your interview booking link',
   '🎙 Tap “Take over this chat” on a PWEZA alert to answer a visitor yourself · /end hands back',
   '💬 Or just ask me in plain English, e.g. "who looked at my AWS projects this week?"',
   '/test — send a sample visitor alert',
@@ -114,6 +120,15 @@ export async function POST(req: NextRequest) {
           thread, replyTo, silent: true,
           buttons: [[{ text: '✂️ Shorter', callback_data: 'redraft:short' }, { text: '🎩 More formal', callback_data: 'redraft:formal' }, { text: '😊 Warmer', callback_data: 'redraft:warm' }]],
         })
+      }
+      return NextResponse.json({ ok: true })
+    }
+    if (data.startsWith('intel:')) {
+      const company = data.slice(6)
+      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: searchConfigured() ? `🔎 Researching ${company}…` : 'Add TAVILY_API_KEY in Vercel first' })
+      if (searchConfigured()) {
+        const intel = await companyIntel(company)
+        await sendMessage(intel ? renderIntel(intel, esc) : `🔎 Couldn't find solid information on ${esc(company)}.`, { thread, replyTo, silent: true })
       }
       return NextResponse.json({ ok: true })
     }
@@ -290,6 +305,25 @@ export async function POST(req: NextRequest) {
     case '/forget': {
       const ok = await forget(arg.trim())
       await reply(ok ? 'Forgotten.' : 'Not found. /taught lists the exact questions.', thread); break
+    }
+    case '/intel': {
+      if (!arg.trim()) { await reply('Format: /intel Company name\ne.g. /intel CrowdStrike', thread); break }
+      if (!searchConfigured()) { await reply('🔎 Company research needs TAVILY_API_KEY in Vercel.', thread); break }
+      await reply(`🔎 Researching ${esc(arg.trim())}…`, thread)
+      const intel = await companyIntel(arg.trim())
+      await reply(intel ? renderIntel(intel, esc) : `Couldn't find solid information on ${esc(arg.trim())}.`, thread); break
+    }
+    case '/sms': {
+      if (!smsConfigured()) { await reply('📱 Text alerts need TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM and ALERT_PHONE in Vercel.', thread); break }
+      const a = arg.trim().toLowerCase()
+      if (a === 'off') { await setSms(false); await reply('📵 Text alerts paused. /sms on to resume.', thread); break }
+      if (a === 'on') { await setSms(true); await reply('📱 Text alerts on: visitors asking for you, leads, bookings and very hot visits (max 12 a day).', thread); break }
+      if (a === 'test') { const ok = await sendSms('PWEZA test: text alerts are working.', `test:${Date.now()}`, { ignoreMute: true }); await reply(ok ? '📱 Test text sent.' : '⚠️ The test text failed. Check the Twilio values in Vercel (trial accounts can only text verified numbers).', thread); break }
+      await reply(`📱 Text alerts are ${(await smsEnabled()) ? 'on' : 'off'}. Use /sms on · /sms off · /sms test`, thread); break
+    }
+    case '/book': {
+      const u = bookingUrl()
+      await reply(u ? `📅 Your booking link (PWEZA shares it with recruiters):\n${esc(u)}` : '📅 Booking needs CAL_LINK in Vercel, e.g. allan-kamara/30min', thread); break
     }
     case '/online':
       await setOnline(true)

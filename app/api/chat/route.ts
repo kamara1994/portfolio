@@ -11,6 +11,7 @@ import { streamAnswer, hasAI } from '@/lib/pweza/llm'
 import { matchJob, fitText } from '@/lib/pweza/jd'
 import { teachings } from '@/lib/alerts/store'
 import type { Passage } from '@/lib/pweza/corpus'
+import { wantsBooking, bookingUrl, BOOK_LABEL } from '@/lib/integrations/booking'
 import { detectAttack, logAttack, REFUSAL } from '@/lib/pweza/guard'
 import { looksLikeAlert, triageDemo, followUps, getMemory, remember, memoryContext, validVid, timeContext, wantsNavigation, wantsDeepDive, projectFromSources, projectCard, navTarget, couldNotAnswer, trackUnanswered, josephIsNight, isOnline } from '@/lib/pweza/extras'
 import { getSettings } from '@/lib/alerts/settings'
@@ -185,6 +186,14 @@ export async function POST(req: NextRequest) {
         await tgSend(`🛡 <b>PWEZA blocked a ${tgEsc(attack.replace('-', ' '))} attempt</b>\n<code>${tgEsc(latestQuestion.slice(0, 160))}</code>\n<i>Refused before reaching the AI. Logged for /ai-security.</i>`, { thread: settings.topics?.priority, silent: true })
       }
       return NextResponse.json({ content: REFUSAL, links: [{ label: 'How PWEZA is secured', href: '/ai-security' }], guarded: true })
+    }
+
+    // 📅 "Can we schedule a call?" → straight to Joseph's calendar.
+    const book = bookingUrl()
+    if (book && wantsBooking(latestQuestion)) {
+      const content = 'Of course. Pick any open slot on Joseph’s calendar and you’ll both get an invite with the meeting link. He’ll see the booking on his phone right away.'
+      await notifyChat(req, latestQuestion, '📅 Sent the booking link.', messages.filter((m) => m.role === 'user').length, sid)
+      return NextResponse.json({ content, links: [{ label: BOOK_LABEL, href: book }, { label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }] })
     }
 
     const previousAssistant = [...messages].reverse().find((m) => m.role === 'assistant')?.content || ''
@@ -365,6 +374,8 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
         ])
         if (couldNotAnswer(plain)) await trackUnanswered(latestQuestion, settings.tz)
         if (vid) await remember(vid, latestQuestion, r.expert)
+        const bookUrl = r.hiring ? bookingUrl() : null
+        if (bookUrl) links = [...links.slice(0, 2), { label: BOOK_LABEL, href: bookUrl }]
         const nav = wantsNavigation(latestQuestion) ? navTarget(latestQuestion, sources) : null
         send({ type: 'done', links, audio: speech.audio, hiring: r.hiring, suggestions, nav })
       } catch (e) {
