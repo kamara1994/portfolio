@@ -21,15 +21,27 @@
       "Draw.io"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Sanitized case-study summary; original exam and identifiers withheld.",
+    "evidenceNote": "Two genuine redacted alert crops, a sanitized case-study summary and a derived incident-flow diagram. Full original exam and identifiers withheld.",
     "course": "CYBER375",
     "architecture": [
-      "Simulated network and endpoint telemetry → Security Onion and Suricata alerts",
-      "Windows Sysmon events → Host activity correlation",
-      "Network and host observations → Incident timeline and scope analysis",
+      "Simulated external delivery → Windows endpoint",
+      "Windows endpoint → Secondary payload and command-and-control observations",
+      "Endpoint activity → Persistence and attempted internal movement",
+      "Security Onion / Suricata alerts and Windows Sysmon events → Analyst timeline",
       "Documented findings → Recommended response and security improvements"
     ],
-    "report": "/docs/security-onion-case-study.md"
+    "report": "/docs/security-onion-case-study.md",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/security-onion-alert-download.png",
+        "caption": "Executable download alert · medium severity · redacted crop"
+      },
+      {
+        "src": "/screenshots/security-onion-alert-c2.png",
+        "caption": "Revenge-RAT keep-alive alert · high severity · redacted crop"
+      }
+    ],
+    "architectureFile": "/docs/security-onion-incident-flow.mmd"
   },
   {
     "id": "cyber375-midterm-ir",

@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 
 const art: Record<string, string> = {
   'blue-soc-p8': 'soc',
+  'cyber375-final-ir': 'soc', 'cyber375-midterm-ir': 'soc', 'cyber375-splunk': 'soc',
+  'cyber375-endpoint': 'threat', 'cyber375-network-threat': 'threat', 'cyber375-vuln-assess': 'threat',
+  'cloud-cafe-architecture': 'cloud', 'aws-vpc-peering': 'cloud', 'aws-ha-resilience': 'cloud', 'aws-iam-security': 'cloud', 'aws-storage-db': 'cloud', 'aws-cloudformation': 'cloud',
   'salone-aegis': 'network',
   'enterprise-networking': 'enterprise',
   'fortress-v2': 'cloud',

@@ -18,6 +18,8 @@ export interface Project {
   placement?: 'flagship' | 'more' | 'library'
   course?: string
   evidenceNote?: string
+  evidenceImages?: { src: string; caption: string }[]
+  architectureFile?: string
   demo?: string
   video?: string
   report?: string

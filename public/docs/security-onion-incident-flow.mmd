@@ -1,0 +1,12 @@
+flowchart LR
+  A[Simulated external delivery host] -->|HTTP executable download| B[Simulated Windows endpoint]
+  B -->|Second-stage retrieval| C[Simulated payload service]
+  B -->|Revenge-RAT beacon| D[Simulated command-and-control host]
+  B -->|Registry Run key| E[Persistence on endpoint]
+  B -->|WinRM / RDP activity| F[Other simulated internal systems]
+  G[Security Onion / Suricata alerts] --> H[Analyst timeline]
+  I[Windows Sysmon events] --> H
+  B --> G
+  B --> I
+  classDef simulated fill:#f8e7d2,stroke:#895c25;
+  class A,B,C,D,E,F simulated;
