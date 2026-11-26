@@ -1,0 +1,53 @@
+name: Inspect public Credly badges
+on:
+  push:
+    branches: [asset/credly-public-profile]
+permissions:
+  contents: write
+jobs:
+  retrieve:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve public profile
+        shell: python
+        run: |
+          import json, urllib.request, pathlib, re
+          base='https://www.credly.com/users/joseph-allan-kamara'
+          def fetch(url):
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/json, text/html'})
+              with urllib.request.urlopen(req,timeout=25) as response:
+                  return response.read()
+          badges=[]
+          for suffix in ['/badges.json','/badges?page=1','/badges','']:
+              try:
+                  raw=fetch(base+suffix)
+                  print('Public endpoint',suffix,'bytes',len(raw))
+                  try:
+                      obj=json.loads(raw)
+                      rows=obj.get('data',[]) if isinstance(obj,dict) else obj
+                      if isinstance(rows,list):
+                          for b in rows:
+                              if not isinstance(b,dict): continue
+                              t=b.get('badge_template') or {}
+                              badges.append({'id':b.get('id'),'name':t.get('name') or b.get('name'),'issued_at':b.get('issued_at'),'expires_at':b.get('expires_at'),'image_url':t.get('image_url') or b.get('image_url'),'url':b.get('public_url') or b.get('url')})
+                          if badges: break
+                  except ValueError:
+                      print('Public badge references',sorted(set(re.findall(r'/badges/[a-f0-9-]{36}',raw.decode(errors='replace'))))[:20])
+              except Exception as e: print(type(e).__name__,str(e))
+          print(json.dumps(badges,indent=2))
+          pathlib.Path('public-credly-evidence.json').write_text(json.dumps(badges,indent=2))
+          for b in badges:
+              n=(b.get('name') or '').lower()
+              if 'cnvp' in n and b.get('image_url') and b['image_url'].startswith('https://images.credly.com/'):
+                  raw=fetch(b['image_url'])
+                  if raw.startswith(b'\x89PNG\r\n\x1a\n'):
+                      pathlib.Path('public/certs/cnvp.png').write_bytes(raw)
+      - name: Save public badge evidence in temporary branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public-credly-evidence.json public/certs
+          git commit -m 'Retrieve public credential links and issuer artwork'
+          git push
