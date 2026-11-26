@@ -18,6 +18,19 @@ const META: Record<string, { img?: string; tile?: { top: string; main: string; b
 export default function Credentials() {
   return (
     <section id="credentials" className="lazy-section border-t border-line">
+      {/* Preserve the original badge colors while making its dark ink legible on a dark card. */}
+      <svg aria-hidden="true" width="0" height="0" className="absolute pointer-events-none" focusable="false">
+        <defs>
+          <filter id="ccna-light-ink" colorInterpolationFilters="sRGB" x="0%" y="0%" width="100%" height="100%">
+            <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.5 -1.5 -1.5 0 1" result="darkness" />
+            <feComponentTransfer in="darkness" result="inkMask"><feFuncA type="table" tableValues="0 0 0.15 0.7 1" /></feComponentTransfer>
+            <feComposite in="inkMask" in2="SourceAlpha" operator="in" result="visibleInk" />
+            <feFlood floodColor="#e8f3ff" result="lightInk" />
+            <feComposite in="lightInk" in2="visibleInk" operator="in" result="replacement" />
+            <feComposite in="replacement" in2="SourceGraphic" operator="over" />
+          </filter>
+        </defs>
+      </svg>
       <div className="wrap py-16 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
