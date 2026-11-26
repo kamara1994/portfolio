@@ -1,10 +1,14 @@
 import { certs } from '@/data'
 
-const VERIFY: Record<string, string> = {
-  CompTIA: 'https://www.certmetrics.com/comptia/public/verification.aspx',
-  Cisco: 'https://cp.certmetrics.com/cisco/en/public/verify',
-  'TCM Security': 'https://certifications.tcm-sec.com/verify',
+// Individual verification URLs must identify this holder, not just the certification program.
+// The PenTest+ reference is listed on the holder's public LinkedIn profile.
+// Until other individual URLs are supplied, distinguish issuer lookup from a request for proof.
+const VERIFY: Record<string, { href: string; label: string; title: string }> = {
+  'Security+': { href: 'https://cp.certmetrics.com/CompTIA/en/public/verify/credential', label: 'Issuer lookup', title: 'Open CompTIA credential verification (individual verification code required)' },
+  CCNA: { href: 'https://cp.certmetrics.com/cisco/en/public/verify/credential', label: 'Issuer lookup', title: 'Open Cisco credential verification (individual verification code required)' },
+  'PenTest+': { href: 'https://cp.certmetrics.com/CompTIA/en/public/verify/credential/b849fdfc86d84609affadca6e6dbe640', label: 'Verify', title: 'Open the PenTest+ credential reference published on LinkedIn' },
 }
+const requestProof = (name: string) => 'mailto:kamarajosephallan@gmail.com?subject=' + encodeURIComponent('Credential verification: ' + name) + '&body=' + encodeURIComponent('Hello, could you share the public issuer verification link for ' + name + '? Thank you.')
 
 // Badge art and the dates already shown in the journey
 const META: Record<string, { img?: string; tile?: { top: string; main: string; bg: string }; when?: string; area: string }> = {
@@ -34,7 +38,7 @@ export default function Credentials() {
       <div className="wrap py-16 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
-          Four industry certifications earned, one in progress. Each earned one can be checked with the issuer.
+          Four industry certifications earned, one in progress. Use the issuer verification links or request individual credential proof.
         </p>
 
         <ul className="cred-grid mt-8">
@@ -61,9 +65,11 @@ export default function Credentials() {
                 <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
                 <div className="cred-actions flex items-center justify-between gap-3">
                   <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{earned ? '✅ Earned' : '⏳ In progress'}</span>
-                  {earned && VERIFY[c.issuer] && (
-                    <a href={VERIFY[c.issuer]} target="_blank" rel="noopener" className="tap cred-verify">Verify ↗</a>
-                  )}
+                  {earned && (c.credlyUrl || VERIFY[c.name] ? (
+                    <a href={c.credlyUrl || VERIFY[c.name].href} target="_blank" rel="noopener noreferrer" className="tap cred-verify" title={c.credlyUrl ? 'Open individual digital credential' : VERIFY[c.name].title} aria-label={(c.credlyUrl ? 'Verify' : VERIFY[c.name].label) + ' — ' + c.name}>{c.credlyUrl ? 'Verify' : VERIFY[c.name].label} ↗</a>
+                  ) : (
+                    <a href={requestProof(c.name)} className="tap cred-verify" aria-label={'Request individual verification link for ' + c.name}>Request proof ↗</a>
+                  ))}
                 </div>
               </li>
             )
@@ -81,6 +87,7 @@ export default function Credentials() {
             <div className="cred-actions"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
+        <p className="mt-3 max-w-[62ch] text-[12px] leading-relaxed text-smoke">Issuer lookup requires the individual verification code. <a href={requestProof("professional certifications")} className="text-[#9bdcff] underline underline-offset-2">Request verification links or codes</a> if needed.</p>
       </div>
     </section>
   )
