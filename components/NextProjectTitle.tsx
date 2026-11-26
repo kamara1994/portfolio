@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import TitleScene from './TitleScene'
 
 const art: Record<string, string> = {
   'blue-soc-p8': 'soc',
@@ -42,6 +43,8 @@ export function TitleMotionControl() {
 
 export function ProjectTitleArt({ title, projectId }: { title: string; projectId: string }) {
   const ref = useRef<HTMLSpanElement>(null)
+  const textRef = useRef<HTMLSpanElement>(null)
+  const [moving, setMoving] = useState(false)
   useEffect(() => {
     const el = ref.current
     if (!el || typeof IntersectionObserver === 'undefined') return
@@ -51,8 +54,9 @@ export function ProjectTitleArt({ title, projectId }: { title: string; projectId
       if (!motion.matches && !motionDisabled() && !el.classList.contains('title-art-active')) {
         el.classList.add('title-art-active')
       }
+      if (!motion.matches && !motionDisabled()) setMoving(true)
     }
-    const stop = () => el.classList.remove('title-art-active')
+    const stop = () => { el.classList.remove('title-art-active'); setMoving(false) }
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
       if (visible) play()
@@ -71,7 +75,14 @@ export function ProjectTitleArt({ title, projectId }: { title: string; projectId
       stop()
     }
   }, [projectId])
-  return <span ref={ref} className="project-title-art" data-art={art[projectId] ?? 'network'}><span>{title}</span><span className="project-title-art-overlay" aria-hidden="true">{title}</span></span>
+  const scene = art[projectId] ?? 'network'
+  return (
+    <span ref={ref} className="project-title-art" data-art={scene}>
+      <span ref={textRef} className="project-title-text">{title}</span>
+      <span className="project-title-art-overlay" aria-hidden="true">{title}</span>
+      <TitleScene scene={scene} animate={moving} textRef={textRef} />
+    </span>
+  )
 }
 
 export default function NextProjectTitle({ title, projectId }: { title: string; projectId: string }) {
