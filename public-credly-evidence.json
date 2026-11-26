@@ -1,0 +1,26 @@
+[
+  {
+    "id": "a2442824-312d-400c-8ae4-a4a843125025",
+    "name": "CompTIA Network Vulnerability Assessment Professional \u2013 CNVP Stackable Certification",
+    "issued_at": "2026-03-19T19:00:00.000-05:00",
+    "expires_at": "2029-03-19T19:00:00.000-05:00",
+    "image_url": "https://images.credly.com/images/3eaf80a9-a69a-480a-a98b-e9a91796d6cb/CompTIA_CNVP.png",
+    "url": null
+  },
+  {
+    "id": "97145db7-4c96-468c-ac8d-9382f432f731",
+    "name": "CompTIA PenTest+ ce Certification",
+    "issued_at": "2026-03-19T19:00:00.000-05:00",
+    "expires_at": "2029-03-19T19:00:00.000-05:00",
+    "image_url": "https://images.credly.com/images/c7ac176b-15a3-4726-827a-e8cee8fe44dc/blob",
+    "url": null
+  },
+  {
+    "id": "030d88e9-50df-4054-8d99-6a06286f6e51",
+    "name": "CompTIA Security+ ce Certification",
+    "issued_at": "2025-03-20T19:00:00.000-05:00",
+    "expires_at": "2029-03-19T19:00:00.000-05:00",
+    "image_url": "https://images.credly.com/images/80d8a06a-c384-42bf-ad36-db81bce5adce/blob",
+    "url": null
+  }
+]
