@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { tg, tgConfigured, webhookSecret, SITE } from '@/lib/alerts/telegram'
+import { BOT_COMMANDS } from '@/lib/alerts/commands'
 
 // One-time setup: points the bot's webhook at this site and registers its command menu.
 // Safe to call repeatedly — it only ever points the bot at this site's own /api/telegram, and refuses
@@ -31,17 +32,6 @@ export async function GET(req: Request) {
     allowed_updates: ['message', 'callback_query'],
     drop_pending_updates: true,
   })
-  const cmds = await tg('setMyCommands', {
-    commands: [
-      { command: 'status', description: 'Current alert settings' },
-      { command: 'mute', description: 'Silence alerts, e.g. /mute 2h' },
-      { command: 'unmute', description: 'Turn alerts back on' },
-      { command: 'quiet', description: 'Quiet hours, e.g. /quiet 23-7' },
-      { command: 'tz', description: 'Time zone, e.g. /tz America/New_York' },
-      { command: 'topics', description: 'Sort alerts into topic tabs' },
-      { command: 'test', description: 'Send a sample visitor alert' },
-      { command: 'help', description: 'What the bot can do' },
-    ],
-  })
+  const cmds = await tg('setMyCommands', { commands: BOT_COMMANDS })
   return NextResponse.json({ ok: hook.ok && cmds.ok, webhook: hook.ok ? 'connected' : hook.description, commands: cmds.ok ? 'registered' : cmds.description })
 }

@@ -32,7 +32,7 @@ export function keyboard(rows: (Button | null | undefined | false)[][]) {
   return clean.length ? { inline_keyboard: clean } : undefined
 }
 
-export async function sendMessage(text: string, opts: { thread?: number | null; silent?: boolean; buttons?: (Button | null | undefined | false)[][]; chat?: string } = {}) {
+export async function sendMessage(text: string, opts: { thread?: number | null; silent?: boolean; buttons?: (Button | null | undefined | false)[][]; chat?: string; replyTo?: number } = {}) {
   const body: Record<string, unknown> = {
     chat_id: opts.chat || chatId(),
     text,
@@ -41,6 +41,7 @@ export async function sendMessage(text: string, opts: { thread?: number | null; 
     disable_notification: !!opts.silent,
   }
   if (opts.thread) body.message_thread_id = opts.thread
+  if (opts.replyTo) body.reply_parameters = { message_id: opts.replyTo, allow_sending_without_reply: true }
   const kb = opts.buttons ? keyboard(opts.buttons) : undefined
   if (kb) body.reply_markup = kb
   let r = await tg<{ message_id: number }>('sendMessage', body)
@@ -77,3 +78,25 @@ export function hmac(data: string): string {
 }
 
 export const webhookSecret = () => hmac('pweza-telegram-webhook').slice(0, 48)
+
+/** Photo by URL (Telegram fetches it) or by uploading bytes. */
+export async function sendPhoto(photo: string | Uint8Array, caption: string, opts: { thread?: number | null; silent?: boolean } = {}) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  if (!token) return { ok: false, description: 'telegram-not-configured' } as TgResult
+  if (typeof photo === 'string') {
+    const body: Record<string, unknown> = { chat_id: chatId(), photo, caption, parse_mode: 'HTML', disable_notification: !!opts.silent }
+    if (opts.thread) body.message_thread_id = opts.thread
+    return tg('sendPhoto', body, 12000)
+  }
+  const form = new FormData()
+  form.set('chat_id', chatId())
+  form.set('caption', caption)
+  form.set('parse_mode', 'HTML')
+  form.set('disable_notification', String(!!opts.silent))
+  if (opts.thread) form.set('message_thread_id', String(opts.thread))
+  form.set('photo', new Blob([new Uint8Array(photo)], { type: 'image/png' }), 'qr.png')
+  try {
+    const res = await fetch(`${process.env.TELEGRAM_API_BASE || 'https://api.telegram.org'}/bot${token}/sendPhoto`, { method: 'POST', body: form, signal: AbortSignal.timeout(12000) })
+    return (await res.json()) as TgResult
+  } catch (e: any) { return { ok: false, description: e?.message || 'upload-failed' } as TgResult }
+}

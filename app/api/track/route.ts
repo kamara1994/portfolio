@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { tgConfigured, sendMessage, editMessage, hmac, SITE } from '@/lib/alerts/telegram'
+import { tgConfigured, sendMessage, sendPhoto, editMessage, hmac, SITE } from '@/lib/alerts/telegram'
 import { getSettings, ensureTopics, isHushed } from '@/lib/alerts/settings'
-import { clientIp, locate, matchTarget, classifyReferrer, parseUA, crawlerName, leadScore, pageName, ACTIONS, type Step } from '@/lib/alerts/intel'
+import { clientIp, locate, matchTarget, watchMatch, viaSlug, classifyReferrer, parseUA, crawlerName, leadScore, pageName, ACTIONS, SECTION_LABELS, type Step } from '@/lib/alerts/intel'
 import { renderVisit, visitButtons, renderLead, renderAction, dur, location, who, type Ctx, type Live } from '@/lib/alerts/format'
 import { aiBrief } from '@/lib/alerts/brief'
+import { stripUrl } from '@/lib/alerts/strip'
 
 // Visitor alerts → Telegram.
 // One message per visit that updates live (path, time, scroll, actions), a loud
@@ -51,7 +52,17 @@ function readLive(body: any, kind: Kind): Live {
     role: ['recruiter', 'soc', 'engineer'].includes(body.role) ? body.role : null,
     ended: kind === 'end',
     human: body.human === true,
+    sections: readSections(body.sections),
   }
+}
+
+function readSections(raw: unknown): Record<string, number> {
+  const out: Record<string, number> = {}
+  if (!raw || typeof raw !== 'object') return out
+  for (const [id, ms] of Object.entries(raw as Record<string, unknown>)) {
+    if (SECTION_LABELS[id]) out[id] = int(ms, 0, 86_400_000)
+  }
+  return out
 }
 
 function readCtx(body: any): Ctx | null {
@@ -62,7 +73,7 @@ function readCtx(body: any): Ctx | null {
 
 function scoreOf(ctx: Ctx, live: Live) {
   return leadScore({
-    target: ctx.target, company: ctx.geo.company, ref: ctx.ref, role: live.role,
+    target: ctx.target, company: ctx.geo.company, ref: ctx.ref, role: live.role, via: ctx.via, watch: ctx.watch,
     durMs: live.durMs, steps: live.steps, actions: live.actions, visits: ctx.visitor.n,
     bot: !!ctx.bot && !live.human,
   })
@@ -103,18 +114,22 @@ export async function POST(req: NextRequest) {
         lang: str(body.language, 20),
         ref,
         refRaw: ref.kind === 'direct' ? '' : refRaw,
-        target: matchTarget(geo, ref.host),
+        target: '',
         bot: botLabel,
         visitor: { n, last: int(body.visitor?.last, 0, 9e15) || undefined, first: int(body.visitor?.first, 0, 9e15) || undefined },
         landing: str(body.page, 160) || '/',
       }
+      ctx.via = viaSlug(ctx.landing) || undefined
+      ctx.target = matchTarget(geo, ref.host, ctx.via)
+      ctx.watch = watchMatch(settings.watch, geo, ref.host, ctx.via) || undefined
+      const priority = !!(ctx.target || ctx.watch || ctx.via)
       const live = readLive(body, kind)
       const score = scoreOf(ctx, live)
       const topics = await ensureTopics(settings)
-      const thread = topics ? (ctx.target ? topics.priority : topics.visits) : null
+      const thread = topics ? (priority ? topics.priority : topics.visits) : null
       const sent = await sendMessage(renderVisit(ctx, live, score, settings.tz), {
         thread,
-        silent: hushed || !ctx.target, // only priority companies buzz the phone on arrival
+        silent: hushed || !priority, // company links, watchlist and target companies buzz on arrival
         buttons: visitButtons(ctx, live),
       })
       if (!sent.ok || !sent.result) return NextResponse.json({ ok: false, error: sent.description || 'send-failed' })
@@ -159,13 +174,19 @@ export async function POST(req: NextRequest) {
     await editMessage(msgId, renderVisit(ctx, live, score, settings.tz, brief || undefined), visitButtons(ctx, live))
 
     let lead = false
-    if (score >= 70 && body.leadSent !== true && (kind === 'end' || score >= 85)) {
+    if (score >= 70 && body.leadSent !== true && live.durMs >= 45_000 && live.human && (kind === 'end' || score >= 85)) {
       const r = await sendMessage(renderLead(ctx, live, score, brief || undefined), {
         thread: settings.topics?.leads || settings.topics?.priority,
         silent: hushed,
         buttons: visitButtons(ctx, live).slice(0, 1),
       })
       lead = r.ok
+      // A picture of the visit: time per page, scroll depth, sections read.
+      if (lead) {
+        await sendPhoto(stripUrl(ctx, live, score), `🗺 Visit map · ${who(ctx).replace(/[<>&]/g, '')}`, {
+          thread: settings.topics?.leads || settings.topics?.priority, silent: true,
+        })
+      }
     }
     return NextResponse.json({ ok: true, brief: brief || undefined, lead })
   } catch {

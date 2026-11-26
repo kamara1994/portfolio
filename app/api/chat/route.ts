@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { synthesizeSpeech } from '@/lib/pweza-voice'
 import { notifyChat } from '@/lib/alerts/chat'
+import { reportIssue } from '@/lib/alerts/health'
 import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, type ProofLink } from '@/lib/pweza-knowledge'
 
 const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
@@ -146,11 +147,13 @@ export async function POST(req: NextRequest) {
       usedLocalReply = true
     }
 
+    const failures: string[] = []
+    const wantedAI = !text
     if (!text && process.env.GROQ_API_KEY) {
-      try { text = await callGroq(messages) } catch (e) { console.warn('Groq failed:', e) }
+      try { text = await callGroq(messages) } catch (e: any) { console.warn('Groq failed:', e); failures.push(`Groq: ${e?.message || e}`) }
     }
     if (!text && process.env.GOOGLE_AI_API_KEY) {
-      try { text = await callGemini(messages) } catch (e) { console.warn('Gemini failed:', e) }
+      try { text = await callGemini(messages) } catch (e: any) { console.warn('Gemini failed:', e); failures.push(`Gemini: ${e?.message || e}`) }
     }
     if (!text && process.env.ANTHROPIC_API_KEY) {
       try {
@@ -168,8 +171,13 @@ export async function POST(req: NextRequest) {
         })
         const data = await res.json()
         text = data.content?.[0]?.text
-      } catch (e) { console.error('Claude failed:', e) }
+        if (!text) failures.push(`Claude: ${data?.error?.message || `HTTP ${res.status}`}`)
+      } catch (e: any) { console.error('Claude failed:', e); failures.push(`Claude: ${e?.message || e}`) }
     }
+    const allAIDown = wantedAI && !text && !!(process.env.GROQ_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.ANTHROPIC_API_KEY)
+    const healthWork = allAIDown
+      ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
+      : failures.length ? reportIssue(`PWEZA AI · ${failures[0].split(':')[0]}`, `${failures.join(' · ')} — a backup provider answered.`) : Promise.resolve()
 
     if (!text) {
       ;({ text, links } = generateLocalPwezaReply(messages))
@@ -178,10 +186,13 @@ export async function POST(req: NextRequest) {
     text = usedLocalReply ? text : polishPwezaReply(text, messages)
     if (!usedLocalReply) links = linksForText(text)
     const lastQuestion = [...messages].reverse().find((m) => m.role === 'user')?.content || ''
-    const [{ audio }] = await Promise.all([
-      wantsAudio ? synthesizeSpeech(text) : Promise.resolve({ audio: null }),
+    const [speech] = await Promise.all([
+      wantsAudio ? synthesizeSpeech(text) : Promise.resolve({ audio: null } as { audio: string | null; error?: string }),
       notifyChat(req, lastQuestion, text, messages.filter((m) => m.role === 'user').length),
+      healthWork,
     ])
+    const audio = speech.audio
+    if (wantsAudio && !audio) await reportIssue('PWEZA voice', `Voice reply failed (${(speech as any).error || 'no audio'}); text answer still shown.`)
     return NextResponse.json({ content: text, links: links ?? [], audio })
   } catch (err) {
     console.error('PWEZA error:', err)

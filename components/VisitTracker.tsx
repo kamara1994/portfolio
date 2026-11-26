@@ -16,6 +16,7 @@ type Session = {
   sid: string; start: number; steps: Step[]; actions: string[]
   msgId?: number; ctx?: string; sig?: string; brief?: string
   leadSent?: boolean; lastBrief?: number; human?: boolean; role?: string | null
+  sections?: Record<string, number>
 }
 type Visitor = { id: string; n: number; first: number; last?: number }
 
@@ -75,6 +76,7 @@ export default function VisitTracker() {
     return {
       sid: ses.sid, msgId: ses.msgId, ctx: ses.ctx, sig: ses.sig, brief: ses.brief, leadSent: ses.leadSent,
       steps, actions: ses.actions, durMs: Date.now() - ses.start, role: role(), human: !!ses.human,
+      sections: ses.sections || {},
     }
   }
 
@@ -187,6 +189,22 @@ export default function VisitTracker() {
     document.addEventListener('visibilitychange', onHide)
     window.addEventListener('pagehide', onHide)
 
+    // Which section is on screen each second (homepage: Projects, Skills, Contact…; project pages: Architecture, Evidence…).
+    const sectionTick = setInterval(() => {
+      if (document.visibilityState !== 'visible' || !s.current) return
+      const vh = window.innerHeight
+      let best = '', bestPx = vh * 0.3
+      document.querySelectorAll<HTMLElement>('main section[id], #contact').forEach((el) => {
+        const r = el.getBoundingClientRect()
+        const px = Math.min(r.bottom, vh) - Math.max(r.top, 0)
+        if (px > bestPx) { bestPx = px; best = el.id }
+      })
+      if (!best) return
+      const sec = (s.current.sections ||= {})
+      sec[best] = (sec[best] || 0) + 1000
+    }, 1000)
+    const sectionSave = setInterval(persist, 5000)
+
     // Keep the live alert's time fresh while the tab is open (max ~15 min).
     let beats = 0
     const heartbeat = setInterval(() => {
@@ -206,6 +224,8 @@ export default function VisitTracker() {
       document.removeEventListener('visibilitychange', onHide)
       window.removeEventListener('pagehide', onHide)
       clearInterval(heartbeat)
+      clearInterval(sectionTick)
+      clearInterval(sectionSave)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

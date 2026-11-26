@@ -1,5 +1,5 @@
 import { esc, SITE, type Button } from './telegram'
-import { ACTIONS, pageName, type Geo, type Ref, type Step } from './intel'
+import { ACTIONS, SECTION_LABELS, pageName, type Geo, type Ref, type Step } from './intel'
 
 // Signed, server-built facts about a visitor (the browser echoes it back on updates).
 export type Ctx = {
@@ -17,9 +17,11 @@ export type Ctx = {
   bot: string
   visitor: { n: number; last?: number; first?: number }
   landing: string
+  via?: string
+  watch?: string
 }
 
-export type Live = { steps: Step[]; actions: string[]; durMs: number; role?: string | null; ended: boolean; human: boolean }
+export type Live = { steps: Step[]; actions: string[]; durMs: number; role?: string | null; ended: boolean; human: boolean; sections?: Record<string, number> }
 
 const ROLE_LABEL: Record<string, string> = { recruiter: 'Recruiter / hiring', soc: 'SOC / security lead', engineer: 'Engineer' }
 
@@ -60,7 +62,7 @@ function bar(score: number) {
 
 export function who(ctx: Ctx) {
   const g = ctx.geo
-  return ctx.target || g.company?.name || g.org || [g.city, g.country].filter(Boolean).join(', ') || 'A visitor'
+  return ctx.target || (ctx.via ? `/${ctx.via} link` : '') || g.company?.name || g.org || [g.city, g.country].filter(Boolean).join(', ') || 'A visitor'
 }
 
 export function location(g: Geo) {
@@ -72,7 +74,9 @@ export function renderVisit(ctx: Ctx, live: Live, score: number, tz: string, bri
   const g = ctx.geo
   const bot = ctx.bot && !live.human
   const status = live.ended ? ' · <i>left</i>' : ' · <i>browsing now</i>'
-  const head = ctx.target ? `🔥 <b>PRIORITY · ${esc(ctx.target)}</b>`
+  const head = ctx.watch ? `🔥 <b>WATCHLIST · ${esc(ctx.watch)}</b>`
+    : ctx.target ? `🔥 <b>PRIORITY · ${esc(ctx.target)}</b>`
+    : ctx.via ? `🎯 <b>Opened your /${esc(ctx.via)} link</b>`
     : bot ? `🤖 <b>Likely bot</b> · ${esc(ctx.bot)}`
     : ctx.ref.kind === 'job' ? `💼 <b>Visitor from ${esc(ctx.ref.label)}</b>`
     : '👀 <b>Portfolio visitor</b>'
@@ -97,17 +101,24 @@ export function renderVisit(ctx: Ctx, live: Live, score: number, tz: string, bri
 
   const acts = Array.from(new Set(live.actions)).map((a) => ACTIONS[a]?.label).filter(Boolean)
 
+  const read = Object.entries(live.sections || {})
+    .filter(([id, ms]) => SECTION_LABELS[id] && ms >= 3000)
+    .sort((a, b) => b[1] - a[1]).slice(0, 5)
+    .map(([id, ms]) => `${SECTION_LABELS[id]} ${dur(ms)}`)
+
   const flags = [g.vpn && 'VPN', g.proxy && 'Proxy', g.tor && 'Tor', g.hosting && 'Datacenter'].filter(Boolean) as string[]
 
   return [
     head + status,
     visitBits.join(' · '),
+    ctx.via && (ctx.watch || ctx.target) ? `🎯 Came in through <b>/${esc(ctx.via)}</b>` : null,
     '',
     company,
     `📍 ${esc(location(g))}${g.zip ? ` (${esc(g.zip)})` : ''}`,
     from,
     time,
     path,
+    read.length ? `📚 Read: ${read.join(' · ')}` : null,
     acts.length ? `⚡ ${acts.join(' · ')}` : null,
     brief ? `\n🧠 <i>${esc(brief)}</i>` : null,
     '',
@@ -129,6 +140,7 @@ export function visitButtons(ctx: Ctx, live: Live): (Button | null)[][] {
       { text: '📄 Page', url: `${SITE}${last}` },
       orgName ? { text: '🔎 LinkedIn', url: `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(orgName)}` } : null,
     ],
+    [{ text: '✍️ Draft follow-up', callback_data: 'draft' }, { text: '🎓 Prep pack', callback_data: 'prep' }],
     [{ text: '🔕 Mute 1h', callback_data: 'mute:60' }, { text: '🌙 Mute 8h', callback_data: 'mute:480' }],
   ]
 }

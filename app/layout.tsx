@@ -7,6 +7,7 @@ import '@fontsource/barlow-condensed/700.css'
 import './globals.css'
 import VisitTracker from '@/components/VisitTracker'
 import NavMemory from '@/components/NavMemory'
+import { CANARY_CONFIG } from '@/lib/alerts/canary'
 import LiveIcons from '@/components/LiveIcons'
 import AIChat from '@/components/AIChat'
 import MobileDock from '@/components/MobileDock'
@@ -59,6 +60,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-ink font-sans text-snow">
         <a href="#main" className="skip-link">Skip to content</a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PERSON_LD) }} />
+        {/* Canary: a decoy key and endpoint. Nothing on the site uses them; any use triggers a security alert. */}
+        <script type="application/json" id="app-runtime" dangerouslySetInnerHTML={{ __html: JSON.stringify(CANARY_CONFIG) }} />
         <VisitTracker />
         <NavMemory />
         <LiveIcons />

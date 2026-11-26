@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { tg, chatId, webhookSecret, sendMessage, esc } from '@/lib/alerts/telegram'
+import QRCode from 'qrcode'
+import { tg, chatId, webhookSecret, sendMessage, sendPhoto, esc, SITE } from '@/lib/alerts/telegram'
+import { draftFollowUp, redraft, prepPack } from '@/lib/alerts/assist'
+import { healthReport } from '@/lib/alerts/health'
+import { viaSlug } from '@/lib/alerts/slug'
+import { BOT_COMMANDS } from '@/lib/alerts/commands'
 import { getSettings, saveSettings, ensureTopics, describe, fmtDuration, validTz, isHushed } from '@/lib/alerts/settings'
 import { renderVisit, visitButtons, type Ctx } from '@/lib/alerts/format'
 
@@ -7,6 +12,9 @@ import { renderVisit, visitButtons, type Ctx } from '@/lib/alerts/format'
 // Only updates carrying the secret header AND coming from his own chat are accepted.
 
 export const runtime = 'nodejs'
+export const maxDuration = 30
+
+let commandsSynced = false
 
 const HELP = [
   '🤖 <b>Portfolio alert bot</b>',
@@ -17,7 +25,13 @@ const HELP = [
   '/quiet 23-7 — silent overnight (24h clock) · /quiet off',
   '/tz America/New_York — time zone for alerts',
   '/topics — sort alerts into topic tabs',
+  '/watch Deloitte — 🔥 alert when they visit · /unwatch · /watchlist',
+  '/qr byui-fair — QR code for a tagged link (career fairs, cards)',
+  '/health — check the site, PWEZA AI, voice and lookups',
   '/test — send a sample visitor alert',
+  '',
+  '🔗 Company links: put josephkamara.vercel.app/deloitte (any word) in an application — visits through it are tagged and buzz your phone.',
+  '✍️ / 🎓 buttons under alerts draft a follow-up or an interview prep pack.',
   '',
   'Normal visits arrive silently. Priority companies, résumé/email/LinkedIn clicks and strong leads buzz your phone unless muted or in quiet hours.',
 ].join('\n')
@@ -58,12 +72,31 @@ export async function POST(req: NextRequest) {
   }
   const update = await req.json().catch(() => ({}))
   const mine = chatId()
+  if (!commandsSynced) { commandsSynced = true; await tg('setMyCommands', { commands: BOT_COMMANDS }) } // keeps the menu current after deploys
 
   // Inline buttons under alerts (🔕 Mute 1h / 8h)
   const cb = update.callback_query
   if (cb) {
     if (String(cb.message?.chat?.id) !== mine) return NextResponse.json({ ok: true })
-    const m = String(cb.data || '').match(/^mute:(\d+)$/)
+    const data = String(cb.data || '')
+    const source: string = cb.message?.text || cb.message?.caption || ''
+    const thread: number | undefined = cb.message?.message_thread_id
+    const replyTo: number | undefined = cb.message?.message_id
+    if (data === 'draft' || data === 'prep' || data.startsWith('redraft:')) {
+      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: data === 'prep' ? '🎓 Building prep pack…' : '✍️ Writing…' })
+      if (data === 'prep') {
+        await sendMessage(`🎓 <b>Interview prep pack</b>\n\n${esc(await prepPack(source))}`, { thread, replyTo, silent: true })
+      } else {
+        const style = data.split(':')[1] as 'short' | 'formal' | 'warm' | undefined
+        const draftText = style ? await redraft(source.replace(/^✍️ Follow-up drafts\s*/, ''), style) : await draftFollowUp(source)
+        await sendMessage(`✍️ <b>Follow-up drafts</b>\n\n${esc(draftText)}\n\n<i>Copy, personalise with their name, send.</i>`, {
+          thread, replyTo, silent: true,
+          buttons: [[{ text: '✂️ Shorter', callback_data: 'redraft:short' }, { text: '🎩 More formal', callback_data: 'redraft:formal' }, { text: '😊 Warmer', callback_data: 'redraft:warm' }]],
+        })
+      }
+      return NextResponse.json({ ok: true })
+    }
+    const m = data.match(/^mute:(\d+)$/)
     let text = 'Done'
     if (m) {
       const s = await getSettings(true)
@@ -118,6 +151,33 @@ export async function POST(req: NextRequest) {
     }
     case '/test':
       await sample(s.tz); break
+    case '/watch': {
+      const term = arg.trim().replace(/\s+/g, ' ').slice(0, 40)
+      if (!term) { await reply('Who should I watch? e.g. /watch Deloitte', thread); break }
+      const list = Array.from(new Set([...(s.watch || []), term])).slice(0, 30)
+      await saveSettings({ ...s, watch: list })
+      await reply(`👁 Watching <b>${esc(term)}</b>. You'll get a 🔥 alert when someone from there visits (by network, referrer or your /${esc(term.toLowerCase().replace(/[^a-z0-9]+/g, ''))} link).`, thread); break
+    }
+    case '/unwatch': {
+      const term = arg.trim().toLowerCase()
+      const list = (s.watch || []).filter((w) => w.toLowerCase() !== term)
+      if (list.length === (s.watch || []).length) { await reply(`Not on the list. /watchlist shows who I'm watching.`, thread); break }
+      await saveSettings({ ...s, watch: list })
+      await reply(`Stopped watching ${esc(arg.trim())}.`, thread); break
+    }
+    case '/watchlist':
+      await reply(s.watch?.length ? `👁 <b>Watchlist</b>\n${s.watch.map((w) => `• ${esc(w)}`).join('\n')}\n\n/unwatch name to remove` : '👁 Watchlist is empty. Add one with /watch Deloitte', thread); break
+    case '/health':
+      await reply('🩺 Checking…', thread)
+      await reply(await healthReport(), thread); break
+    case '/qr': {
+      const slug = viaSlug('/' + arg.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, ''))
+      if (!slug) { await reply('Give it a simple word, e.g. /qr byui-fair or /qr deloitte (letters, numbers, dashes).', thread); break }
+      const link = `${SITE}/${slug}`
+      const png = await QRCode.toBuffer(link, { width: 720, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#0A1226', light: '#FFFFFF' } })
+      await sendPhoto(new Uint8Array(png), `🔗 <b>${esc(link.replace(/^https:\/\//, ''))}</b>\nEvery scan or visit through this link is tagged <b>/${esc(slug)}</b> and buzzes your phone.\nPrint it on cards, slides or a career-fair sign.`, { thread, silent: true })
+      break
+    }
     default:
       if (cmd.startsWith('/')) await reply('Unknown command. /help lists what I can do.', thread)
   }

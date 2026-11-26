@@ -11,6 +11,7 @@ export type Settings = {
   quiet?: { from: number; to: number } | null
   topics?: Topics | null
   topicsTriedAt?: number
+  watch?: string[]
   pinId?: number
 }
 
@@ -50,7 +51,8 @@ export function describe(s: Settings) {
   const muted = s.mutedUntil && s.mutedUntil > now ? `🔕 Muted for ${fmtDuration(s.mutedUntil - now)} more` : '🔔 Alerts on'
   const quiet = s.quiet ? `🌙 Quiet hours ${hourLabel(s.quiet.from)}–${hourLabel(s.quiet.to)}` : '🌙 No quiet hours'
   const topics = s.topics ? '🗂 Topics on' : '🗂 Topics off'
-  return [muted, quiet, `🕐 Time zone ${s.tz}`, topics]
+  const watch = s.watch?.length ? `👁 Watching ${s.watch.length}: ${s.watch.join(', ')}` : '👁 Watchlist empty'
+  return [muted, quiet, `🕐 Time zone ${s.tz}`, topics, watch]
 }
 
 export async function saveSettings(s: Settings): Promise<Settings> {
@@ -59,7 +61,7 @@ export async function saveSettings(s: Settings): Promise<Settings> {
     '⚙️ <b>Portfolio alert settings</b>',
     ...describe(s),
     '',
-    'Change with /mute, /quiet, /tz, /topics · /help',
+    'Change with /mute, /quiet, /tz, /watch, /topics · /help',
     `<code>${MARK} ${esc(JSON.stringify(data))}</code>`,
   ].join('\n')
   if (pinId) {

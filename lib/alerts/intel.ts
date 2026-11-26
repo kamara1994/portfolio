@@ -85,11 +85,27 @@ const TARGETS: [string, string][] = [
 // ISP / hosting names that contain a target keyword but are not that employer.
 const NOT_EMPLOYER = /google fiber|google cloud|amazon\.com.*(aws|ec2|data ?center)|amazon technologies|microsoft azure|azure|cloudflare warp/i
 
-export function matchTarget(geo: Geo, referrerHost: string): string {
-  const hay = `${geo.company?.name || ''} ${geo.company?.domain || ''} ${geo.org || ''} ${referrerHost}`.toLowerCase()
+export function matchTarget(geo: Geo, referrerHost: string, via = ''): string {
+  const hay = `${geo.company?.name || ''} ${geo.company?.domain || ''} ${geo.org || ''} ${referrerHost} ${via}`.toLowerCase()
   if (NOT_EMPLOYER.test(hay) && !geo.company) return ''
   return TARGETS.find(([k]) => hay.includes(k))?.[1] || ''
 }
+
+/** Joseph's own watchlist (from /watch): first term found in the visitor's company, network, referrer or link. */
+export function watchMatch(terms: string[] | undefined, geo: Geo, referrerHost: string, via = ''): string {
+  if (!terms?.length) return ''
+  const hay = `${geo.company?.name || ''} ${geo.company?.domain || ''} ${geo.org || ''} ${referrerHost} ${via}`.toLowerCase().replace(/[^a-z0-9]+/g, ' ')
+  const squash = hay.replace(/\s+/g, '')
+  return terms.find((t) => {
+    const k = t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+    return k && (hay.includes(k) || squash.includes(k.replace(/\s+/g, '')))
+  }) || ''
+}
+
+// ---------- company links: josephkamara.vercel.app/deloitte ----------
+
+export { RESERVED, viaSlug } from './slug'
+import { viaSlug } from './slug'
 
 // ---------- where they came from ----------
 
@@ -157,12 +173,19 @@ const PAGE_NAMES: Record<string, string> = { '/': 'Home', '/projects': 'Project 
 export function pageName(path: string): string {
   const clean = (path || '/').split('?')[0].split('#')[0]
   if (PAGE_NAMES[clean]) return PAGE_NAMES[clean]
+  const via = viaSlug(clean)
+  if (via) return `Home (via /${via})`
   const m = clean.match(/^\/projects\/([^/]+)/)
   if (m) {
     const p = projects.find((x) => x.id === m[1])
     return p ? p.title : m[1]
   }
   return clean
+}
+
+export const SECTION_LABELS: Record<string, string> = {
+  work: 'Projects', skills: 'Skills', credentials: 'Certifications', experience: 'Experience', story: 'Story', contact: 'Contact',
+  architecture: 'Architecture', evidence: 'Evidence', 'source-code': 'Source code', 'project-index': 'Project index', 'featured-heading': 'Featured',
 }
 
 export const isProjectPage = (path: string) => /^\/projects\/[^/]+/.test(path || '')
@@ -184,13 +207,15 @@ export const ACTIONS: Record<string, { label: string; loud: boolean; weight: num
 export type Step = { p: string; d: number; s: number } // path, ms on page, max scroll %
 
 export type ScoreInput = {
-  target: string; company?: Company; ref: Ref; role?: string | null
+  target: string; company?: Company; ref: Ref; role?: string | null; via?: string; watch?: string
   durMs: number; steps: Step[]; actions: string[]; visits: number; bot: boolean
 }
 
 export function leadScore(i: ScoreInput): number {
   if (i.bot) return 0
   let s = 5
+  if (i.via) s += 30
+  if (i.watch) s += 25
   if (i.target) s += 35
   else if (i.company?.type === 'business') s += 12
   if (i.ref.kind === 'job') s += 20
