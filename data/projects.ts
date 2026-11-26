@@ -1,4 +1,5 @@
 import previewManifest from './project-previews.json'
+import coursework from './coursework-projects.json'
 
 export interface Project {
   id: string
@@ -14,7 +15,9 @@ export interface Project {
   github?: string
   sourceAccess?: 'private' | 'unavailable'
   /** 'flagship' = full-screen panel on home, 'more' = compact list. Unset = not shown until rebuilt. */
-  placement?: 'flagship' | 'more'
+  placement?: 'flagship' | 'more' | 'library'
+  course?: string
+  evidenceNote?: string
   demo?: string
   video?: string
   report?: string
@@ -416,7 +419,7 @@ const projectList: Project[] = [
 ]
 
 const previews: Record<string, string> = previewManifest
-export const projects: Project[] = projectList.map((project) => ({
+export const projects: Project[] = [...projectList, ...(coursework as Project[])].map((project) => ({
   ...project,
   video: previews[project.id] ?? project.video,
 }))

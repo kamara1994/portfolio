@@ -49,7 +49,7 @@ export default function ProjectMedia({ project, priority = false }: { project: P
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-raised to-panel p-5 text-center">
       <svg aria-hidden="true" viewBox="0 0 48 48" fill="none" className="h-12 w-12 text-signal/70"><circle cx="24" cy="24" r="21" stroke="currentColor" strokeWidth="1.5"/><path d="M20 15l14 9-14 9V15z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
       <span className="font-display text-2xl font-semibold uppercase leading-tight text-snow/80 sm:text-3xl">{title}</span>
-      <span className="text-sm text-smoke">Demo video coming soon</span>
+      <span className="text-sm text-smoke">{project.course ? 'Coursework case study · public media not available' : 'Demo video coming soon'}</span>
     </div>
   )
 }

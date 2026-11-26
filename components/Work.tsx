@@ -114,6 +114,7 @@ export default function Work() {
           </div>
         </div>
       )}
+      <div className="wrap project-wrap pb-12"><div className="flex flex-wrap items-center justify-between gap-5 rounded-xl border border-line bg-panel/60 p-6 sm:p-8"><div><p className="text-sm text-signal">Engineering project library</p><h2 className="mt-2 font-display text-3xl font-bold uppercase">Explore the complete work</h2><p className="mt-2 max-w-[60ch] text-smoke">Software projects, security investigations, cloud architecture and networking coursework, with evidence and limitations.</p></div><Link href="/projects" className="btn-primary">Explore project library ↗</Link></div></div>
     </section>
   )
 }
