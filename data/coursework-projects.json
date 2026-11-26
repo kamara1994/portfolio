@@ -77,19 +77,27 @@
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Investigate security events and communicate findings through visualizations. Reviewed event data in the BOTSv3 coursework and completed a separate dashboard assignment. Original investigative write-up recovered.",
+    "description": "A graded BOTSv3 security investigation using Splunk Enterprise. The recovered original Canvas submission describes authentication, process-creation and web-access event analysis, plus a separately graded dashboard assignment.",
     "problem": "Investigate security events and communicate findings through visualizations.",
-    "approach": "Reviewed event data in the BOTSv3 coursework and completed a separate dashboard assignment. Original investigative write-up recovered.",
-    "outcome": "BOTSv3 graded 100/100; dashboard assignment 50/50. A live Splunk deployment and relationship to other dashboard source files were not verified.",
-    "impact": "BOTSv3 graded 100/100; dashboard assignment 50/50. A live Splunk deployment and relationship to other dashboard source files were not verified.",
+    "approach": "Used the BOTSv3 index to analyze Windows authentication events, process execution and web access records. The submitted write-up reports 1,944,092 total indexed events. Identified suspicious encoded PowerShell behavior as an investigative indicator rather than proof of compromise. Separate Project 7 lab materials document team SIEM integration but are not established as the BOTSv3 submission.",
+    "outcome": "BOTSv3 submission graded 100/100 and dashboard assignment 50/50. Dataset counts are reported in the write-up; no independent rerun, dashboard export or live instance verified.",
+    "impact": "Graded SIEM investigation across authentication, execution and web telemetry.",
     "stack": [
       "Splunk",
       "BOTSv3",
       "Security event analysis"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Original write-up retained privately; dashboard source not yet approved.",
-    "course": "CYBER375"
+    "evidenceNote": "Original Canvas BOTSv3 write-up recovered. Raw assessment questions, account names, lab addresses and command payloads withheld; separate Project 7 screenshots not attributed to this assignment.",
+    "course": "CYBER375",
+    "architecture": [
+      "BOTSv3 event index → Splunk searches",
+      "Windows authentication records → Failed-logon triage",
+      "Process-creation events → Suspicious execution analysis",
+      "Web access records → Network activity review",
+      "Investigation findings → Written report and separately graded visualization work"
+    ],
+    "report": "/docs/splunk-investigation-summary.md"
   },
   {
     "id": "cyber375-endpoint",
@@ -174,11 +182,11 @@
     "role": "Individual & team coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Design cloud architectures addressing networking, availability, storage and security. Completed weekly design artifacts and guided/challenge labs; contributed to a team architecture presentation. The recovered package includes design records and a visualization archive.",
+    "description": "ITM 400 Cloud Architecture work covering the AWS Academy café scenario and related Blue Bear studio design artifacts. The recovered materials document individual and team contributions, VPC connectivity testing, storage and identity decisions, and migration and serverless architecture planning.",
     "problem": "Design cloud architectures addressing networking, availability, storage and security.",
-    "approach": "Completed weekly design artifacts and guided/challenge labs; contributed to a team architecture presentation. The recovered package includes design records and a visualization archive.",
-    "outcome": "High-availability challenge graded 20/20; team presentation 28/28. Course ongoing; this is not a verified production deployment.",
-    "impact": "High-availability challenge graded 20/20; team presentation 28/28. Course ongoing; this is not a verified production deployment.",
+    "approach": "Completed guided/challenge labs and architecture decision records. The separate Blue Bear VPC studio documents private RDS connectivity and route failure recovery. A Week 10 report describes resolving a Lambda subnet configuration issue and selecting an EventBridge scheduled rule instead of Scheduler; the report claims successful grading, while the recovered Canvas snapshot still shows 0/20 for the Week 10 challenge.",
+    "outcome": "Verified coursework records include high-availability challenge 20/20 and team presentation 28/28; the VPC evidence packet documents successful bidirectional testing. Course remains ongoing. The Week 10 grading discrepancy is unresolved; no production deployment or final overall completion claimed.",
+    "impact": "Cloud architecture decisions, laboratory network validation and team/individual design work.",
     "stack": [
       "AWS",
       "Architecture decision records",
@@ -187,32 +195,61 @@
       "Identity"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Original team artifacts retained privately; some connectivity remains pending.",
-    "course": "ITM 400"
+    "evidenceNote": "Includes related Blue Bear studio evidence, not a screenshot of the café challenge itself. Mixed team and individual work. Week 10 report and Canvas grade disagree; no completion claim for that activity.",
+    "course": "ITM 400",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/blue-bear-dashboard.webp",
+        "caption": "Related Blue Bear VPC studio application dashboard (October 23, page 7), not the café site."
+      }
+    ],
+    "architecture": [
+      "Café scenario requirements → Guided AWS labs and design decisions",
+      "Blue Bear studio → VPC and private database connectivity",
+      "Identity and storage design artifacts → Access boundaries and data services",
+      "Migration and serverless reports → Proposed transfer and automation analysis"
+    ],
+    "report": "/docs/cloud-architecture-evidence.md"
   },
   {
     "id": "aws-vpc-peering",
     "num": "37",
     "title": "AWS VPC Peering",
-    "subtitle": "Cross-network connectivity and routing design",
+    "subtitle": "Blue Bear VPC peering · bidirectional private database connectivity and route recovery",
     "category": "Cloud Engineering · ITM 400",
     "duration": "2026",
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Design peering and bidirectional routes with scoped access. Prepared a network diagram, reviewed routing and security requirements, and completed guided/challenge VPC coursework.",
+    "description": "An individual AWS architecture studio exercise connecting two separate store VPCs. The October 23 evidence packet documents active peering, bidirectional TLS-verified database queries, least-privilege access and a controlled routing failure with successful recovery.",
     "problem": "Design peering and bidirectional routes with scoped access.",
-    "approach": "Prepared a network diagram, reviewed routing and security requirements, and completed guided/challenge VPC coursework.",
-    "outcome": "Peering activity graded 28/28; network diagram artifact 24/24. Store 00 peering remains pending in the recovered visualization; end-to-end connectivity not verified.",
-    "impact": "Peering activity graded 28/28; network diagram artifact 24/24. Store 00 peering remains pending in the recovered visualization; end-to-end connectivity not verified.",
+    "approach": "Configured Store 01 peering, added partner routes to public and private route tables, scoped database access to the partner EC2 host, set up read-only access, and coordinated reciprocal testing. Removed only the peer route to isolate the failure, confirmed local access still worked, restored the route, and retested.",
+    "outcome": "The evidence packet documents six readable rows in each direction with TLS verified, peer-only failure after route removal and successful recovery. VPC peering activity graded 28/28; network diagram artifact 24/24. Earlier architecture archive indicated peering pending; the later October 23 packet documents the subsequent successful test. Not an ongoing production service.",
+    "impact": "Documented two-way private database access, verified TLS and controlled routing failure recovery in a graded lab.",
     "stack": [
       "Amazon VPC",
       "Route tables",
       "Security groups"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Design and grading evidence; no claim of successful live peering.",
-    "course": "ITM 400"
+    "evidenceNote": "October 23 evidence packet, page 7 screenshot and pages 6–11 test records support the successful lab result. Sensitive lab identifiers omitted; current availability not verified.",
+    "course": "ITM 400",
+    "screenshot": "/screenshots/blue-bear-dashboard.webp",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/blue-bear-dashboard.webp",
+        "caption": "Actual Blue Bear application dashboard, cropped from the October 23 VPC evidence packet (p. 7). Two configured stores; peer RDS reachable; database TLS verified."
+      }
+    ],
+    "architecture": [
+      "Store 01 EC2 application → Local private RDS with TLS",
+      "Store 01 routing tables → Active VPC peering connection",
+      "Peer VPC routing → Partner private RDS with restricted access",
+      "Reciprocal EC2-to-RDS query → TLS and read-only data validation",
+      "Controlled peer route removal → Peer query fails while local query succeeds",
+      "Route restoration → Peer query recovers"
+    ],
+    "report": "/docs/blue-bear-vpc-evidence.md"
   },
   {
     "id": "aws-ha-resilience",
@@ -226,7 +263,7 @@
     "placement": "library",
     "description": "Select availability patterns and reason about failure and recovery. Completed a high-availability challenge and individual failure-analysis design artifact, including monitoring and recovery considerations.",
     "problem": "Select availability patterns and reason about failure and recovery.",
-    "approach": "Completed a high-availability challenge and individual failure-analysis design artifact, including monitoring and recovery considerations.",
+    "approach": "Completed the graded HA challenge and failure-analysis artifact. A recovered Week 5 individual design proposal specifies a two-AZ public ALB behind WAF, private app/database subnets, restricted security groups, private endpoints and zonal egress; the draft explicitly labels these design proposals, not observed failover results.",
     "outcome": "Challenge graded 20/20; failure analysis 24/24; guided HA lab 12/12. No measured uptime or recovery times.",
     "impact": "Challenge graded 20/20; failure analysis 24/24; guided HA lab 12/12. No measured uptime or recovery times.",
     "stack": [
@@ -236,8 +273,15 @@
       "Monitoring"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Graded design evidence; live architecture not independently verified.",
-    "course": "ITM 400"
+    "evidenceNote": "Week 5 individual studio artifact provides a related proposed topology (draft for verification). Exact Week 7 deployed configuration and live failover evidence not recovered.",
+    "course": "ITM 400",
+    "architecture": [
+      "Proposed customer traffic → TLS / WAF → Public ALB across two AZs",
+      "ALB → Private application subnets",
+      "Private application tier → Restricted private database access",
+      "Private AWS endpoints → IAM-controlled Session Manager and logging",
+      "Proposed failure validation → Health checks and recovery objectives"
+    ]
   },
   {
     "id": "aws-iam-security",
@@ -251,7 +295,7 @@
     "placement": "library",
     "description": "Apply least-privilege reasoning to cloud access and resource protection. Completed a guided IAM lab, a policy decision artifact and security-control analysis.",
     "problem": "Apply least-privilege reasoning to cloud access and resource protection.",
-    "approach": "Completed a guided IAM lab, a policy decision artifact and security-control analysis.",
+    "approach": "Completed a guided IAM lab and policy/control coursework. The recovered team ADR proposes federated workforce access through IAM Identity Center with MFA, short-lived STS roles for workloads and partners, and policy-simulator evaluation. This is team design evidence, not verified deployed policy ownership.",
     "outcome": "Guided IAM lab graded 12/12; least-privilege artifact and security-control artifact each 24/24. Exported deployment policy not recovered.",
     "impact": "Guided IAM lab graded 12/12; least-privilege artifact and security-control artifact each 24/24. Exported deployment policy not recovered.",
     "stack": [
@@ -260,8 +304,14 @@
       "Security controls"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Graded policy design; no public deployed configuration.",
-    "course": "ITM 400"
+    "evidenceNote": "Recovered team ADR documents identity design and policy simulation claims. No independently attributable deployed role or approved public policy JSON.",
+    "course": "ITM 400",
+    "architecture": [
+      "Human workforce → Federated IAM Identity Center with MFA (design)",
+      "Application and partner workloads → Short-lived STS roles (design)",
+      "Principal requests → IAM policy evaluation",
+      "Policy simulator → Proposed allow/deny verification"
+    ]
   },
   {
     "id": "aws-storage-db",
@@ -282,35 +332,56 @@
       "AWS",
       "Amazon EFS",
       "Amazon RDS",
-      "Static hosting"
+      "Static hosting",
+      "Amazon S3"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Design artifacts and assignment scores; runtime not verified.",
-    "course": "ITM 400"
+    "evidenceNote": "Grades and design records establish the exercises; no public deployment URL, service settings or standalone storage screenshots recovered.",
+    "course": "ITM 400",
+    "architecture": [
+      "Static website exercise → Object storage / static content",
+      "Separate EFS exercise → Shared file storage",
+      "Separate RDS exercise → Relational database",
+      "Migration decision record → Database migration tradeoffs"
+    ]
   },
   {
     "id": "aws-cloudformation",
     "num": "41",
     "title": "AWS Infrastructure Automation",
-    "subtitle": "CloudFormation deployment analysis and rollback planning",
+    "subtitle": "AWS CodePipeline, CloudFormation and deployment rollback analysis",
     "category": "Cloud Engineering · ITM 400",
     "duration": "2026",
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Reason about repeatable deployments, failure and rollback. Completed guided automation work and an individual deployment/rollback decision record. Generic lab templates were recovered but authorship is not established.",
+    "description": "The Week 8 challenge evidence documents automated deployment of café network and application resources across N. Virginia and Oregon, with a separate individual architecture decision record for controlled releases and rollback.",
     "problem": "Reason about repeatable deployments, failure and rollback.",
-    "approach": "Completed guided automation work and an individual deployment/rollback decision record. Generic lab templates were recovered but authorship is not established.",
-    "outcome": "Automation challenge graded 20/20; rollback artifact 24/24; guided lab 12/12. Deployed stack and personalized template not verified.",
-    "impact": "Automation challenge graded 20/20; rollback artifact 24/24; guided lab 12/12. Deployed stack and personalized template not verified.",
+    "approach": "Reviewed the CloudFormation deployment pipeline, corrected the application template, and documented successful source and deployment stages. Collected EC2 health, stack and HTTP-response evidence. Proposed modular templates, parameterized environments, approved change sets and drift monitoring in a separate individual rollback ADR.",
+    "outcome": "The local evidence packet documents successful pipeline stages, healthy instances, completed Oregon stacks and HTTP 200. Two automatic EC2 grading checks were unresolved in that packet; Canvas later records the challenge at 20/20, ADR at 24/24 and guided lab at 12/12. Final cleanup and current deployment availability were not verified.",
+    "impact": "Documented successful automation stages and deployment troubleshooting; separate release-control and rollback design.",
     "stack": [
       "AWS CloudFormation",
       "Infrastructure as code",
       "Rollback design"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Original decision record retained privately; generic templates not published as authored code.",
-    "course": "ITM 400"
+    "evidenceNote": "Actual pipeline evidence and individual ADR recovered. Generic template authorship remains unverified; no raw template or credential files published. Proposed operational targets are not measured results.",
+    "course": "ITM 400",
+    "screenshot": "/screenshots/cafe-pipeline.webp",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/cafe-pipeline.webp",
+        "caption": "Genuine AWS CodePipeline screenshot from Week 8 challenge evidence, page 2; execution identifiers obscured. Source and CloudFormation deploy stages succeeded."
+      }
+    ],
+    "architecture": [
+      "Git-managed template → CodePipeline source stage",
+      "CloudFormation deploy stage → Network and application stacks",
+      "EC2 instance health and HTTP response → Lab deployment checks",
+      "Separate proposed release-control design → Approved change sets, smoke tests and rollback"
+    ],
+    "report": "/docs/aws-automation-evidence.md"
   },
   {
     "id": "wireless-ap-admin",

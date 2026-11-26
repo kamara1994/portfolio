@@ -101,7 +101,7 @@ export function ProjectEvidence({ project }: { project: Project }) {
   return <section id="evidence" className="scroll-mt-28">
     <h2 className="font-display text-[32px] font-bold uppercase leading-none">Project evidence</h2>
     <p className="mt-2 text-sm text-smoke">Explore the available project materials. Lab and development work retain their original status.</p>
-    {Boolean(project.evidenceImages?.length) && <div className="mt-6 space-y-4">{project.evidenceImages?.map(image=><figure key={image.src} className="overflow-hidden rounded-xl border border-line bg-panel"><a href={image.src} target="_blank" rel="noopener noreferrer" className="block overflow-x-auto bg-[#202020] p-4" aria-label={image.caption+" — open image"}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={image.src} alt={image.caption} loading="lazy" className="h-auto max-w-none" /></a><figcaption className="px-4 py-3 text-sm text-smoke">{image.caption}</figcaption></figure>)}</div>}
+    {Boolean(project.evidenceImages?.length) && <div className="mt-6 space-y-4">{project.evidenceImages?.map(image=><figure key={image.src} className="overflow-hidden rounded-xl border border-line bg-panel"><a href={image.src} target="_blank" rel="noopener noreferrer" className="block overflow-x-auto bg-[#202020] p-4" aria-label={image.caption+" — open image"}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={image.src} alt={image.caption} loading="lazy" className="h-auto w-auto max-w-full mx-auto" /></a><figcaption className="px-4 py-3 text-sm text-smoke">{image.caption}</figcaption></figure>)}</div>}
     <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map(item=><a key={item.href} href={item.href} target={item.external?'_blank':undefined} rel={item.external?'noopener noreferrer':undefined} className="pe-evidence-card"><span className="flex items-center justify-between gap-3 font-semibold text-snow">{item.label}<span aria-hidden="true" className="text-signal">↗</span></span><span className="mt-2 block text-sm text-smoke">{item.detail}</span></a>)}
     </div>
@@ -121,7 +121,7 @@ const previewThemes: Record<string, string> = {
 export function ProjectNextNavigation({ project }: { project: Project }) {
   const [failed, setFailed] = useState(false)
   const theme = previewThemes[project.id] ?? 'network'
-  const screenshot = actualPreviews[project.id] ?? project.screenshot
+  const screenshot = actualPreviews[project.id] ?? project.screenshot ?? project.evidenceImages?.[0]?.src
   return <div className="group pe-next border-t border-line" data-next-theme={theme}>
     <div className="pe-next-backdrop" aria-hidden="true">
       {screenshot && !failed ? (
