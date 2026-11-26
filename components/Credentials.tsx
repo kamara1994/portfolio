@@ -24,7 +24,7 @@ export default function Credentials() {
           Four industry certifications earned, one in progress. Each earned one can be checked with the issuer.
         </p>
 
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="cred-grid mt-8">
           {certs.map((c) => {
             const m = META[c.name] ?? { area: '' }
             const earned = c.status === 'earned'
@@ -46,7 +46,7 @@ export default function Credentials() {
                   <p className="mt-1 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}</p>
                 </div>
                 <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
-                <div className="cred-actions mt-4 flex items-center justify-between gap-3">
+                <div className="cred-actions flex items-center justify-between gap-3">
                   <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{earned ? '✅ Earned' : '⏳ In progress'}</span>
                   {earned && VERIFY[c.issuer] && (
                     <a href={VERIFY[c.issuer]} target="_blank" rel="noopener" className="tap cred-verify">Verify ↗</a>
@@ -64,7 +64,7 @@ export default function Credentials() {
                 <p className="mt-1 text-[14.5px] text-smoke">Brigham Young University–Idaho · Dec 2026</p>
             </div>
             <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">Networking, operating systems, cryptography, and security fundamentals.</p>
-            <div className="cred-actions mt-4"><span className="cred-status">📅 Final semester</span></div>
+            <div className="cred-actions"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
       </div>

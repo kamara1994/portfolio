@@ -686,6 +686,33 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   }
 }
 
+/* Compact credential index: constrain actual width and remove inherited footer margins. */
+#credentials .cred-grid {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px; max-width: 1080px; align-items: stretch;
+}
+#credentials .cred-card {
+  min-height: 136px; padding: 13px 14px; border-radius: 13px;
+}
+#credentials .cred-heading { max-width: 83%; }
+#credentials .cred-heading > p:first-child { font-size: 17px; line-height: 1.15; }
+#credentials .cred-heading > p:last-child { font-size: 12.5px; line-height: 1.25; margin-top: 3px; }
+#credentials .cred-card .cred-description { max-width: 83%; margin-top: 6px; font-size: 12.5px; line-height: 1.35; }
+#credentials .cred-card .cred-actions { margin-top: auto; padding-top: 8px; }
+#credentials .cred-status { padding: 3px 7px; font-size: 11.5px; line-height: 1.3; }
+#credentials .cred-verify { padding: 4px 8px; min-height: 28px; font-size: 12px; line-height: 1.3; border-radius: 7px; }
+#credentials .cred-art img { width: min(90%,145px); max-height: 94%; }
+#credentials .cred-art-tile { width: min(90%,138px); }
+#credentials .cred-art-tile strong { font-size: clamp(36px,4vw,48px); }
+#credentials .cred-art-tile span { font-size: 12px; }
+@media (max-width: 1023px) { #credentials .cred-grid { grid-template-columns: repeat(2,minmax(0,1fr)); max-width: 720px; } }
+@media (max-width: 639px) {
+  #credentials .cred-grid { grid-template-columns: minmax(0,1fr); max-width: 420px; gap: 10px; }
+  #credentials .cred-card { min-height: 130px; padding: 12px 13px; }
+  #credentials .cred-art img { width: min(90%,132px); }
+  #credentials .cred-art-tile { width: min(90%,126px); }
+}
+
 /* Skills on phones and tablets: every category visible as a chip grid */
 .sk-cat-icon .emoji { font-size: 19px; }
 @media (max-width: 1023px) {
