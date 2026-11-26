@@ -1,237 +1,175 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { tgConfigured, sendMessage, editMessage, hmac, SITE } from '@/lib/alerts/telegram'
+import { getSettings, ensureTopics, isHushed } from '@/lib/alerts/settings'
+import { clientIp, locate, matchTarget, classifyReferrer, parseUA, crawlerName, leadScore, pageName, ACTIONS, type Step } from '@/lib/alerts/intel'
+import { renderVisit, visitButtons, renderLead, renderAction, dur, location, who, type Ctx, type Live } from '@/lib/alerts/format'
+import { aiBrief } from '@/lib/alerts/brief'
 
-// Server-side visitor tracking. Geolocation is resolved from the REAL request
-// IP on the server (can't be blocked by ad-blockers or spoofed by the client),
-// enriched with ISP/org + VPN/proxy/hosting flags, and pushed to Telegram with
-// a map link. LogSnag logging is optional and never blocks the Telegram alert.
+// Visitor alerts → Telegram.
+// One message per visit that updates live (path, time, scroll, actions), a loud
+// ping for high-value actions, an AI read + lead score when they leave, and a
+// ⭐ Leads alert for strong visits. Location/company come from the request IP on
+// the server; the browser only reports what happened on the page. The server signs
+// the visitor context it builds, so later updates can't rewrite who the visitor is.
 
 export const runtime = 'nodejs'
+export const maxDuration = 20
 
-// Recruiter / target-company signals (matched against ISP/org + referrer).
-const TARGET_COMPANIES = [
-  'boozallen', 'booz-allen', 'bah.com',
-  'anthropic', 'openai', 'google', 'deepmind',
-  'microsoft', 'amazon', 'aws',
-  'crowdstrike', 'mandiant', 'palo alto', 'paloaltonetworks',
-  'wiz.io', 'lakera', 'snyk', 'lacework',
-  'deloitte', 'ey.com', 'pwc', 'kpmg', 'accenture',
-  'jobyaviation', 'gtlic', 'gi-de', 'situsamc',
-  'honeywell', 'lockheedmartin', 'rtx', 'northrop',
-  'hackerone', 'bugcrowd',
-]
+type Kind = 'start' | 'update' | 'action' | 'end'
+const KINDS: Kind[] = ['start', 'update', 'action', 'end']
 
-// Best-effort in-memory throttle so the public endpoint can't be used to spam
-// the Telegram chat. Resets on cold start — fine for this use case.
-const RATE = new Map<string, number>()
-const RATE_WINDOW_MS = 5_000
-
-function esc(s: string): string {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+// Best-effort per-IP limits (in memory; resets on cold start).
+const RATE = new Map<string, { start: number; last: number; count: number; window: number }>()
+function limited(ip: string, kind: Kind) {
+  if (!ip) return false
+  const now = Date.now()
+  const r = RATE.get(ip) || { start: 0, last: 0, count: 0, window: now }
+  if (now - r.window > 60_000) { r.window = now; r.count = 0 }
+  r.count++
+  let blocked = r.count > 40
+  if (kind === 'start') { if (now - r.start < 4000) blocked = true; else r.start = now }
+  if (kind === 'update') { if (now - r.last < 1200) blocked = true; else r.last = now }
+  if (RATE.size > 5000) RATE.clear()
+  RATE.set(ip, r)
+  return blocked
 }
 
-function clamp(s: unknown, max = 300): string {
-  if (typeof s !== 'string') return ''
-  return s.slice(0, max)
+const str = (v: unknown, max = 300) => (typeof v === 'string' ? v.slice(0, max) : '')
+const int = (v: unknown, min: number, max: number) => {
+  const n = Math.round(Number(v))
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : 0
 }
 
-function clientIp(req: NextRequest): string {
-  const fwd = req.headers.get('x-vercel-forwarded-for') || req.headers.get('x-forwarded-for')
-  if (fwd) return fwd.split(',')[0].trim()
-  return req.headers.get('x-real-ip') || ''
-}
-
-function parseUA(ua: string): string {
-  const browser =
-    /Edg\//.test(ua) ? 'Edge' :
-    /OPR\/|Opera/.test(ua) ? 'Opera' :
-    /Firefox\//.test(ua) ? 'Firefox' :
-    /Chrome\//.test(ua) ? 'Chrome' :
-    /Safari\//.test(ua) ? 'Safari' : 'Unknown browser'
-  const os =
-    /iPhone|iPad|iPod/.test(ua) ? 'iOS' :
-    /Android/.test(ua) ? 'Android' :
-    /Mac OS X/.test(ua) ? 'macOS' :
-    /Windows/.test(ua) ? 'Windows' :
-    /Linux/.test(ua) ? 'Linux' : 'Unknown OS'
-  const kind = /Mobi|Android|iPhone|iPad/.test(ua) ? 'Mobile' : 'Desktop'
-  return `${browser} on ${os} · ${kind}`
-}
-
-interface Geo {
-  city?: string; region?: string; country?: string; zip?: string
-  lat?: number; lon?: number; timezone?: string
-  isp?: string; org?: string; as?: string
-  proxy?: boolean; hosting?: boolean; mobile?: boolean
-}
-
-function decodeHeader(value: string | null): string | undefined {
-  if (!value) return undefined
-  try { return decodeURIComponent(value) } catch { return value }
-}
-
-function numberHeader(value: string | null): number | undefined {
-  if (!value) return undefined
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : undefined
-}
-
-// Vercel adds these from the visitor's public IP before the request reaches
-// the function. Prefer them for location because they avoid a second network
-// lookup and remain available when the enrichment provider is slow.
-function vercelGeo(req: NextRequest): Geo {
+function readLive(body: any, kind: Kind): Live {
+  const steps: Step[] = Array.isArray(body.steps)
+    ? body.steps.slice(-40).map((x: any) => ({ p: str(x?.p, 160) || '/', d: int(x?.d, 0, 86_400_000), s: int(x?.s, 0, 100) }))
+    : []
   return {
-    city: decodeHeader(req.headers.get('x-vercel-ip-city')),
-    region: decodeHeader(req.headers.get('x-vercel-ip-country-region')),
-    country: decodeHeader(req.headers.get('x-vercel-ip-country')),
-    zip: decodeHeader(req.headers.get('x-vercel-ip-postal-code')),
-    lat: numberHeader(req.headers.get('x-vercel-ip-latitude')),
-    lon: numberHeader(req.headers.get('x-vercel-ip-longitude')),
-    timezone: decodeHeader(req.headers.get('x-vercel-ip-timezone')),
+    steps,
+    actions: Array.isArray(body.actions) ? body.actions.filter((a: unknown) => typeof a === 'string' && ACTIONS[a]).slice(0, 40) : [],
+    durMs: int(body.durMs, 0, 86_400_000),
+    role: ['recruiter', 'soc', 'engineer'].includes(body.role) ? body.role : null,
+    ended: kind === 'end',
+    human: body.human === true,
   }
 }
 
-async function geolocate(ip: string): Promise<Geo> {
-  if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-    return {} // local / private address — nothing to resolve
-  }
-  try {
-    // HTTPS lookup for the visitor's network owner (e.g. a company office).
-    // Works without a key at low volume; set IPINFO_TOKEN in Vercel for more.
-    const token = process.env.IPINFO_TOKEN ? `?token=${process.env.IPINFO_TOKEN}` : ''
-    const res = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}/json${token}`, {
-      signal: AbortSignal.timeout(3500),
-    })
-    if (!res.ok) return {}
-    const d = await res.json()
-    if (d.bogon) return {}
-    const [lat, lon] = String(d.loc || '').split(',').map(Number)
-    const org = typeof d.org === 'string' ? d.org.replace(/^AS\d+\s+/, '') : undefined
-    return {
-      city: d.city, region: d.region, country: d.country, zip: d.postal,
-      lat: Number.isFinite(lat) ? lat : undefined, lon: Number.isFinite(lon) ? lon : undefined,
-      timezone: d.timezone, isp: org, org, as: typeof d.org === 'string' ? d.org.split(' ')[0] : undefined,
-    }
-  } catch {
-    return {}
-  }
+function readCtx(body: any): Ctx | null {
+  if (typeof body.ctx !== 'string' || body.ctx.length > 8000 || typeof body.sig !== 'string') return null
+  if (hmac(body.ctx) !== body.sig) return null
+  try { return JSON.parse(body.ctx) as Ctx } catch { return null }
 }
 
-async function sendTelegram(text: string) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!botToken || !chatId) return { ok: false, error: 'telegram-not-configured' }
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
-    })
-    return res.ok ? { ok: true } : { ok: false, status: res.status }
-  } catch (e: any) {
-    return { ok: false, error: e?.message || 'telegram-failed' }
-  }
-}
-
-async function logSnag(payload: Record<string, unknown>) {
-  const token = process.env.LOGSNAG_TOKEN
-  const project = process.env.LOGSNAG_PROJECT
-  const channel = process.env.LOGSNAG_CHANNEL
-  if (!token || !project || !channel) return // optional — silently skip
-  try {
-    await fetch('https://api.logsnag.com/v1/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ project, channel, ...payload }),
-    })
-  } catch { /* analytics logging is best-effort */ }
+function scoreOf(ctx: Ctx, live: Live) {
+  return leadScore({
+    target: ctx.target, company: ctx.geo.company, ref: ctx.ref, role: live.role,
+    durMs: live.durMs, steps: live.steps, actions: live.actions, visits: ctx.visitor.n,
+    bot: !!ctx.bot && !live.human,
+  })
 }
 
 export async function POST(req: NextRequest) {
   try {
+    if (!tgConfigured()) return NextResponse.json({ ok: false, error: 'telegram-not-configured' })
     const body = await req.json().catch(() => ({}))
+    const kind = body.type as Kind
+    if (!KINDS.includes(kind)) return NextResponse.json({ ok: false, error: 'bad-type' }, { status: 400 })
     const ip = clientIp(req)
+    if (limited(ip, kind)) return NextResponse.json({ ok: true, throttled: true })
 
-    // throttle per IP
-    const now = Date.now()
-    const last = RATE.get(ip) || 0
-    if (ip && now - last < RATE_WINDOW_MS) {
-      return NextResponse.json({ ok: true, throttled: true })
+    const settings = await getSettings()
+    const hushed = isHushed(settings)
+
+    // ---------- first page of a visit ----------
+    if (kind === 'start') {
+      const ua = str(req.headers.get('user-agent'), 400)
+      if (crawlerName(ua)) return NextResponse.json({ ok: true, skipped: 'bot' })
+      // Automation that runs a real browser but never scrolls, clicks or types stays labelled as a likely bot.
+      let botLabel = body.human === true ? '' : body.webdriver === true ? 'automated browser' : ''
+
+      const geo = await locate(req, ip)
+      if (geo.hosting && !botLabel) botLabel = 'datacenter network'
+      const refRaw = str(body.referrer, 300)
+      const ref = classifyReferrer(refRaw, new URL(SITE).hostname)
+      const n = int(body.visitor?.n, 1, 9999) || 1
+      const ctx: Ctx = {
+        v: 1,
+        sid: str(body.sid, 40),
+        start: Date.now(),
+        ip,
+        geo,
+        device: parseUA(ua),
+        screen: str(body.screen, 20),
+        lang: str(body.language, 20),
+        ref,
+        refRaw: ref.kind === 'direct' ? '' : refRaw,
+        target: matchTarget(geo, ref.host),
+        bot: botLabel,
+        visitor: { n, last: int(body.visitor?.last, 0, 9e15) || undefined, first: int(body.visitor?.first, 0, 9e15) || undefined },
+        landing: str(body.page, 160) || '/',
+      }
+      const live = readLive(body, kind)
+      const score = scoreOf(ctx, live)
+      const topics = await ensureTopics(settings)
+      const thread = topics ? (ctx.target ? topics.priority : topics.visits) : null
+      const sent = await sendMessage(renderVisit(ctx, live, score, settings.tz), {
+        thread,
+        silent: hushed || !ctx.target, // only priority companies buzz the phone on arrival
+        buttons: visitButtons(ctx, live),
+      })
+      if (!sent.ok || !sent.result) return NextResponse.json({ ok: false, error: sent.description || 'send-failed' })
+      const packed = JSON.stringify(ctx)
+      return NextResponse.json({ ok: true, msgId: sent.result.message_id, ctx: packed, sig: hmac(packed) })
     }
-    if (ip) RATE.set(ip, now)
 
-    const page = clamp(body.page, 200) || '/'
-    const referrer = clamp(body.referrer, 300) || 'direct'
-    const screen = clamp(body.screen, 40)
-    const language = clamp(body.language, 40)
-    const ua = clamp(req.headers.get('user-agent') || '', 400)
+    // ---------- updates within the same visit ----------
+    const ctx = readCtx(body)
+    const msgId = int(body.msgId, 1, 2 ** 31)
+    if (!ctx || !msgId) return NextResponse.json({ ok: false, error: 'restart', restart: true })
+    const live = readLive(body, kind)
+    const score = scoreOf(ctx, live)
+    let brief = str(body.brief, 400)
 
-    const edgeGeo = vercelGeo(req)
-    const enrichedGeo = await geolocate(ip)
-    const geo: Geo = {
-      ...enrichedGeo,
-      city: edgeGeo.city || enrichedGeo.city,
-      region: enrichedGeo.region || edgeGeo.region,
-      country: enrichedGeo.country || edgeGeo.country,
-      zip: edgeGeo.zip || enrichedGeo.zip,
-      lat: edgeGeo.lat ?? enrichedGeo.lat,
-      lon: edgeGeo.lon ?? enrichedGeo.lon,
-      timezone: edgeGeo.timezone || enrichedGeo.timezone,
+    if (kind === 'action') {
+      const action = str(body.action, 20)
+      if (!ACTIONS[action]) return NextResponse.json({ ok: false, error: 'bad-action' }, { status: 400 })
+      if (ACTIONS[action].loud) {
+        await sendMessage(renderAction(ctx, action, str(body.page, 160)), { thread: settings.topics?.priority, silent: hushed })
+      }
     }
 
-    const locationParts = [geo.city, geo.region, geo.country].filter(Boolean)
-    const location = locationParts.length ? locationParts.join(', ') : 'Unknown'
-    const orgStr = geo.org || geo.isp || ''
+    if (kind === 'end' && body.wantBrief === true && live.durMs > 15_000 && !(ctx.bot && !live.human)) {
+      const fresh = await aiBrief({
+        visitor: who(ctx),
+        knownTargetEmployer: ctx.target || null,
+        companyType: ctx.geo.company?.type || null,
+        location: location(ctx.geo),
+        cameFrom: ctx.ref.label,
+        chosenVisitorType: live.role,
+        timeOnSite: dur(live.durMs),
+        pages: live.steps.map((s) => `${pageName(s.p)} (${dur(s.d)}, scrolled ${s.s}%)`),
+        actions: Array.from(new Set(live.actions)).map((a) => ACTIONS[a]?.label.replace(/^\S+\s/, '')),
+        visitNumber: ctx.visitor.n,
+        device: ctx.device,
+        leadScore: score,
+      })
+      if (fresh) brief = fresh
+    }
 
-    // priority-company detection across org, ISP, ASN, and referrer
-    const haystack = `${geo.org || ''} ${geo.isp || ''} ${geo.as || ''} ${referrer}`.toLowerCase()
-    const matched = TARGET_COMPANIES.find((c) => haystack.includes(c)) || ''
+    await editMessage(msgId, renderVisit(ctx, live, score, settings.tz, brief || undefined), visitButtons(ctx, live))
 
-    const flags: string[] = []
-    if (geo.proxy) flags.push('VPN/Proxy')
-    if (geo.hosting) flags.push('Datacenter/Bot')
-    if (geo.mobile) flags.push('Mobile network')
-
-    const isPriority = !!matched
-    const header = isPriority ? '🔥 <b>PRIORITY VISIT</b>' : flags.length ? '🕵️ <b>Portfolio visit</b>' : '👀 <b>Portfolio visit</b>'
-    const mapLink = geo.lat != null && geo.lon != null
-      ? `https://www.google.com/maps?q=${geo.lat},${geo.lon}`
-      : ''
-
-    const lines = [
-      header,
-      '',
-      `📄 Page: ${esc(page)}`,
-      `📍 Approx. location: ${esc(location)}${geo.zip ? ` (${esc(geo.zip)})` : ''}`,
-      mapLink ? `🗺️ Map area: ${mapLink}` : null,
-      geo.timezone ? `🕓 TZ: ${esc(geo.timezone)}` : null,
-      ip ? `🌐 IP: ${esc(ip)}` : null,
-      orgStr ? `🏢 ISP/Org: ${esc(orgStr)}` : null,
-      matched ? `🎯 Match: ${esc(matched)}` : null,
-      flags.length ? `🚩 Flags: ${esc(flags.join(' · '))}` : null,
-      `🔗 Referrer: ${esc(referrer)}`,
-      `📱 Device: ${esc(parseUA(ua))}${screen ? ` · ${esc(screen)}` : ''}${language ? ` · ${esc(language)}` : ''}`,
-      `🕐 Time: ${new Date().toISOString()}`,
-    ].filter(Boolean) as string[]
-
-    const telegram = await sendTelegram(lines.join('\n'))
-
-    // optional analytics log (non-blocking to the response contract)
-    await logSnag({
-      event: isPriority ? '🔥 PRIORITY VISIT' : 'Portfolio visit',
-      description: `${location} · ${orgStr} · ${page}`,
-      icon: isPriority ? '🔥' : '👀',
-      notify: isPriority,
-      tags: {
-        page,
-        priority: isPriority ? 'high' : 'normal',
-        country: geo.country || 'unknown',
-        ...(matched ? { company: matched } : {}),
-      },
-    })
-
-    return NextResponse.json({ ok: true, telegram })
-  } catch (err: any) {
-    // never surface internals or 500 the visitor for an analytics failure
+    let lead = false
+    if (score >= 70 && body.leadSent !== true && (kind === 'end' || score >= 85)) {
+      const r = await sendMessage(renderLead(ctx, live, score, brief || undefined), {
+        thread: settings.topics?.leads || settings.topics?.priority,
+        silent: hushed,
+        buttons: visitButtons(ctx, live).slice(0, 1),
+      })
+      lead = r.ok
+    }
+    return NextResponse.json({ ok: true, brief: brief || undefined, lead })
+  } catch {
+    // never surface internals or fail the visitor's page for an alert problem
     return NextResponse.json({ ok: true, error: 'handled' })
   }
 }

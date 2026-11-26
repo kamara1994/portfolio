@@ -69,6 +69,7 @@ export default function AIChat() {
     setMessages(next)
     setInput('')
     setLoading(true)
+    window.dispatchEvent(new Event('pweza-asked'))
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',

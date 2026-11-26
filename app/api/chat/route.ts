@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { synthesizeSpeech } from '@/lib/pweza-voice'
+import { notifyChat } from '@/lib/alerts/chat'
 import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, type ProofLink } from '@/lib/pweza-knowledge'
 
 const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
@@ -176,7 +177,11 @@ export async function POST(req: NextRequest) {
     }
     text = usedLocalReply ? text : polishPwezaReply(text, messages)
     if (!usedLocalReply) links = linksForText(text)
-    const { audio } = wantsAudio ? await synthesizeSpeech(text) : { audio: null }
+    const lastQuestion = [...messages].reverse().find((m) => m.role === 'user')?.content || ''
+    const [{ audio }] = await Promise.all([
+      wantsAudio ? synthesizeSpeech(text) : Promise.resolve({ audio: null }),
+      notifyChat(req, lastQuestion, text, messages.filter((m) => m.role === 'user').length),
+    ])
     return NextResponse.json({ content: text, links: links ?? [], audio })
   } catch (err) {
     console.error('PWEZA error:', err)

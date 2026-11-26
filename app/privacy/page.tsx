@@ -12,23 +12,26 @@ const SECTIONS: { h: string; body: string[] }[] = [
   {
     h: 'Visit notifications',
     body: [
-      'When you open a page, the site records the page, the referring site, your screen size, and your browser language.',
-      'The server uses your IP address to look up an approximate city, region, and network provider (through Vercel and ipinfo.io, over an encrypted connection), so I can see roughly where visits come from, for example a university or a company network. It never uses your device GPS.',
-      'I receive this as a private notification. It is not sold, shared, or used for advertising.',
+      'When you browse the site, it records which pages you open, roughly how long you spend and how far you scroll on each, which visitor type you pick (for example "Recruiter"), and clicks on the résumé, email, LinkedIn, GitHub, source-code, evidence and demo links. It also records the referring site, your screen size, browser and language.',
+      'The server uses your IP address to look up an approximate city, region, network provider and, where available, the organisation that owns the network (through Vercel and ipinfo.io, over an encrypted connection). It never uses your device GPS.',
+      'Automated traffic (search crawlers, link previews, data-centre networks) is filtered out. When a visit ends, an AI provider (Anthropic, Groq or Google Gemini) may write a short private summary of the visit from these details.',
+      'I receive this as a private Telegram notification. It is not sold, shared, or used for advertising.',
     ],
   },
   {
     h: 'The AI assistant (PWEZA)',
     body: [
       'Questions you type or speak to the assistant are sent to an AI provider (Groq, Google Gemini, or Anthropic) to write the answer. Common questions are answered by the site itself without an AI provider.',
+      'I also receive your questions and the start of each answer as a private notification, with your approximate city and country, so I can see what visitors want to know.',
       'If you turn on voice replies, the answer text is turned into speech by Microsoft’s text-to-speech service. Voice input uses your browser’s built-in speech recognition.',
       'Please do not share sensitive personal information in the chat.',
     ],
   },
   {
-    h: 'What the site does not do',
+    h: 'What is stored in your browser',
     body: [
-      'No cookies, no advertising trackers, and nothing stored in your browser.',
+      'No cookies and no advertising trackers.',
+      'The site keeps a random visitor ID and a visit count in your browser’s local storage so a return visit can be recognised, and the current visit’s progress and the previous page in session storage (cleared when you close the tab). Clearing this site’s data in your browser removes them.',
     ],
   },
   {
