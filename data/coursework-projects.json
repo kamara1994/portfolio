@@ -106,7 +106,7 @@
       "Security event analysis"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Original Canvas BOTSv3 write-up recovered. Raw assessment questions, account names, lab addresses and command payloads withheld; separate Project 7 screenshots not attributed to this assignment.",
+    "evidenceNote": "Original Canvas BOTSv3 write-up recovered. Raw assessment questions, account names, lab addresses and command payloads withheld; separate Project 7 screenshots not attributed to this assignment. Related Project 7 search-interface image is shown with its own provenance; not evidence of a BOTSv3 rerun.",
     "course": "CYBER375",
     "architecture": [
       "BOTSv3 event index → Splunk searches",
@@ -115,7 +115,15 @@
       "Web access records → Network activity review",
       "Investigation findings → Written report and separately graded visualization work"
     ],
-    "report": "/docs/splunk-investigation-summary.md"
+    "report": "/docs/splunk-investigation-summary.md",
+    "screenshot": "/screenshots/splunk-related-search.webp",
+    "mediaLabel": "Related lab screenshot",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/splunk-related-search.webp",
+        "caption": "Related Project 7 Splunk search screenshot (redacted). Genuine SIEM interface, not a BOTSv3 assignment screenshot."
+      }
+    ]
   },
   {
     "id": "cyber375-endpoint",
@@ -138,9 +146,23 @@
       "Endpoint analysis"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Canvas submission screenshots recovered for Linux Endpoint Analysis, Windows Events and Windows Endpoint Analysis challenges. They document challenge completion scores, not logs or commands. No project-specific terminal/event viewer screenshots, EVTX or Linux log exports recovered. Score images are not used as application previews.",
+    "evidenceNote": "Canvas submission screenshots recovered for Linux Endpoint Analysis, Windows Events and Windows Endpoint Analysis challenges. They document challenge completion scores, not logs or commands. No project-specific terminal/event viewer screenshots, EVTX or Linux log exports recovered. The cropped Linux challenge result is explicitly labeled assessment evidence.",
     "course": "CYBER375",
-    "report": "/docs/endpoint-coursework-validation.md"
+    "report": "/docs/endpoint-coursework-validation.md",
+    "screenshot": "/screenshots/linux-endpoint-assessment.webp",
+    "mediaLabel": "Assessment screenshot",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/linux-endpoint-assessment.webp",
+        "caption": "Original Linux Endpoint Analysis Challenge 1 score screenshot, cropped; assessment evidence only, not an investigation interface."
+      }
+    ],
+    "architecture": [
+      "Windows event and process telemetry → Endpoint triage (exercise topic)",
+      "Linux host events → Log review (exercise topic)",
+      "Submitted challenge results → Assessed coursework",
+      "Investigation details → Raw logs and commands not recovered"
+    ]
   },
   {
     "id": "cyber375-network-threat",
@@ -165,7 +187,20 @@
     "sourceAccess": "unavailable",
     "evidenceNote": "Phishing attachment recovered but is a score screen, not a packet analysis or email investigation screenshot. Raw assessment content and identifiers withheld.",
     "course": "CYBER375",
-    "report": "/docs/network-phishing-coursework-validation.md"
+    "report": "/docs/network-phishing-coursework-validation.md",
+    "screenshot": "/screenshots/phishing-assessment.webp",
+    "mediaLabel": "Assessment screenshot",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/phishing-assessment.webp",
+        "caption": "Original Phishing Analysis Challenge 1 score screenshot, cropped; assessment evidence only, not a phishing investigation interface."
+      }
+    ],
+    "architecture": [
+      "Controlled traffic → IDS / packet inspection (exercise topic)",
+      "Email artifacts → Phishing indicator review (exercise topic)",
+      "Challenge score → Assessment evidence, not a detection-rate measure"
+    ]
   },
   {
     "id": "cyber375-vuln-assess",
@@ -190,7 +225,21 @@
     "sourceAccess": "unavailable",
     "evidenceNote": "Reopened Nessus report submission confirms 100/100 with no instructor comments. Redacted derivative retained; raw report contains lab identifiers and a password value and remains private. No scan console screenshot recovered.",
     "course": "CYBER375",
-    "report": "/docs/vulnerability-assessment-summary.md"
+    "report": "/docs/vulnerability-assessment-summary.md",
+    "architecture": [
+      "Controlled lab host → Nessus and Nikto (reported)",
+      "Reported findings → Legacy OS, weak remote access, obsolete TLS, exposed services",
+      "Risk interpretation → Remediation recommendations",
+      "Retesting → No verification recovered"
+    ],
+    "screenshot": "/evidence-visuals/cyber375-vuln-assess.svg",
+    "mediaLabel": "Evidence summary",
+    "evidenceImages": [
+      {
+        "src": "/evidence-visuals/cyber375-vuln-assess.svg",
+        "caption": "Report-derived summary, not a scanner screenshot."
+      }
+    ]
   },
   {
     "id": "cloud-cafe-architecture",
@@ -335,14 +384,23 @@
       "Security controls"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Recovered team ADR documents identity design and policy simulation claims. No independently attributable deployed role or approved public policy JSON.",
+    "evidenceNote": "Original team ADR diagram recovered. Accepted design requirements include federation, MFA, temporary scoped roles, no shared credentials, no wildcard production actions, and protection of rental-condition photos. No deployed policy or enforcement test recovered.",
     "course": "ITM 400",
     "architecture": [
       "Human workforce → Federated IAM Identity Center with MFA (design)",
       "Application and partner workloads → Short-lived STS roles (design)",
       "Principal requests → IAM policy evaluation",
       "Policy simulator → Proposed allow/deny verification"
-    ]
+    ],
+    "screenshot": "/screenshots/iam-authorization-design.webp",
+    "mediaLabel": "Original design diagram",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/iam-authorization-design.webp",
+        "caption": "Original team ADR authorization-flow diagram. Proposed centralized governance and scoped permissions; not deployed-policy evidence."
+      }
+    ],
+    "report": "/docs/iam-design-evidence.md"
   },
   {
     "id": "aws-storage-db",
@@ -367,14 +425,23 @@
       "Amazon S3"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Grades and design records establish the exercises; no public deployment URL, service settings or standalone storage screenshots recovered.",
+    "evidenceNote": "Original group lift-and-shift design diagram recovered; individual contribution cannot be isolated from the group document. No production cutover or migration validation recovered.",
     "course": "ITM 400",
     "architecture": [
       "Static website exercise → Object storage / static content",
       "Separate EFS exercise → Shared file storage",
       "Separate RDS exercise → Relational database",
       "Migration decision record → Database migration tradeoffs"
-    ]
+    ],
+    "screenshot": "/screenshots/migration-two-az-design.webp",
+    "mediaLabel": "Original design diagram",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/migration-two-az-design.webp",
+        "caption": "Original team lift-and-shift design, across two availability zones. Design artifact, not a completed production migration."
+      }
+    ],
+    "report": "/docs/storage-migration-evidence.md"
   },
   {
     "id": "aws-cloudformation",
@@ -476,7 +543,22 @@
     ],
     "sourceAccess": "unavailable",
     "evidenceNote": "Submitted but not validated. Intended path is wireless client → SSID/AP VLAN mapping → VLAN-aware switch → gateway. This is a design objective, not a working configuration.",
-    "course": "CYBER345"
+    "course": "CYBER345",
+    "architecture": [
+      "Wireless client → SSID association (intended)",
+      "Autonomous AP → SSID-to-VLAN mapping (intended)",
+      "VLAN-aware switch → Gateway (intended)",
+      "Gateway ping → Failed; no verified repair"
+    ],
+    "report": "/docs/wireless-vlan-evidence.md",
+    "screenshot": "/evidence-visuals/wireless-vlan-ssid.svg",
+    "mediaLabel": "Evidence summary",
+    "evidenceImages": [
+      {
+        "src": "/evidence-visuals/wireless-vlan-ssid.svg",
+        "caption": "Reconstructed intended flow; not a working configuration."
+      }
+    ]
   },
   {
     "id": "wireless-wireshark",
@@ -503,7 +585,22 @@
     "sourceAccess": "unavailable",
     "evidenceNote": "Individual assignment pages and grades verified. No PCAP or publication-safe protocol screenshots recovered. Course instructions are not presented as student evidence.",
     "course": "CYBER345",
-    "report": "/docs/lan-protocol-coursework-validation.md"
+    "report": "/docs/lan-protocol-coursework-validation.md",
+    "architecture": [
+      "ARP → Address resolution exercise",
+      "DHCP → Address assignment exercise",
+      "HTTP → Application protocol inspection",
+      "Telnet → Legacy cleartext transport exercise",
+      "Evidence → Graded records; capture output withheld or missing"
+    ],
+    "screenshot": "/evidence-visuals/wireless-wireshark.svg",
+    "mediaLabel": "Evidence summary",
+    "evidenceImages": [
+      {
+        "src": "/evidence-visuals/wireless-wireshark.svg",
+        "caption": "Assessment summary; packet captures are unavailable for publication."
+      }
+    ]
   },
   {
     "id": "wireless-security",
@@ -527,6 +624,21 @@
     ],
     "sourceAccess": "unavailable",
     "evidenceNote": "The original WEP and GUI security PNG attachment links were visible in Canvas but downloads are still missing. WEP is obsolete and is described only as a legacy lab exercise.",
-    "course": "CYBER345"
+    "course": "CYBER345",
+    "architecture": [
+      "Cisco AP → Legacy WEP configuration exercise",
+      "WEP exercise → Graded completion",
+      "WPA and attack exercises → Completion unverified",
+      "Kali wireless adapter test → Not passed"
+    ],
+    "report": "/docs/wireless-security-evidence.md",
+    "screenshot": "/evidence-visuals/wireless-security.svg",
+    "mediaLabel": "Evidence summary",
+    "evidenceImages": [
+      {
+        "src": "/evidence-visuals/wireless-security.svg",
+        "caption": "Assessment summary; WEP is obsolete. Not a configuration screenshot."
+      }
+    ]
   }
 ]

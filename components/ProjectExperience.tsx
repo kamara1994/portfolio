@@ -50,7 +50,7 @@ export function ProjectMediaStage({ project }: { project: Project }) {
   return <div ref={ref} className="pe-media-stage">
     <div className="pe-media-bar">
       <div className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="pe-media-dot"/><span className="truncate">{project.title}</span></div>
-      <span className="text-smoke shrink-0">{project.video ? 'Demo' : project.screenshot ? 'Screenshot' : 'Preview'}</span>
+      <span className="text-smoke shrink-0">{project.video ? 'Demo' : project.screenshot ? (project.mediaLabel || 'Screenshot') : 'Preview'}</span>
       {supported && <button type="button" className="pe-small-button" onClick={fullscreen}>{full ? 'Exit fullscreen' : 'Fullscreen'} <span aria-hidden="true">↗</span></button>}
     </div>
     <div className="pe-media-body relative aspect-video w-full overflow-hidden bg-panel"><ProjectMedia project={project} priority /></div>
@@ -95,7 +95,7 @@ export function ProjectEvidence({ project }: { project: Project }) {
     ...(project.architecture?.length ? [{label:'System architecture',detail:'Documented implementation stages',href:'#architecture',external:false}] : []),
     ...(project.architectureFile ? [{label:'Incident flow diagram',detail:'Download the sanitized diagram source',href:project.architectureFile,external:false}] : []),
     ...(project.report ? [{label:project.course ? 'Sanitized report' : 'Project report',detail:'Existing project documentation',href:project.report,external:false}] : []),
-    ...(project.screenshot || project.video ? [{label:'Project media',detail:project.video ? 'Project demonstration' : 'Existing project screenshot',href:'#project-media',external:false}] : []),
+    ...(project.screenshot || project.video ? [{label:'Project media',detail:project.video ? 'Project demonstration' : (project.mediaLabel || 'Existing project screenshot'),href:'#project-media',external:false}] : []),
     ...(project.demo ? [{label:'Live project link',detail:'Open the listed deployment',href:project.demo,external:true}] : []),
   ]
   return <section id="evidence" className="scroll-mt-28">

@@ -18,6 +18,7 @@ export interface Project {
   placement?: 'flagship' | 'more' | 'library'
   course?: string
   evidenceNote?: string
+  mediaLabel?: string
   evidenceImages?: { src: string; caption: string }[]
   architectureFile?: string
   demo?: string
@@ -420,8 +421,55 @@ const projectList: Project[] = [
   },
 ]
 
+const independentLibrary: Project[] = [{
+  "id": "griot-nexus",
+  "num": "46",
+  "title": "GRIOT NEXUS",
+  "subtitle": "Provider-neutral cinematic storytelling operating system",
+  "description": "A private, in-development media engineering platform with a control dashboard, provider adapters, media workflow orchestration and approval gates. Reviewed source establishes implemented components, not a validated production release.",
+  "impact": "Source-backed architecture and historical CI evidence with explicit release limitations.",
+  "problem": "Coordinate multilingual cinematic media production while keeping provider selection, rights, budgets and publishing under owner control.",
+  "approach": "Developed a provider-neutral dashboard and workflow components. Reviewed source includes approval and private execution preflight routes, FFmpeg transition planning and PostgreSQL migrations for director memory and character continuity. The code checks owner session and records rights, provider, budget, credential-reference and voice-input readiness.",
+  "outcome": "Historical August 22 CI passed e2e and release-gate jobs but failed lint and migration snapshot freshness. Build and unit tests were skipped; deployment skipped. No live runtime or application screenshot verified.",
+  "stack": [
+    "Next.js",
+    "React",
+    "TypeScript",
+    "PostgreSQL",
+    "Redis",
+    "BullMQ",
+    "S3 SDK",
+    "Three.js",
+    "FFmpeg"
+  ],
+  "sourceAccess": "private",
+  "placement": "library",
+  "category": "Software Engineering · AI Media Systems",
+  "duration": "2026",
+  "role": "Independent developer",
+  "status": "in-development",
+  "architecture": [
+    "Owner dashboard → Review and approval route",
+    "Private queue → Preflight checks for rights, budget and provider readiness",
+    "Provider-neutral design → Media workflow adapters",
+    "Transition planner → FFmpeg planning",
+    "PostgreSQL migrations → Director memory and character continuity",
+    "CI gates → Release checks; deployment not verified"
+  ],
+  "report": "/docs/griot-nexus-evidence.md",
+  "evidenceNote": "Private source reviewed at historical commit 56b1090. No current build, live deployment or genuine dashboard screenshot. Architecture summary is reconstructed from reviewed source.",
+  "mediaLabel": "Source architecture summary",
+  "screenshot": "/evidence-visuals/griot-nexus.svg",
+  "evidenceImages": [
+    {
+      "src": "/evidence-visuals/griot-nexus.svg",
+      "caption": "Source-derived component and historical release-status summary; not a runtime screenshot."
+    }
+  ]
+}]
+
 const previews: Record<string, string> = previewManifest
-export const projects: Project[] = [...projectList, ...(coursework as Project[])].map((project) => ({
+export const projects: Project[] = [...projectList, ...independentLibrary, ...(coursework as Project[])].map((project) => ({
   ...project,
   video: previews[project.id] ?? project.video,
 }))

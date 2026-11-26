@@ -37,7 +37,7 @@ export default function ProjectMedia({ project, priority = false, controls = tru
       <img
         className="h-full w-full object-contain bg-ink"
         src={screenshot}
-        alt={`${title} screenshot`}
+        alt={`${title} — ${project.mediaLabel || 'screenshot'}`}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         style={ph(screenshot)}
