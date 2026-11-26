@@ -11,6 +11,11 @@ import { streamAnswer, hasAI } from '@/lib/pweza/llm'
 import { matchJob, fitText } from '@/lib/pweza/jd'
 import { teachings } from '@/lib/alerts/store'
 import type { Passage } from '@/lib/pweza/corpus'
+import { detectAttack, logAttack, REFUSAL } from '@/lib/pweza/guard'
+import { looksLikeAlert, triageDemo, followUps, getMemory, remember, memoryContext, validVid, timeContext, wantsNavigation, wantsDeepDive, projectFromSources, projectCard, navTarget, couldNotAnswer, trackUnanswered, josephIsNight, isOnline } from '@/lib/pweza/extras'
+import { getSettings } from '@/lib/alerts/settings'
+import { tgConfigured, sendMessage as tgSend, esc as tgEsc } from '@/lib/alerts/telegram'
+import { once } from '@/lib/alerts/store'
 import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, wantsJoseph, normalizeNames, type ProofLink } from '@/lib/pweza-knowledge'
 
 export const runtime = 'nodejs'
@@ -121,7 +126,7 @@ function sanitizeMessages(input: unknown): { role: string; content: string }[] {
     .slice(-12) // only the recent tail matters for a 2-sentence assistant
     .map((m: any) => ({
       role: m?.role === 'assistant' ? 'assistant' : 'user',
-      content: typeof m?.content === 'string' ? m.content.slice(0, 1500) : '',
+      content: typeof m?.content === 'string' ? m.content.slice(0, 6000) : '',
     }))
     .filter((m) => m.content.length > 0)
 }
@@ -171,14 +176,28 @@ export async function POST(req: NextRequest) {
       await forwardLive(req, sid, latestQuestion)
       return NextResponse.json({ content: '', live: true, links: [] })
     }
+    // 🛡 Guardrails: prompt-injection / jailbreak attempts never reach a model.
+    const attack = detectAttack(latestQuestion, raw?.mode === 'demo' || looksLikeAlert(latestQuestion))
+    if (attack) {
+      const settings = await getSettings()
+      await logAttack(attack, latestQuestion, ip, settings.tz)
+      if (tgConfigured() && (await once(`attack:${ip}:${attack}`, 600))) {
+        await tgSend(`🛡 <b>PWEZA blocked a ${tgEsc(attack.replace('-', ' '))} attempt</b>\n<code>${tgEsc(latestQuestion.slice(0, 160))}</code>\n<i>Refused before reaching the AI. Logged for /ai-security.</i>`, { thread: settings.topics?.priority, silent: true })
+      }
+      return NextResponse.json({ content: REFUSAL, links: [{ label: 'How PWEZA is secured', href: '/ai-security' }], guarded: true })
+    }
+
     const previousAssistant = [...messages].reverse().find((m) => m.role === 'assistant')?.content || ''
     if (wantsJoseph(latestQuestion, previousAssistant)) {
       // For a plain "yes" to PWEZA's offer, show Joseph the question they actually asked.
       const userTurns = messages.filter((m) => m.role === 'user').map((m) => m.content)
       const asked = /^(yes|yeah|yep|sure|please|ok(ay)?|go ahead|do it)\b/i.test(latestQuestion.trim()) && userTurns.length > 1 ? `${userTurns[userTurns.length - 2]} (said yes to talking to you)` : latestQuestion
       const status = sid ? await requestJoseph(req, sid, asked) : 'unavailable'
+      const night = josephIsNight((await getSettings()).tz)
       const content = status === 'pinged'
-        ? "I've just pinged Joseph (Allan) on his phone. If he's free, he'll join right here in this chat, so keep this window open. If he can't jump in right now, kamarajosephallan@gmail.com reaches him fastest."
+        ? night
+          ? "I've pinged Joseph (Allan), but it's night where he is, so he may be asleep. Keep this window open just in case, and kamarajosephallan@gmail.com will reach him first thing. Want me to create a briefing you can share in the meantime?"
+          : "I've just pinged Joseph (Allan) on his phone. If he's free, he'll join right here in this chat, so keep this window open. If he can't jump in right now, kamarajosephallan@gmail.com reaches him fastest."
         : status === 'recent'
           ? "I've already let Joseph know you'd like to talk. If he's free he'll join this chat shortly; otherwise email him at kamarajosephallan@gmail.com."
           : "He isn't reachable live from here right now, but kamarajosephallan@gmail.com gets to him quickly, and he usually replies the same day."
@@ -199,6 +218,16 @@ export async function POST(req: NextRequest) {
 
     const turn = messages.filter((m) => m.role === 'user').length
 
+    // 🧪 Pasted alert/log → live triage demo the way BLUE SOC would reason about it.
+    if (!text && hasAI() && (raw?.mode === 'demo' || looksLikeAlert(latestQuestion))) {
+      const triage = await triageDemo(latestQuestion)
+      if (triage) {
+        const content = `Demo: here's how Joseph's BLUE SOC pipeline would triage that. ${triage.verdict} (severity ${triage.severity}).`
+        await notifyChat(req, `[Triage demo] ${latestQuestion.slice(0, 140)}…`, content, turn, sid)
+        return NextResponse.json({ content, triage, links: [{ label: 'BLUE SOC', href: '/projects/blue-soc-p8' }] })
+      }
+    }
+
     // 🎯 Pasted job description → requirement-by-requirement fit card.
     if (!text && hasAI() && looksLikeJobPost(latestQuestion)) {
       const fit = await matchJob(latestQuestion)
@@ -214,7 +243,9 @@ export async function POST(req: NextRequest) {
 
     // 🧠 Streaming multi-agent answer: router → retrieval → expert (streamed) → fact-check.
     if (!text && raw?.stream === true && hasAI()) {
-      return streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn })
+      const vid = validVid(raw?.vid) ? raw.vid : undefined
+      const visitorRole = ['recruiter', 'soc', 'engineer'].includes(raw?.visitorRole) ? raw.visitorRole : null
+      return streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn, mode: raw?.mode === 'interview' ? 'interview' : null, vid, visitorRole })
     }
 
     const failures: string[] = []
@@ -270,13 +301,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
-type StreamArgs = { req: NextRequest; messages: { role: string; content: string }[]; latestQuestion: string; system: string; sid?: string; wantsAudio: boolean; turn: number }
+type StreamArgs = { req: NextRequest; messages: { role: string; content: string }[]; latestQuestion: string; system: string; sid?: string; wantsAudio: boolean; turn: number; mode: 'interview' | null; vid?: string; visitorRole: string | null }
 
 async function taughtPassages(): Promise<Passage[]> {
   return (await teachings()).slice(0, 40).map((t, i) => ({ id: `taught-${i}`, title: 'Answer from Joseph', href: '/#contact', text: `Q: ${t.q} A: ${t.a}` }))
 }
 
-function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn }: StreamArgs) {
+const ROLE_LENS: Record<string, string> = {
+  recruiter: 'The visitor told the site they are a recruiter / hiring: keep it plain-language, outcome-first, and point to proof and next steps.',
+  soc: 'The visitor told the site they lead or work in a SOC: go a level deeper on detection logic, triage flow and tooling.',
+  engineer: 'The visitor told the site they are an engineer: be technically precise about architecture, stack and trade-offs.',
+}
+
+function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn, mode, vid, visitorRole }: StreamArgs) {
   const enc = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
@@ -284,20 +321,31 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
       try {
         const prevUser = messages.filter((m) => m.role === 'user').slice(-2, -1)[0]?.content || ''
         const history = messages.slice(-6).map((m) => `${m.role}: ${m.content}`).join('\n')
-        const [r, extra] = await Promise.all([route(latestQuestion, history), taughtPassages()])
+        const [r, extra, settings, memory, online] = await Promise.all([route(latestQuestion, history), taughtPassages(), getSettings(), vid ? getMemory(vid) : Promise.resolve(null), isOnline()])
         const sources = retrieve(normalizeNames(`${latestQuestion} ${prevUser}`), 6, extra)
-        send({ type: 'meta', expert: r.expert, sources: sources.map((p, i) => ({ n: i + 1, title: p.title, href: p.href })) })
+        const deep = wantsDeepDive(latestQuestion)
+        const project = deep || wantsNavigation(latestQuestion) ? projectFromSources(sources) : null
+        send({ type: 'meta', expert: r.expert, sources: sources.map((p, i) => ({ n: i + 1, title: p.title, href: p.href })), card: deep && project ? projectCard(project) : undefined })
 
-        const { text: draft, failures } = await streamAnswer(expertSystem(system, r, sources), messages, (t) => send({ type: 'delta', t }))
+        let sys = expertSystem(system, r, sources)
+        if (visitorRole && ROLE_LENS[visitorRole]) sys += `\n${ROLE_LENS[visitorRole]}`
+        if (mode === 'interview') sys += `\nINTERVIEW MODE: the visitor is asking interview questions about Joseph. Answer in STAR form (Situation, Task, Action, Result) using ONLY verified projects and experience, speaking about Joseph in the third person, 4-6 sentences, with the S/T/A/R flow clear but not robotic. If no verified example fits, say so honestly and offer the closest one.`
+        if (deep) sys += `\nDEEP DIVE: walk through it in four short labelled steps — Problem, Architecture, How it works, Result & proof — up to 7 sentences total, citing sources.`
+        if (online) sys += `\nJoseph is online right now: if they'd like to talk to him, tell them he can join this chat.`
+        sys += timeContext(req.headers.get('x-vercel-ip-timezone'), settings.tz) + memoryContext(memory)
+
+        const { text: draft, failures } = await streamAnswer(sys, messages, (t) => send({ type: 'delta', t }), deep || mode === 'interview' ? 520 : 320)
         let final = draft
         let links: ProofLink[] = []
+        let suggestions: string[] = []
         if (!draft.trim()) {
           const fb = generateLocalPwezaReply(messages)
           final = fb.text
           links = fb.links ?? []
           send({ type: 'replace', t: final })
         } else {
-          const fixed = await factCheck(draft, PWEZA_KNOWLEDGE_CONTEXT, sources)
+          const [fixed, chips] = await Promise.all([factCheck(draft, PWEZA_KNOWLEDGE_CONTEXT, sources), followUps(latestQuestion, draft, r.expert)])
+          suggestions = chips
           if (fixed) { final = fixed; send({ type: 'replace', t: fixed, checked: true }) }
           const cited = Array.from(new Set(Array.from(final.matchAll(/\[(\d+)\]/g)).map((m) => Number(m[1]))))
             .map((n) => sources[n - 1]).filter(Boolean)
@@ -315,7 +363,10 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
           failures.length && !draft ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
             : failures.length ? reportIssue(`PWEZA AI · ${failures[0].split(':')[0]}`, `${failures.join(' · ')} — a backup answered.`) : Promise.resolve(),
         ])
-        send({ type: 'done', links, audio: speech.audio, hiring: r.hiring })
+        if (couldNotAnswer(plain)) await trackUnanswered(latestQuestion, settings.tz)
+        if (vid) await remember(vid, latestQuestion, r.expert)
+        const nav = wantsNavigation(latestQuestion) ? navTarget(latestQuestion, sources) : null
+        send({ type: 'done', links, audio: speech.audio, hiring: r.hiring, suggestions, nav })
       } catch (e) {
         console.error('PWEZA stream error:', e)
         send({ type: 'replace', t: "I hit a snag answering that. Try again, or email Joseph at kamarajosephallan@gmail.com." })

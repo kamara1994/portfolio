@@ -24,7 +24,16 @@ const SECTIONS: { h: string; body: string[] }[] = [
       'Questions you type or speak to the assistant are sent to an AI provider (Groq, Google Gemini, or Anthropic) to write the answer. Common questions are answered by the site itself without an AI provider.',
       'I also receive your questions and the start of each answer as a private notification, with your approximate city and country, so I can see what visitors want to know.',
       'If you turn on voice replies, the answer text is turned into speech by Microsoft’s text-to-speech service. Voice input uses your browser’s built-in speech recognition.',
+      'To recognise a returning visitor, the assistant keeps the topics of your recent questions for 30 days, linked only to the random visitor ID in your browser. Questions it could not answer are kept so I can add the answer.',
+      'If you rate an answer with 👍 or 👎, the rating, your question and the answer are stored so I can improve the assistant. If you paste a job post and ask for a tailored résumé, the generated résumé is stored for 30 days at a private link.',
+      'Messages that look like attacks on the assistant (for example prompt injection) are refused and counted. A short, redacted sample is shown on the public “How PWEZA is secured” page; your IP address is stored only as a one-way hash.',
       'Please do not share sensitive personal information in the chat.',
+    ],
+  },
+  {
+    h: 'If you ask me to contact you',
+    body: [
+      'If you tick the consent box and send your email (and optionally your name, company and a note), I receive them as a private notification and they are stored so I can reply. They are used only to contact you about the opportunity you raised, never sold or shared. Email me to have them deleted.',
     ],
   },
   {

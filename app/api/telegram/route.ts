@@ -11,6 +11,8 @@ import { answerFromData } from '@/lib/alerts/askdata'
 import { rate, learnedSummary } from '@/lib/alerts/learn'
 import { hasDb, lookupMessage, getVisit, teach, forget, teachings } from '@/lib/alerts/store'
 import { liveOn, liveOff, pushOut, lastLive, linkChat, validSid } from '@/lib/alerts/live'
+import { stashedQuestion, setOnline, isOnline } from '@/lib/pweza/extras'
+import { safe as dbSafe, mapMessage } from '@/lib/alerts/store'
 import { getSettings, saveSettings, ensureTopics, describe, fmtDuration, validTz, isHushed } from '@/lib/alerts/settings'
 import { renderVisit, visitButtons, type Ctx } from '@/lib/alerts/format'
 
@@ -39,6 +41,8 @@ const HELP = [
   '📊 /today · /week · /top — stats   🔊 /briefing — voice summary now',
   '🧠 /teach question | answer — PWEZA learns it · /taught · /forget question',
   '📈 /score — what the self-learning lead score has learned from your 👍/👎',
+  '🟢 /online · /offline — show visitors you\'re available to chat live',
+  '🎙 Reply with a voice note to a live chat and the visitor hears it',
   '🎙 Tap “Take over this chat” on a PWEZA alert to answer a visitor yourself · /end hands back',
   '💬 Or just ask me in plain English, e.g. "who looked at my AWS projects this week?"',
   '/test — send a sample visitor alert',
@@ -113,6 +117,16 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ ok: true })
     }
+    const tq = data.match(/^teachq:([a-z0-9]{6,12})$/)
+    if (tq) {
+      const q = await stashedQuestion(tq[1])
+      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: q ? '✏️ Reply with the answer' : 'That question expired' })
+      if (q) {
+        const m = await sendMessage(`✏️ <b>Reply to this message with the right answer</b> for:\n“${esc(q)}”\n<i>PWEZA will use it from now on.</i>`, { thread, replyTo, silent: true })
+        if (m.ok && m.result) await mapMessage(m.result.message_id, `teach:${tq[1]}`, 7 * 86_400)
+      }
+      return NextResponse.json({ ok: true })
+    }
     const lv = data.match(/^live(off)?:([a-z0-9]{8,40})$/i)
     if (lv) {
       const sid = lv[2]
@@ -153,12 +167,32 @@ export async function POST(req: NextRequest) {
   }
 
   const msg = update.message
-  if (!msg || String(msg.chat?.id) !== mine || typeof msg.text !== 'string') return NextResponse.json({ ok: true })
+  if (!msg || String(msg.chat?.id) !== mine) return NextResponse.json({ ok: true })
+  // 🎙 Voice note replied to a live chat → the visitor hears it in their chat window.
+  if ((msg.voice || msg.audio) && msg.reply_to_message?.message_id) {
+    const key = await lookupMessage(msg.reply_to_message.message_id)
+    if (key?.startsWith('chat:')) {
+      const sid = key.slice(5)
+      const vid = Math.random().toString(36).slice(2, 12)
+      await dbSafe((r) => r.set(`voice:${vid}`, (msg.voice || msg.audio).file_id, { ex: 86_400 }), null)
+      await liveOn(sid)
+      await pushOut(sid, `__voice__:${vid}`)
+      await tg('setMessageReaction', { chat_id: mine, message_id: msg.message_id, reaction: [{ type: 'emoji', emoji: '👍' }] })
+    }
+    return NextResponse.json({ ok: true })
+  }
+  if (typeof msg.text !== 'string') return NextResponse.json({ ok: true })
   const thread: number | undefined = msg.message_thread_id
   // A reply to a live-chat message goes straight to that visitor.
   const repliedTo: number | undefined = msg.reply_to_message?.message_id
   if (repliedTo && !msg.text.startsWith('/')) {
     const key = await lookupMessage(repliedTo)
+    if (key?.startsWith('teach:')) {
+      const q = await stashedQuestion(key.slice(6))
+      const ok = q ? await teach(q, msg.text.trim()) : false
+      await reply(ok ? `🧠 Learned. PWEZA will answer “${esc(q!)}” with that from now on.` : 'That question expired — use /teach question | answer.', msg.message_thread_id)
+      return NextResponse.json({ ok: true })
+    }
     if (key?.startsWith('chat:')) {
       const sid = key.slice(5)
       await liveOn(sid)
@@ -257,6 +291,12 @@ export async function POST(req: NextRequest) {
       const ok = await forget(arg.trim())
       await reply(ok ? 'Forgotten.' : 'Not found. /taught lists the exact questions.', thread); break
     }
+    case '/online':
+      await setOnline(true)
+      await reply('🟢 You\'re shown as online in PWEZA for the next 8 hours. Visitors see “Joseph is online” and can ask for you. /offline to stop.', thread); break
+    case '/offline':
+      await setOnline(false)
+      await reply('⚪ You\'re shown as offline. PWEZA still pings you if someone asks for you.', thread); break
     case '/end': {
       const sid = validSid(arg.trim()) ? arg.trim() : await lastLive()
       if (!sid) { await reply('No live chat right now.', thread); break }

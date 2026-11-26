@@ -20,6 +20,8 @@ export const BOT_COMMANDS = [
   { command: 'score', description: 'What the lead score has learned' },
   { command: 'ask', description: 'Ask about your visitors in plain English' },
   { command: 'end', description: 'Hand a live chat back to PWEZA' },
+  { command: 'online', description: 'Show visitors you\'re available to chat' },
+  { command: 'offline', description: 'Stop showing as available' },
   { command: 'test', description: 'Send a sample visitor alert' },
   { command: 'help', description: 'What the bot can do' },
 ]
