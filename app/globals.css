@@ -1170,3 +1170,58 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 #pweza-panel > header .pz-icon { width: 33px; height: 33px; }
 #pweza-panel > header p { white-space: nowrap; }
 @media (max-width: 380px) { #pweza-panel > header .pz-icon { width: 30px; } }
+
+
+/* Credential details are opt-in; keep the approved card dimensions and artwork. */
+#credentials .cred-card[id] { scroll-margin-top: 100px; }
+#credentials .cred-card:target { border-color: #83caff; box-shadow: 0 0 0 2px rgba(131,202,255,.22); }
+#credentials .cred-detail-trigger { display: inline; padding: 0; color: inherit; background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
+#credentials .cred-detail-trigger:hover { text-decoration: underline; text-underline-offset: 3px; }
+#credentials .cred-detail-trigger:focus-visible { outline: 2px solid #9bdcff; outline-offset: 3px; border-radius: 3px; }
+.cred-detail-dialog { position: fixed; inset: 0; z-index: 100; width: min(720px,calc(100% - 24px)); max-width: none; max-height: min(88dvh,850px); margin: auto; padding: 0; overflow: auto; overscroll-behavior: contain; color: #e8f0fc; background: #0a121f; border: 1px solid #3d5778; border-radius: 18px; box-shadow: 0 24px 100px #000a; }
+.cred-detail-dialog::backdrop { background: rgba(3,7,14,.85); backdrop-filter: blur(5px); }
+.cred-detail-inner { padding: 22px; }
+.cred-detail-top { display: flex; align-items: center; justify-content: space-between; color: #9cc9f1; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; margin-bottom: 16px; }
+.cred-detail-close { width: 44px; height: 44px; border: 1px solid #3d5778; border-radius: 10px; font-size: 24px; color: #e8f0fc; }
+.cred-detail-hero { display: flex; align-items: center; gap: 20px; }
+.cred-detail-hero > div:last-child { min-width: 0; flex: 1; }
+.cred-detail-image { width: 140px; flex-shrink: 0; display: grid; place-items: center; }
+.cred-detail-image img { width: 100%; height: auto; object-fit: contain; }
+.cred-detail-image.is-ccna img { filter: url(#ccna-light-ink) brightness(1.08); }
+.cred-detail-hero h2 { font-size: clamp(21px,4vw,29px); font-weight: 700; line-height: 1.2; }
+.cred-detail-hero p { color: #b5c5da; font-size: 14px; margin-top: 6px; line-height: 1.5; }
+.cred-detail-hero .cred-detail-status { color: #8ad7c5; }
+.cred-detail-primary,.cred-detail-secondary { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; margin: 12px 8px 0 0; border: 1px solid #41678e; border-radius: 9px; color: #b4e1ff; background: #14263d; font-size: 13px; font-weight: 600; }
+.cred-detail-secondary { background: transparent; }
+.cred-detail-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid #26384e; }
+.cred-detail-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #dbe8f9; }
+.cred-detail-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+.cred-detail-skills span { border: 1px solid #354c68; border-radius: 7px; background: #111f30; padding: 6px 9px; font-size: 12px; color: #c4d7ed; }
+.cred-detail-projects { display: grid; gap: 6px; }
+.cred-detail-projects a { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #30445b; border-radius: 8px; font-size: 13px; color: #b4e1ff; }
+.cred-detail-note,.cred-detail-hero p.cred-detail-note { font-size: 12px; line-height: 1.5; color: #aebed3; margin-top: 8px; }
+.cred-detail-share { display: flex; gap: 8px; }
+.cred-detail-share input { flex: 1; min-width: 0; color: #c5d7ec; background: #101e2f; border: 1px solid #354c68; border-radius: 8px; padding: 8px; font-size: 12px; }
+.cred-detail-share button { min-height: 44px; padding: 8px 12px; color: #b4e1ff; border: 1px solid #41678e; background: #14263d; border-radius: 8px; font-size: 12px; font-weight: 600; }
+.cred-explore { max-width: 869px; margin-top: 10px; border: 1px solid rgba(150,170,210,.2); border-radius: 10px; background: #0b111d; }
+.cred-explore summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 9px 12px; color: #b5d5f4; font-size: 13px; font-weight: 600; }
+.cred-explore summary::-webkit-details-marker { display: none; }
+.cred-explore[open] summary span { transform: rotate(45deg); }
+.cred-explore-body { padding: 4px 12px 12px; }
+.cred-timeline { display: grid; gap: 10px; border-left: 1px solid #496888; margin-left: 5px; padding-left: 14px; }
+.cred-timeline li { position: relative; display: grid; grid-template-columns: 104px 1fr; gap: 8px; font-size: 13px; color: #d1dfef; }
+.cred-timeline li::before { content: ''; position: absolute; left: -18px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: #8cc7ff; }
+.cred-timeline time { color: #aebed3; }
+.cred-timeline a,.cred-explore-body p a { color: #9bdcff; text-decoration: underline; text-underline-offset: 2px; }
+.cred-combination { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: 13px; }
+.cred-combination a,.cred-combination strong { display: inline-flex; align-items: center; min-height: 38px; padding: 6px 10px; border: 1px solid #41678e; border-radius: 7px; background: #14263d; color: #b4e1ff; }
+.cred-detail-dialog :focus-visible,.cred-explore :focus-visible { outline: 2px solid #9bdcff; outline-offset: 2px; }
+@media(max-width:639px) {
+  .cred-detail-dialog { width: 100%; max-height: 100dvh; height: 100dvh; border-radius: 0; border: 0; }
+  .cred-detail-inner { padding: max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom)); }
+  .cred-detail-hero { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .cred-detail-image { width: 120px; align-self: center; }
+  .cred-explore { max-width: 336px; }
+  .cred-timeline li { grid-template-columns: 1fr; gap: 2px; }
+}
+@media(min-width:640px) and (max-width:1023px) { .cred-explore { max-width: 578px; } }

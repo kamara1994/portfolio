@@ -1,4 +1,6 @@
 import { certs } from '@/data'
+import { projects } from '@/data/projects'
+import CredentialDetails from './CredentialDetails'
 
 // Individual verification URLs must identify this holder, not just the certification program.
 // The PenTest+ reference is listed on the holder's public LinkedIn profile.
@@ -21,6 +23,18 @@ const META: Record<string, { img?: string; tile?: { top: string; main: string; b
   'AWS Security Specialty': { tile: { top: 'AWS', main: 'SCS', bg: '#1B2433' }, area: 'Studying now: AWS security services and design' },
 }
 
+
+// Only reference project routes with published case studies.
+const DETAIL: Record<string, { id: string; skills: string[]; projectIds: string[] }> = {
+  'Security+': { id: 'credential-security-plus', skills: ['Threats and vulnerabilities','Risk management','Cryptography','Security architecture','Incident response'], projectIds: ['fortress-v2','blue-soc-p8','cyber375-endpoint'] },
+  CCNA: { id: 'credential-ccna', skills: ['IP connectivity','Routing and switching','VLANs','Network access','Network security','Automation fundamentals'], projectIds: ['salone-aegis','enterprise-networking','wireless-vlan-ssid'] },
+  'Practical SOC Analyst Associate (PSAA)': { id: 'credential-psaa', skills: ['Alert triage','Security monitoring','Log analysis','Incident investigation','Threat detection'], projectIds: ['cyber375-final-ir','cyber375-splunk','blue-soc-p8'] },
+  'PenTest+': { id: 'credential-pentest-plus', skills: ['Reconnaissance','Vulnerability analysis','Penetration testing','Exploitation concepts','Reporting'], projectIds: ['cyber375-vuln-assess','cyber375-network-threat'] },
+  'Network Vulnerability Assessment Professional (CNVP)': { id: 'credential-cnvp', skills: ['Network security','Vulnerability assessment','Reconnaissance','Risk management','Penetration testing'], projectIds: ['cyber375-vuln-assess','cyber375-network-threat'] },
+  'AWS Security Specialty': { id: 'credential-aws-security', skills: ['IAM','Cloud logging','Network security','Data protection'], projectIds: ['aws-iam-security','aws-vpc-peering','cloud-cafe-architecture'] },
+}
+const publicCredential = (c: typeof certs[number]) => c.credlyUrl || (c.name === 'Practical SOC Analyst Associate (PSAA)' ? VERIFY[c.name].href : undefined)
+
 export default function Credentials() {
   return (
     <section id="credentials" className="lazy-section border-t border-line">
@@ -40,15 +54,18 @@ export default function Credentials() {
       <div className="wrap py-16 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
-          Four standalone industry certifications earned, one stackable credential, and one certification in progress. Verify individual digital badges or request credential proof.
+          Four standalone industry certifications earned, one stackable credential, and one certification in progress. Select a certification title for its badge, skills, projects and sharing options.
         </p>
 
         <ul className="cred-grid mt-8">
           {certs.map((c) => {
             const m = META[c.name] ?? { area: '' }
             const earned = c.status === 'earned'
+            const d = DETAIL[c.name]
+            const directUrl = publicCredential(c)
+            const related = d ? d.projectIds.flatMap(id => { const p = projects.find(p => p.id === id && p.placement); return p ? [{ id: p.id, title: p.title }] : [] }) : []
             return (
-              <li key={c.name} className={`cred-card ${earned ? '' : 'is-progress'}${c.name === 'CCNA' ? ' cred-ccna' : ''}`}>
+              <li key={c.name} id={d?.id} className={`cred-card ${earned ? '' : 'is-progress'}${c.name === 'CCNA' ? ' cred-ccna' : ''}`}>
                 <div className="cred-art" aria-hidden="true">
                   {m.img ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -61,12 +78,12 @@ export default function Credentials() {
                   ) : null}
                 </div>
                 <div className="cred-heading">
-                  <p className="text-[18px] font-semibold leading-snug text-snow">{c.name}</p>
+                  <p className="text-[18px] font-semibold leading-snug text-snow">{d ? <CredentialDetails item={{ id: d.id, name: c.name, issuer: c.issuer, image: m.img, issued: c.date || m.when, earned, directUrl, lookupUrl: earned && !directUrl ? VERIFY[c.name]?.href : undefined, requestUrl: earned && !directUrl ? requestProof(c.name) : undefined, skills: d.skills, projects: related, stackable: c.stackable }} /> : c.name}</p>
                   <p className="mt-1 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}{c.expires ? ` · Expires ${c.expires.replace('March', 'Mar')}` : ''}</p>
                 </div>
                 <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
                 <div className="cred-actions flex items-center justify-between gap-3">
-                  <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{earned ? '✅ Earned' : '⏳ In progress'}</span>
+                  <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{directUrl && earned ? '✓ Verified link' : earned ? '✅ Earned' : '⏳ In progress'}</span>
                   {earned && (c.credlyUrl || VERIFY[c.name] ? (
                     <a href={c.credlyUrl || VERIFY[c.name].href} target="_blank" rel="noopener noreferrer" className="tap cred-verify" title={c.credlyUrl ? 'Open individual issuer-backed credential on Credly' : VERIFY[c.name].title} aria-label={(c.credlyUrl ? 'Verify' : VERIFY[c.name].label) + ' — ' + c.name}>{c.credlyUrl ? 'Verify' : VERIFY[c.name].label} ↗</a>
                   ) : (
@@ -76,7 +93,7 @@ export default function Credentials() {
               </li>
             )
           })}
-          <li className="cred-card cred-degree">
+          <li id="credential-degree" className="cred-card cred-degree">
             <div className="cred-art cred-campus" aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="cred-campus-logo" src="/certs/byui-logo.svg" alt="" width={177} height={105} loading="eager" decoding="async" />
@@ -89,6 +106,24 @@ export default function Credentials() {
             <div className="cred-actions"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
+        <details className="cred-explore">
+          <summary>Certification journey <span aria-hidden="true">+</span></summary>
+          <div className="cred-explore-body">
+            <ol className="cred-timeline">
+              <li><time dateTime="2025-03">Mar 2025</time><a href="#credential-security-plus">Security+</a></li>
+              <li><time dateTime="2026-03">Mar 2026</time><div><a href="#credential-pentest-plus">PenTest+</a> · <a href="#credential-cnvp">CNVP</a> (stackable)</div></li>
+              <li><time dateTime="2026-03-26">Mar 26, 2026</time><a href="#credential-psaa">Practical SOC Analyst Associate</a></li>
+            </ol>
+            <p className="cred-detail-note"><a href="#credential-ccna">CCNA</a> is earned; its issue date is not listed. <a href="#credential-aws-security">AWS Security Specialty</a> is in progress. <a href="#credential-degree">B.S. Cybersecurity</a> is expected December 2026.</p>
+          </div>
+        </details>
+        <details className="cred-explore">
+          <summary>How the CompTIA credentials connect <span aria-hidden="true">+</span></summary>
+          <div className="cred-explore-body">
+            <div className="cred-combination"><a href="#credential-security-plus">Security+</a><span aria-hidden="true">+</span><a href="#credential-pentest-plus">PenTest+</a><span aria-hidden="true">→</span><a href="#credential-cnvp">CNVP</a></div>
+            <p className="cred-detail-note">CNVP is a stackable credential awarded from the qualifying Security+ and PenTest+ certifications; it does not require a separate exam.</p>
+          </div>
+        </details>
         <p className="mt-4 max-w-[62ch] text-[13px] leading-relaxed"><a href="https://www.credly.com/users/joseph-allan-kamara" target="_blank" rel="noopener noreferrer" className="text-[#9bdcff] underline underline-offset-2">View all credentials on Credly ↗</a></p>
         <p className="mt-3 max-w-[62ch] text-[12px] leading-relaxed text-smoke">Issuer lookup requires the individual verification code. <a href={requestProof("professional certifications")} className="text-[#9bdcff] underline underline-offset-2">Request verification links or codes</a> if needed.</p>
       </div>
