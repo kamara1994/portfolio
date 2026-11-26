@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import SkyShader from './SkyShader'
 
 const FLIP_EVERY_MS = 4000
 
@@ -13,7 +14,7 @@ const STARS: [number, number, number, number, number][] = [
 ]
 
 /** A living night sky: twinkling stars, a slowly gliding moon, and layered drifting clouds. */
-function NightSky() {
+function NightSky({ hover }: { hover: boolean }) {
   return (
     <span aria-hidden className="sky">
       <span className="sky-glow" />
@@ -101,6 +102,7 @@ function NightSky() {
       </span>
 
       <span className="sky-shooting-star" />
+      <SkyShader hover={hover} />
       <span className="sky-sheen" />
     </span>
   )
@@ -126,7 +128,7 @@ export default function FlipStatus() {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <NightSky />
+      <NightSky hover={paused} />
       <span className="flip">
         <span className={`flip-inner ${flipped ? 'is-flipped' : ''}`}>
           <span className="flip-face">Open to work</span>
