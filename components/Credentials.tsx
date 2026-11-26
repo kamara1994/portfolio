@@ -16,6 +16,7 @@ const META: Record<string, { img?: string; tile?: { top: string; main: string; b
   CCNA: { img: '/certs/ccna.png', area: 'Routing, switching, VLANs, OSPF, SSH hardening' },
   'Practical SOC Analyst Associate (PSAA)': { img: '/certs/tcm-psaa.webp', when: 'Mar 2026', area: 'SOC operations, alert triage, incident response' },
   'PenTest+': { img: '/certs/pentest-plus.webp', when: 'Mar 2026', area: 'Penetration testing and vulnerability assessment' },
+  'Network Vulnerability Assessment Professional (CNVP)': { img: '/certs/cnvp.png', when: 'Mar 2026', area: 'Stackable credential · Security+ and PenTest+ · Vulnerability assessment and penetration testing' },
   'AWS Security Specialty': { tile: { top: 'AWS', main: 'SCS', bg: '#1B2433' }, area: 'Studying now: AWS security services and design' },
 }
 
@@ -38,7 +39,7 @@ export default function Credentials() {
       <div className="wrap py-16 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
-          Four industry certifications earned, one in progress. Use the issuer verification links or request individual credential proof.
+          Four standalone industry certifications earned, one stackable credential, and one certification in progress. Verify individual digital badges or request credential proof.
         </p>
 
         <ul className="cred-grid mt-8">
@@ -60,13 +61,13 @@ export default function Credentials() {
                 </div>
                 <div className="cred-heading">
                   <p className="text-[18px] font-semibold leading-snug text-snow">{c.name}</p>
-                  <p className="mt-1 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}</p>
+                  <p className="mt-1 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}{c.expires ? ` · Expires ${c.expires.replace('March', 'Mar')}` : ''}</p>
                 </div>
                 <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
                 <div className="cred-actions flex items-center justify-between gap-3">
                   <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{earned ? '✅ Earned' : '⏳ In progress'}</span>
                   {earned && (c.credlyUrl || VERIFY[c.name] ? (
-                    <a href={c.credlyUrl || VERIFY[c.name].href} target="_blank" rel="noopener noreferrer" className="tap cred-verify" title={c.credlyUrl ? 'Open individual digital credential' : VERIFY[c.name].title} aria-label={(c.credlyUrl ? 'Verify' : VERIFY[c.name].label) + ' — ' + c.name}>{c.credlyUrl ? 'Verify' : VERIFY[c.name].label} ↗</a>
+                    <a href={c.credlyUrl || VERIFY[c.name].href} target="_blank" rel="noopener noreferrer" className="tap cred-verify" title={c.credlyUrl ? 'Open individual issuer-backed credential on Credly' : VERIFY[c.name].title} aria-label={(c.credlyUrl ? 'Verify' : VERIFY[c.name].label) + ' — ' + c.name}>{c.credlyUrl ? 'Verify' : VERIFY[c.name].label} ↗</a>
                   ) : (
                     <a href={requestProof(c.name)} className="tap cred-verify" aria-label={'Request individual verification link for ' + c.name}>Request proof ↗</a>
                   ))}
@@ -87,6 +88,7 @@ export default function Credentials() {
             <div className="cred-actions"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
+        <p className="mt-4 max-w-[62ch] text-[13px] leading-relaxed"><a href="https://www.credly.com/users/joseph-allan-kamara" target="_blank" rel="noopener noreferrer" className="text-[#9bdcff] underline underline-offset-2">View all credentials on Credly ↗</a></p>
         <p className="mt-3 max-w-[62ch] text-[12px] leading-relaxed text-smoke">Issuer lookup requires the individual verification code. <a href={requestProof("professional certifications")} className="text-[#9bdcff] underline underline-offset-2">Request verification links or codes</a> if needed.</p>
       </div>
     </section>

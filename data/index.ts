@@ -5,6 +5,8 @@ export interface Cert {
   certNum?: string
   status: 'earned' | 'progress'
   credlyUrl?: string
+  expires?: string
+  stackable?: boolean
 }
 
 export const certs: Cert[] = [
@@ -12,6 +14,9 @@ export const certs: Cert[] = [
     name: 'Security+',
     issuer: 'CompTIA',
     status: 'earned',
+    credlyUrl: 'https://www.credly.com/badges/030d88e9-50df-4054-8d99-6a06286f6e51/public_url',
+    date: 'March 2025',
+    expires: 'March 2029',
   },
   {
     name: 'CCNA',
@@ -29,6 +34,18 @@ export const certs: Cert[] = [
     name: 'PenTest+',
     issuer: 'CompTIA',
     status: 'earned',
+    credlyUrl: 'https://www.credly.com/badges/97145db7-4c96-468c-ac8d-9382f432f731/public_url',
+    date: 'March 2026',
+    expires: 'March 2029',
+  },
+  {
+    name: 'Network Vulnerability Assessment Professional (CNVP)',
+    issuer: 'CompTIA',
+    status: 'earned',
+    stackable: true,
+    credlyUrl: 'https://www.credly.com/badges/a2442824-312d-400c-8ae4-a4a843125025/public_url',
+    date: 'March 2026',
+    expires: 'March 2029',
   },
   {
     name: 'AWS Security Specialty',
