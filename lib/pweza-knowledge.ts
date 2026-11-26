@@ -96,6 +96,7 @@ const lc = (x: string) => x.charAt(0).toLowerCase() + x.slice(1)
 const UNDOCUMENTED = ['ids', 'intrusion detection', 'cve', 'vulnerability scanner', 'threat intel', 'blue v3', 'blue-v3', 'toolkit', 'visitor intelligence']
 const isThanks = (t: string) => /\b(thank|thanks|thank you|thank u|appreciate it)\b/.test(t)
 const isGreeting = (t: string) => /^(hello|hi|hey|yo|good (morning|afternoon|evening)|what'?s up|whats up)[!. ]*$/.test(t)
+const isMicCheck = (t: string) => /\b(can you hear me|do you hear me|are you (there|listening|hearing me)|testing,? (one|1)|mic check|is this (working|on))\b/.test(t) && t.split(/\s+/).length <= 8
 const isAck = (t: string) => /^(okay|ok|alright|got it|i see|understood|cool|nice|great|perfect|sounds good|makes sense)[.! ]*$/.test(t)
 
 const TOPICS: { keys: string[]; reply: () => PwezaReply }[] = [
@@ -232,7 +233,7 @@ export function shouldUseLocalPwezaReply(messages: Msg[]) {
   // Only small talk is scripted. Real questions go to the AI with the full knowledge base,
   // so follow-ups, detail and phrasing are understood; the scripted topics are the offline backup.
   const t = latest(messages).toLowerCase().trim()
-  return !t || isThanks(t) || isGreeting(t) || isAck(t) || has(t, UNDOCUMENTED)
+  return !t || isThanks(t) || isGreeting(t) || isMicCheck(t) || isAck(t) || has(t, UNDOCUMENTED)
 }
 
 export function generateLocalPwezaReply(messages: Msg[]): PwezaReply {
@@ -240,6 +241,7 @@ export function generateLocalPwezaReply(messages: Msg[]): PwezaReply {
   if (!t) return { text: 'Ask me about his projects, skills, certifications, or role fit.' }
   if (isThanks(t)) return { text: "You're welcome. Anything else?" }
   if (isGreeting(t)) return { text: "Hey, I'm PWEZA. Ask me anything about Joseph's work, and I'll show you the proof." }
+  if (isMicCheck(t)) return { text: "Yes, I can hear you loud and clear. Ask me anything about Joseph's work, skills or fit for a role." }
   if (isAck(t)) return { text: 'What would you like to look at next?' }
   if (has(t, UNDOCUMENTED)) return {
     text: `That project isn't documented on this site, so I can't speak to it. The documented ones are ${shown.filter((p) => p.placement === 'flagship').map((p) => p.title).join(', ')}.`,

@@ -84,6 +84,7 @@ export default function AIChat() {
   const [live, setLive] = useState(false)
   const liveAfter = useRef(0)
   const wasLive = useRef(false)
+  const sayRef = useRef<((t: string) => void) | null>(null)
   const pathname = usePathname() || '/'
   const router = useRouter()
   const [online, setOnline] = useState(false)
@@ -119,7 +120,12 @@ export default function AIChat() {
           else incoming.push({ role: 'joseph', content: m.t })
         }
         if (typeof d.online === 'boolean') setOnline(d.online)
-        if (incoming.length) { setMessages((cur) => [...cur, ...incoming]); setOpen(true) }
+        if (incoming.length) {
+          setMessages((cur) => [...cur, ...incoming]); setOpen(true)
+          // Hands-free mode: read Joseph's live messages aloud too.
+          const said = incoming.filter((m) => m.role === 'joseph' && !m.voice).map((m) => m.content).join(' ')
+          if (talkRef.current && said) sayRef.current?.(`Joseph says: ${said}`)
+        }
         if (!!d.live !== wasLive.current) { wasLive.current = !!d.live; setLive(!!d.live) }
       } catch { /* try again next tick */ }
     }
@@ -197,7 +203,7 @@ export default function AIChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: next.slice(1).map((m, i, arr) => (i === arr.length - 1 && opts.label ? { ...m, content: q } : m)).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content: content.replace(/\s*\[\d+\]/g, '') })),
-          wantsAudio: voiceOut,
+          wantsAudio: voiceOut || talkRef.current,
           sid: chatSid(),
           stream: true,
           mode: opts.mode || (interview ? 'interview' : undefined),
@@ -206,8 +212,12 @@ export default function AIChat() {
           page: pathname,
         }),
       })
-      const playAudio = (audio?: string | null) => {
-        if (!(voiceOut || talkRef.current) || !audio) { if (talkRef.current) setTimeout(() => listen(true), 400); return }
+      const playAudio = async (audio?: string | null, text?: string) => {
+        if (!(voiceOut || talkRef.current)) return
+        if (!audio && text) {
+          try { audio = (await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }).then((r) => r.json())).audio } catch { /* fall through */ }
+        }
+        if (!audio) { if (talkRef.current) setTimeout(() => listen(true), 400); return }
         audioRef.current?.pause()
         audioRef.current = new Audio(audio)
         // Hands-free talk mode: when PWEZA finishes speaking, listen again.
@@ -218,7 +228,7 @@ export default function AIChat() {
       if ((res.headers.get('content-type') || '').includes('ndjson') && res.body) {
         const reader = res.body.getReader()
         const dec = new TextDecoder()
-        let buf = '', started = false
+        let buf = '', started = false, spoken = ''
         const patch = (fn: (m: Msg) => Msg) => setMessages((cur) => { const copy = cur.slice(); copy[copy.length - 1] = fn(copy[copy.length - 1]); return copy })
         const begin = () => { if (!started) { started = true; setLoading(false); setMessages((cur) => [...cur, { role: 'assistant', content: '', streaming: true }]) } }
         for (;;) {
@@ -232,13 +242,13 @@ export default function AIChat() {
             let ev: any
             try { ev = JSON.parse(line) } catch { continue }
             if (ev.type === 'meta') { begin(); patch((m) => ({ ...m, sources: ev.sources, card: ev.card, q })) }
-            else if (ev.type === 'delta') { begin(); patch((m) => ({ ...m, content: m.content + ev.t })) }
-            else if (ev.type === 'replace') { begin(); patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
+            else if (ev.type === 'delta') { begin(); spoken += ev.t; patch((m) => ({ ...m, content: m.content + ev.t })) }
+            else if (ev.type === 'replace') { begin(); spoken = ev.t; patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
             else if (ev.type === 'done') {
               begin(); patch((m) => ({ ...m, links: ev.links, nav: ev.nav, streaming: false, q }))
               if (Array.isArray(ev.suggestions)) setSmart(ev.suggestions.slice(0, 3))
               if (ev.hiring) setLeadOpen(true)
-              playAudio(ev.audio)
+              playAudio(ev.audio, spoken)
             }
           }
         }
@@ -246,10 +256,10 @@ export default function AIChat() {
         return
       }
       const data = await res.json()
-      if (data.live) { setLive(true); wasLive.current = true; return } // Joseph will answer himself
+      if (data.live) { setLive(true); wasLive.current = true; if (talkRef.current) setTimeout(() => listen(true), 400); return } // Joseph will answer himself
       const reply = data.content || data.error || "I couldn't answer that right now. You can email Joseph at kamarajosephallan@gmail.com."
       setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links, fit: data.fit, triage: data.triage, q, jobPost: data.fit ? q : undefined }])
-      playAudio(data.audio)
+      playAudio(data.audio, reply)
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: "Connection problem. Try again, or email kamarajosephallan@gmail.com." }])
     } finally {
@@ -301,6 +311,17 @@ export default function AIChat() {
     }
     recRef.current = r
     try { r.start() } catch { /* already listening */ }
+  }
+  sayRef.current = async (text: string) => {
+    try {
+      recRef.current?.stop?.()
+      const { audio } = await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }).then((r) => r.json())
+      if (!audio) return
+      audioRef.current?.pause()
+      audioRef.current = new Audio(audio)
+      audioRef.current.onended = () => { if (talkRef.current) listen(true) }
+      await audioRef.current.play()
+    } catch { if (talkRef.current) listen(true) }
   }
   const toggleTalk = () => {
     const on = !talkRef.current
