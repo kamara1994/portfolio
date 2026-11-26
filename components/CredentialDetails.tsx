@@ -73,7 +73,7 @@ export default function CredentialDetails({ item }: { item: Detail }) {
               {item.lookupUrl && <a className="cred-detail-primary" href={item.lookupUrl} target="_blank" rel="noopener noreferrer">Issuer lookup ↗</a>}
               {item.requestUrl && <a className="cred-detail-secondary" href={item.requestUrl}>Request individual proof</a>}
             </>}
-            {item.directUrl && <p className="cred-detail-note">The original credential opens on the issuer's own page, including its available verification information.</p>}
+            {item.directUrl && <p className="cred-detail-note">The original credential opens on the issuer&apos;s own page, including its available verification information.</p>}
           </div>
         </div>
         {item.skills.length > 0 && <section className="cred-detail-section"><h3>Skills covered</h3><div className="cred-detail-skills">{item.skills.map(s => <span key={s}>{s}</span>)}</div><p className="cred-detail-note">Topics associated with this credential; not separate endorsements or a proficiency rating.</p></section>}
