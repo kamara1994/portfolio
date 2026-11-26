@@ -344,6 +344,7 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
         sys += timeContext(req.headers.get('x-vercel-ip-timezone'), settings.tz) + memoryContext(memory)
 
         const { text: draft, failures } = await streamAnswer(sys, messages, (t) => send({ type: 'delta', t }), deep || mode === 'interview' ? 520 : 320)
+        if (failures.length) console.warn('PWEZA provider failures:', failures.join(' || '), '| system chars:', sys.length)
         let final = draft
         let links: ProofLink[] = []
         let suggestions: string[] = []
