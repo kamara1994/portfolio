@@ -713,6 +713,27 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   #credentials .cred-art-tile { width: min(90%,112px); }
 }
 
+/* Official university logo: preserve its proportions and original orientation. */
+#credentials .cred-degree .cred-campus {
+  width: 48%; overflow: hidden; padding-right: 10px;
+  -webkit-mask-image: none; mask-image: none;
+  background: linear-gradient(90deg,transparent,rgba(0,109,173,.18));
+}
+#credentials .cred-degree .cred-campus .cred-campus-logo,
+#credentials .cred-degree:hover .cred-campus .cred-campus-logo {
+  width: min(100%,112px); height: auto; max-height: 95%; margin: 0;
+  object-fit: contain; opacity: 1; filter: none; transform: none;
+  border-radius: 4px; transition: none;
+}
+#credentials .cred-degree::after {
+  background: linear-gradient(90deg,#0a101b 0%,#0a101b 40%,rgba(10,16,27,.76) 54%,transparent 73%);
+}
+#credentials .cred-degree .cred-heading,
+#credentials .cred-degree .cred-description { max-width: 64%; }
+@media (max-width:639px) {
+  #credentials .cred-degree .cred-campus .cred-campus-logo { width: min(100%,105px); }
+}
+
 /* Skills on phones and tablets: every category visible as a chip grid */
 .sk-cat-icon .emoji { font-size: 19px; }
 @media (max-width: 1023px) {

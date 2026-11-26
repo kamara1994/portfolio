@@ -57,7 +57,8 @@ export default function Credentials() {
           })}
           <li className="cred-card cred-degree">
             <div className="cred-art cred-campus" aria-hidden="true">
-              <div className="cred-campus-photo" style={{ backgroundImage: 'url(https://brightspotcdn.byui.edu/dims4/default/15c7b67/2147483647/strip/true/crop/4366x4366%2B1317%2B0/resize/800x800%21/quality/90/?url=http%3A%2F%2Fbyu-idaho-brightspot-production-us-east-2.s3.us-east-2.amazonaws.com%2F7a%2F49%2Ff979a989426690cee17f4a1b9ea4%2F210518-byui-signs-37.jpg)' }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="cred-campus-logo" src="https://brightspotcdn.byui.edu/dims4/default/52a0cee/2147483647/strip/true/crop/2500x2500%2B0%2B0/resize/400x400%21/quality/90/?url=https%3A%2F%2Fbyu-idaho-brightspot-production-us-east-2.s3.us-east-2.amazonaws.com%2Fc4%2F7a%2F8ad3d0424e8aaa71438693ed316d%2Fbyui-square-logos-white-on-blue.png" alt="" width={400} height={400} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             </div>
             <div className="cred-heading">
                 <p className="text-[18px] font-semibold leading-snug text-snow">B.S. Cybersecurity</p>
