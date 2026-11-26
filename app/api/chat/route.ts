@@ -254,7 +254,7 @@ export async function POST(req: NextRequest) {
     if (!text && raw?.stream === true && hasAI()) {
       const vid = validVid(raw?.vid) ? raw.vid : undefined
       const visitorRole = ['recruiter', 'soc', 'engineer'].includes(raw?.visitorRole) ? raw.visitorRole : null
-      return streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn, mode: raw?.mode === 'interview' ? 'interview' : null, vid, visitorRole })
+      return streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn, mode: raw?.mode === 'interview' ? 'interview' : null, vid, visitorRole, talk: raw?.talk === true })
     }
 
     const failures: string[] = []
@@ -310,7 +310,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-type StreamArgs = { req: NextRequest; messages: { role: string; content: string }[]; latestQuestion: string; system: string; sid?: string; wantsAudio: boolean; turn: number; mode: 'interview' | null; vid?: string; visitorRole: string | null }
+type StreamArgs = { req: NextRequest; messages: { role: string; content: string }[]; latestQuestion: string; system: string; sid?: string; wantsAudio: boolean; turn: number; mode: 'interview' | null; vid?: string; visitorRole: string | null; talk?: boolean }
 
 async function taughtPassages(): Promise<Passage[]> {
   return (await teachings()).slice(0, 40).map((t, i) => ({ id: `taught-${i}`, title: 'Answer from Joseph', href: '/#contact', text: `Q: ${t.q} A: ${t.a}` }))
@@ -322,7 +322,7 @@ const ROLE_LENS: Record<string, string> = {
   engineer: 'The visitor told the site they are an engineer: be technically precise about architecture, stack and trade-offs.',
 }
 
-function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn, mode, vid, visitorRole }: StreamArgs) {
+function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn, mode, vid, visitorRole, talk }: StreamArgs) {
   const enc = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
@@ -340,10 +340,11 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
         if (visitorRole && ROLE_LENS[visitorRole]) sys += `\n${ROLE_LENS[visitorRole]}`
         if (mode === 'interview') sys += `\nINTERVIEW MODE: the visitor is asking interview questions about Joseph. Answer in STAR form (Situation, Task, Action, Result) using ONLY verified projects and experience, speaking about Joseph in the third person, 4-6 sentences, with the S/T/A/R flow clear but not robotic. If no verified example fits, say so honestly and offer the closest one.`
         if (deep) sys += `\nDEEP DIVE: walk through it in four short labelled steps — Problem, Architecture, How it works, Result & proof — up to 7 sentences total, citing sources.`
+        if (talk) sys += `\nLIVE VOICE CALL: the visitor is talking to you out loud, hands-free, like a phone call. Reply the way a sharp, warm person talks on a call: natural spoken English, usually 1-3 short sentences, contractions, no lists, no headings, no markdown, no citation numbers, no URLs or email addresses read out (say "the email on the page" instead). React to what they actually said, including small talk, and keep the conversation moving with a brief natural follow-up only when it helps. If they interrupt or change topic, just go with it.`
         if (online) sys += `\nJoseph is online right now: if they'd like to talk to him, tell them he can join this chat.`
         sys += timeContext(req.headers.get('x-vercel-ip-timezone'), settings.tz) + memoryContext(memory)
 
-        const { text: draft, failures } = await streamAnswer(sys, messages, (t) => send({ type: 'delta', t }), deep || mode === 'interview' ? 520 : 320)
+        const { text: draft, failures } = await streamAnswer(sys, messages, (t) => send({ type: 'delta', t }), talk ? 220 : deep || mode === 'interview' ? 520 : 320)
         if (failures.length) console.warn('PWEZA provider failures:', failures.join(' || '), '| system chars:', sys.length)
         let final = draft
         let links: ProofLink[] = []
