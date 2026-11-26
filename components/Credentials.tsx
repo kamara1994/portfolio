@@ -30,25 +30,23 @@ export default function Credentials() {
             const earned = c.status === 'earned'
             return (
               <li key={c.name} className={`cred-card ${earned ? '' : 'is-progress'}`}>
-                <div className="flex items-start gap-4">
-                  <div className="cred-badge">
-                    {m.img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.img} alt={`${c.name} badge`} width={240} height={240} loading="lazy" className="h-full w-full object-cover" />
-                    ) : m.tile ? (
-                      <div className="flex h-full w-full flex-col items-center justify-center leading-none" style={{ background: m.tile.bg }}>
-                        <span className="text-[10px] font-semibold tracking-[0.2em] text-[#9CC7F0]">{m.tile.top}</span>
-                        <span className="mt-1 font-display text-[20px] font-bold text-white">{m.tile.main}</span>
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[18px] font-semibold leading-snug text-snow">{c.name}</p>
-                    <p className="mt-0.5 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}</p>
-                  </div>
+                <div className="cred-art" aria-hidden="true">
+                  {m.img ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={m.img} alt="" width={240} height={240} loading="lazy" decoding="async" />
+                  ) : m.tile ? (
+                    <div className="cred-art-tile" style={{ background: m.tile.bg }}>
+                      <span>{m.tile.top}</span>
+                      <strong>{m.tile.main}</strong>
+                    </div>
+                  ) : null}
                 </div>
-                <p className="mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
-                <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="cred-heading">
+                  <p className="text-[18px] font-semibold leading-snug text-snow">{c.name}</p>
+                  <p className="mt-1 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}</p>
+                </div>
+                <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
+                <div className="cred-actions mt-4 flex items-center justify-between gap-3">
                   <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{earned ? '✅ Earned' : '⏳ In progress'}</span>
                   {earned && VERIFY[c.issuer] && (
                     <a href={VERIFY[c.issuer]} target="_blank" rel="noopener" className="tap cred-verify">Verify ↗</a>
@@ -58,15 +56,13 @@ export default function Credentials() {
             )
           })}
           <li className="cred-card cred-degree">
-            <div className="flex items-start gap-4">
-              <div className="cred-badge flex items-center justify-center bg-[#10233D] text-[30px]"><span className="emoji">🎓</span></div>
-              <div className="min-w-0 flex-1">
+            <div className="cred-art" aria-hidden="true"><div className="cred-art-degree"><svg viewBox="0 0 100 100" fill="none"><path d="M6 37L50 15 94 37 50 59 6 37Z" stroke="currentColor" strokeWidth="3" strokeLinejoin="round"/><path d="M24 47V70Q50 90 76 70V47M94 37V65" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></div></div>
+            <div className="cred-heading">
                 <p className="text-[18px] font-semibold leading-snug text-snow">B.S. Cybersecurity</p>
-                <p className="mt-0.5 text-[14.5px] text-smoke">Brigham Young University–Idaho · Dec 2026</p>
-              </div>
+                <p className="mt-1 text-[14.5px] text-smoke">Brigham Young University–Idaho · Dec 2026</p>
             </div>
             <p className="mt-4 text-[14.5px] leading-relaxed text-snow/75">Networking, operating systems, cryptography, and security fundamentals.</p>
-            <div className="mt-4"><span className="cred-status">📅 Final semester</span></div>
+            <div className="cred-actions mt-4"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
       </div>
