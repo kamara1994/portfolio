@@ -6,6 +6,7 @@ import '@fontsource/barlow-condensed/600.css'
 import '@fontsource/barlow-condensed/700.css'
 import './globals.css'
 import VisitTracker from '@/components/VisitTracker'
+import NavMemory from '@/components/NavMemory'
 import LiveIcons from '@/components/LiveIcons'
 import AIChat from '@/components/AIChat'
 import MobileDock from '@/components/MobileDock'
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main" className="skip-link">Skip to content</a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PERSON_LD) }} />
         <VisitTracker />
+        <NavMemory />
         <LiveIcons />
         {children}
         <AIChat />

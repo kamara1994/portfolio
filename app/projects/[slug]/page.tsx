@@ -6,6 +6,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ProjectSource from '@/components/ProjectSource'
 import { ProjectTitleArt, TitleMotionControl } from '@/components/NextProjectTitle'
+import { BackButton, FloatingBack } from '@/components/BackButton'
 import { ProjectReadingProgress, ProjectMediaStage, ProjectArchitecture, ProjectEvidence, ProjectSectionNav, ProjectNextNavigation } from '@/components/ProjectExperience'
 
 const shown = projects.filter((p) => p.placement)
@@ -46,8 +47,9 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       <Nav />
       <main key={p.id} className="pe-project-page" data-project={p.id}>
         <ProjectReadingProgress />
+        <FloatingBack href={p.placement === "library" ? "/projects" : "/#work"} label={p.placement === "library" ? "Back to project library" : "Back to all work"} />
         <header id="project-overview" className="wrap project-wrap pb-7 pt-28 md:pt-32">
-          <div className="flex flex-wrap items-center justify-between gap-3"><Link href={p.placement === "library" ? "/projects" : "/#work"} className="tap text-[15px] text-smoke hover:text-snow">{p.placement === "library" ? "Back to project library" : "Back to all work"}</Link><TitleMotionControl /></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><BackButton href={p.placement === "library" ? "/projects" : "/#work"} label={p.placement === "library" ? "Back to project library" : "Back to all work"} /><TitleMotionControl /></div>
           <div className="mt-5 grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <div className="min-w-0 lg:col-span-5">
               <p className="text-[15px] text-smoke">{p.category}</p>
