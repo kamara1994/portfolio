@@ -785,6 +785,18 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   #credentials .cred-ccna .cred-art img { width: min(100%,130px); }
 }
 
+/* The official CCNA PNG uses black lettering on transparency: give it a light backing. */
+#credentials .cred-ccna .cred-art img {
+  background-color: #f1f6fa; border-radius: 10px; padding: 4px;
+  box-sizing: border-box; object-fit: contain; aspect-ratio: 1;
+  box-shadow: 5px 8px 20px rgba(0,0,0,.38);
+  opacity: 1; filter: none;
+}
+#credentials .cred-ccna .cred-art {
+  -webkit-mask-image: linear-gradient(to right,transparent 0%,#000 17%);
+  mask-image: linear-gradient(to right,transparent 0%,#000 17%);
+}
+
 /* Skills on phones and tablets: every category visible as a chip grid */
 .sk-cat-icon .emoji { font-size: 19px; }
 @media (max-width: 1023px) {
