@@ -1,0 +1,23 @@
+name: Retrieve original CCNA badge
+on:
+  push:
+    branches: [asset/official-ccna-badge]
+permissions:
+  contents: write
+jobs:
+  retrieve:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and validate the issuer's PNG
+        run: |
+          curl --fail --location --retry 3 --max-time 45 'https://images.credly.com/images/683783d8-eaac-4c37-a14d-11bd8a36321d/ccna_600.png' -o public/certs/ccna.png
+          python -c "from pathlib import Path; p=Path('public/certs/ccna.png'); assert p.read_bytes().startswith(b'\\x89PNG\\r\\n\\x1a\\n') and p.stat().st_size > 1000"
+      - name: Commit asset to temporary branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/certs/ccna.png
+          git commit -m 'Store original Cisco CCNA badge from Credly'
+          git push
