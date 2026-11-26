@@ -4,8 +4,19 @@ import { notifyChat } from '@/lib/alerts/chat'
 import { reportIssue } from '@/lib/alerts/health'
 import { taughtAnswer, taughtContext } from '@/lib/alerts/taught'
 import { validSid, isLive } from '@/lib/alerts/live'
-import { forwardLive, requestJoseph } from '@/lib/alerts/chat'
+import { forwardLive, requestJoseph, hiringSignal } from '@/lib/alerts/chat'
+import { retrieve } from '@/lib/pweza/retrieve'
+import { route, expertSystem, factCheck, looksLikeJobPost } from '@/lib/pweza/agents'
+import { streamAnswer, hasAI } from '@/lib/pweza/llm'
+import { matchJob, fitText } from '@/lib/pweza/jd'
+import { teachings } from '@/lib/alerts/store'
+import type { Passage } from '@/lib/pweza/corpus'
 import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, wantsJoseph, normalizeNames, type ProofLink } from '@/lib/pweza-knowledge'
+
+export const runtime = 'nodejs'
+export const maxDuration = 45
+
+const stripCites = (t: string) => t.replace(/\s*\[\d+\]/g, '')
 
 const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
 
@@ -186,6 +197,26 @@ export async function POST(req: NextRequest) {
       usedLocalReply = true
     }
 
+    const turn = messages.filter((m) => m.role === 'user').length
+
+    // 🎯 Pasted job description → requirement-by-requirement fit card.
+    if (!text && hasAI() && looksLikeJobPost(latestQuestion)) {
+      const fit = await matchJob(latestQuestion)
+      if (fit) {
+        const content = `${fitText(fit)} Here's the breakdown — and I can turn it into a briefing for your hiring team.`
+        await Promise.all([
+          notifyChat(req, `[Job post] ${latestQuestion.slice(0, 160)}…`, content, turn, sid),
+          sid ? hiringSignal(req, sid, `Pasted a job post: ${fit.company ? `${fit.company} — ` : ''}${fit.role} (fit ${fit.score}/100)`, 'career') : Promise.resolve(),
+        ])
+        return NextResponse.json({ content, fit, links: [{ label: 'Résumé (PDF)', href: '/resume/Joseph_Allan_Kamara_Resume_v3.pdf' }, { label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }] })
+      }
+    }
+
+    // 🧠 Streaming multi-agent answer: router → retrieval → expert (streamed) → fact-check.
+    if (!text && raw?.stream === true && hasAI()) {
+      return streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn })
+    }
+
     const failures: string[] = []
     const wantedAI = !text
     if (!text && process.env.GROQ_API_KEY) {
@@ -237,4 +268,62 @@ export async function POST(req: NextRequest) {
     console.error('PWEZA error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
+
+type StreamArgs = { req: NextRequest; messages: { role: string; content: string }[]; latestQuestion: string; system: string; sid?: string; wantsAudio: boolean; turn: number }
+
+async function taughtPassages(): Promise<Passage[]> {
+  return (await teachings()).slice(0, 40).map((t, i) => ({ id: `taught-${i}`, title: 'Answer from Joseph', href: '/#contact', text: `Q: ${t.q} A: ${t.a}` }))
+}
+
+function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudio, turn }: StreamArgs) {
+  const enc = new TextEncoder()
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (o: unknown) => { try { controller.enqueue(enc.encode(JSON.stringify(o) + '\n')) } catch { /* client gone */ } }
+      try {
+        const prevUser = messages.filter((m) => m.role === 'user').slice(-2, -1)[0]?.content || ''
+        const history = messages.slice(-6).map((m) => `${m.role}: ${m.content}`).join('\n')
+        const [r, extra] = await Promise.all([route(latestQuestion, history), taughtPassages()])
+        const sources = retrieve(normalizeNames(`${latestQuestion} ${prevUser}`), 6, extra)
+        send({ type: 'meta', expert: r.expert, sources: sources.map((p, i) => ({ n: i + 1, title: p.title, href: p.href })) })
+
+        const { text: draft, failures } = await streamAnswer(expertSystem(system, r, sources), messages, (t) => send({ type: 'delta', t }))
+        let final = draft
+        let links: ProofLink[] = []
+        if (!draft.trim()) {
+          const fb = generateLocalPwezaReply(messages)
+          final = fb.text
+          links = fb.links ?? []
+          send({ type: 'replace', t: final })
+        } else {
+          const fixed = await factCheck(draft, PWEZA_KNOWLEDGE_CONTEXT, sources)
+          if (fixed) { final = fixed; send({ type: 'replace', t: fixed, checked: true }) }
+          const cited = Array.from(new Set(Array.from(final.matchAll(/\[(\d+)\]/g)).map((m) => Number(m[1]))))
+            .map((n) => sources[n - 1]).filter(Boolean)
+            .map((p) => ({ label: p.title.replace(/ · (problem|how it was built|result)$/, ''), href: p.href }))
+          const seen = new Set<string>()
+          const norm = (h: string) => h.split('#')[0] || h
+          links = [...cited, ...linksForText(final)].filter((l) => { const k = `${l.label}|${norm(l.href)}`; if (seen.has(k) || seen.has(norm(l.href))) return false; seen.add(k); seen.add(norm(l.href)); return true }).slice(0, 3)
+        }
+
+        const plain = stripCites(final)
+        const [speech] = await Promise.all([
+          wantsAudio ? synthesizeSpeech(plain) : Promise.resolve({ audio: null } as { audio: string | null; error?: string }),
+          notifyChat(req, latestQuestion, plain, turn, sid),
+          sid && r.hiring ? hiringSignal(req, sid, latestQuestion, r.expert) : Promise.resolve(),
+          failures.length && !draft ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
+            : failures.length ? reportIssue(`PWEZA AI · ${failures[0].split(':')[0]}`, `${failures.join(' · ')} — a backup answered.`) : Promise.resolve(),
+        ])
+        send({ type: 'done', links, audio: speech.audio, hiring: r.hiring })
+      } catch (e) {
+        console.error('PWEZA stream error:', e)
+        send({ type: 'replace', t: "I hit a snag answering that. Try again, or email Joseph at kamarajosephallan@gmail.com." })
+        send({ type: 'done', links: [] })
+      } finally {
+        try { controller.close() } catch { /* already closed */ }
+      }
+    },
+  })
+  return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' } })
 }

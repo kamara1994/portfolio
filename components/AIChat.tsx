@@ -5,7 +5,25 @@ import Link from 'next/link'
 import { useRole } from './roles'
 
 type ProofLink = { label: string; href: string }
-type Msg = { role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[] }
+type Source = { n: number; title: string; href: string }
+type FitItem = { requirement: string; status: 'strong' | 'partial' | 'gap'; evidence: string; href?: string }
+type Fit = { role: string; company?: string; score: number; summary: string; items: FitItem[]; strengths: string[]; gaps: string[] }
+type Msg = { role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[]; sources?: Source[]; fit?: Fit; checked?: boolean; streaming?: boolean; href?: string }
+
+/** Renders "[2]" citations as small links to the passage PWEZA used. */
+function withCitations(text: string, sources: Source[] | undefined, onNav: () => void) {
+  if (!sources?.length) return text.replace(/\s*\[\d+\]/g, '')
+  const parts = text.split(/(\[\d+\])/g)
+  return parts.map((part, i) => {
+    const m = part.match(/^\[(\d+)\]$/)
+    const src = m ? sources.find((x) => x.n === Number(m[1])) : undefined
+    if (!m) return <span key={i}>{part}</span>
+    if (!src) return null
+    return <Link key={i} href={src.href} onClick={onNav} className="pz-cite" title={src.title} aria-label={`Source: ${src.title}`}>{m[1]}</Link>
+  })
+}
+
+const FIT_LABEL = { strong: 'Strong', partial: 'Partial', gap: 'Gap' } as const
 
 /** Same visit ID the tracker uses, so Joseph can take over this chat from Telegram. */
 function chatSid(): string {
@@ -117,26 +135,82 @@ export default function AIChat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: next.slice(1).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content })),
+          messages: next.slice(1).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content: content.replace(/\s*\[\d+\]/g, '') })),
           wantsAudio: voiceOut,
           sid: chatSid(),
+          stream: true,
         }),
       })
+      const playAudio = (audio?: string | null) => {
+        if (!voiceOut || !audio) return
+        audioRef.current?.pause()
+        audioRef.current = new Audio(audio)
+        audioRef.current.play().catch(() => {})
+      }
+      // Streaming answer: words appear as PWEZA writes them; the fact-checker may refine the text at the end.
+      if ((res.headers.get('content-type') || '').includes('ndjson') && res.body) {
+        const reader = res.body.getReader()
+        const dec = new TextDecoder()
+        let buf = '', started = false
+        const patch = (fn: (m: Msg) => Msg) => setMessages((cur) => { const copy = cur.slice(); copy[copy.length - 1] = fn(copy[copy.length - 1]); return copy })
+        const begin = () => { if (!started) { started = true; setLoading(false); setMessages((cur) => [...cur, { role: 'assistant', content: '', streaming: true }]) } }
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buf += dec.decode(value, { stream: true })
+          const lines = buf.split('\n')
+          buf = lines.pop() || ''
+          for (const line of lines) {
+            if (!line.trim()) continue
+            let ev: any
+            try { ev = JSON.parse(line) } catch { continue }
+            if (ev.type === 'meta') { begin(); patch((m) => ({ ...m, sources: ev.sources })) }
+            else if (ev.type === 'delta') { begin(); patch((m) => ({ ...m, content: m.content + ev.t })) }
+            else if (ev.type === 'replace') { begin(); patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
+            else if (ev.type === 'done') { begin(); patch((m) => ({ ...m, links: ev.links, streaming: false })); playAudio(ev.audio) }
+          }
+        }
+        if (started) patch((m) => ({ ...m, streaming: false }))
+        return
+      }
       const data = await res.json()
       if (data.live) { setLive(true); wasLive.current = true; return } // Joseph will answer himself
       const reply = data.content || data.error || "I couldn't answer that right now. You can email Joseph at kamarajosephallan@gmail.com."
-      setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links }])
-      if (voiceOut && data.audio) {
-        audioRef.current?.pause()
-        audioRef.current = new Audio(data.audio)
-        audioRef.current.play().catch(() => {})
-      }
+      setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links, fit: data.fit }])
+      playAudio(data.audio)
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: "Connection problem. Try again, or email kamarajosephallan@gmail.com." }])
     } finally {
       setLoading(false)
     }
   }
+
+  // 📎 Turn this conversation (and any job fit) into a page the visitor can forward to their hiring team.
+  const [briefing, setBriefing] = useState(false)
+  const createBrief = async () => {
+    if (briefing) return
+    setBriefing(true)
+    const qa: { q: string; a: string }[] = []
+    let fit: Fit | undefined
+    messages.forEach((m, i) => {
+      if (m.fit) fit = m.fit
+      if (m.role === 'user') {
+        const a = messages.slice(i + 1).find((x) => x.role === 'assistant' || x.role === 'joseph')
+        if (a && !a.fit && !m.content.startsWith('[') && m.content.length < 600) qa.push({ q: m.content, a: a.content })
+      }
+    })
+    try {
+      const r = await fetch('/api/brief', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid: chatSid(), qa, fit }) })
+      const d = await r.json()
+      setMessages((cur) => [...cur, d.url
+        ? { role: 'system', content: 'Your briefing is ready to share: open it, then copy the link or print to PDF.', href: d.url }
+        : { role: 'system', content: "Couldn't create the briefing right now. Try again in a moment." }])
+    } catch {
+      setMessages((cur) => [...cur, { role: 'system', content: "Couldn't create the briefing right now." }])
+    } finally { setBriefing(false) }
+  }
+  const answered = messages.filter((m) => m.role === 'assistant' && m !== messages[0]).length
+  const canBrief = messages.some((m) => m.fit) || answered >= 2
 
   const listen = () => {
     const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
@@ -201,7 +275,29 @@ export default function AIChat() {
           {messages.map((m, i) => (
             <div key={i} className={m.role === 'user' ? 'pz-msg pz-user' : m.role === 'joseph' ? 'pz-msg pz-bot pz-joseph' : m.role === 'system' ? 'pz-system' : 'pz-msg pz-bot'}>
               {m.role === 'joseph' && <span className="pz-joseph-name">Joseph</span>}
-              <p>{m.content}</p>
+              {m.role === 'system' && m.href ? (
+                <p>{m.content} <a href={m.href} target="_blank" rel="noopener" className="pz-proof">Open briefing</a></p>
+              ) : (
+                <p className={m.streaming ? 'pz-streaming' : undefined}>{m.role === 'assistant' ? withCitations(m.content, m.sources, () => setOpen(false)) : m.content}</p>
+              )}
+              {m.checked && <span className="pz-checked" title="PWEZA's fact-checker refined this answer against the site">✓ fact-checked</span>}
+              {m.fit && (
+                <div className="pz-fit">
+                  <div className="pz-fit-head">
+                    <div><b>{m.fit.company ? `${m.fit.company} · ` : ''}{m.fit.role}</b><span>{m.fit.summary}</span></div>
+                    <div className="pz-fit-score" style={{ ['--fit' as any]: `${m.fit.score * 3.6}deg` }}><i>{m.fit.score}</i></div>
+                  </div>
+                  <ul>
+                    {m.fit.items.map((it, k) => (
+                      <li key={k}>
+                        <span className={`pz-fit-pill ${it.status}`}>{FIT_LABEL[it.status]}</span>
+                        <span className="pz-fit-req">{it.requirement}</span>
+                        <span className="pz-fit-ev">{it.href ? <Link href={it.href} onClick={() => setOpen(false)}>{it.evidence}</Link> : it.evidence}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {!!m.links?.length && (
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {m.links.map((l) =>
@@ -215,6 +311,11 @@ export default function AIChat() {
               )}
             </div>
           ))}
+          {canBrief && !loading && !live && (
+            <button type="button" onClick={createBrief} disabled={briefing} className="pz-brief-btn">
+              {briefing ? 'Creating briefing…' : '📎 Share this with your hiring team'}
+            </button>
+          )}
           {loading && (
             <div className="pz-msg pz-bot" aria-label="PWEZA is typing">
               <span className="pz-typing"><i /><i /><i /></span>

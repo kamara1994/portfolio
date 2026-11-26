@@ -62,3 +62,19 @@ export async function requestJoseph(req: NextRequest, sid: string, message: stri
   if (sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
   return sent.ok ? 'pinged' : 'unavailable'
 }
+
+/** PWEZA's router spotted a recruiter / hiring conversation: buzz Joseph once per chat (6h). */
+export async function hiringSignal(req: NextRequest, sid: string, message: string, expert: string) {
+  if (!tgConfigured() || !hasDb()) return
+  if (!(await once(`hiring:${sid}`, 6 * 3600))) return
+  const settings = await getSettings()
+  const country = req.headers.get('x-vercel-ip-country') || ''
+  let city = req.headers.get('x-vercel-ip-city') || ''
+  try { city = decodeURIComponent(city) } catch {}
+  await bump('priority', settings.tz)
+  const sent = await sendMessage(
+    `🔥 <b>Active hiring conversation in PWEZA</b>\n❓ ${esc(message.slice(0, 400))}\n🧭 Topic: ${esc(expert)}${city || country ? ` · 📍 ${esc([city, country].filter(Boolean).join(', '))} ${flag(country)}` : ''}\n\n<i>PWEZA is answering. Jump in any time.</i>`,
+    { thread: settings.topics?.priority, silent: isHushed(settings), buttons: [[{ text: '🎙 Join the chat', callback_data: `live:${sid}` }]] },
+  )
+  if (sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
+}
