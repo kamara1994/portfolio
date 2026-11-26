@@ -10,7 +10,7 @@ import { sendVoiceNote } from '@/lib/alerts/voice'
 import { answerFromData } from '@/lib/alerts/askdata'
 import { rate, learnedSummary } from '@/lib/alerts/learn'
 import { hasDb, lookupMessage, getVisit, teach, forget, teachings } from '@/lib/alerts/store'
-import { liveOn, liveOff, pushOut, lastLive, linkChat, validSid } from '@/lib/alerts/live'
+import { liveOn, liveOff, pushOut, lastLive, linkChat, validSid, isLive } from '@/lib/alerts/live'
 import { companyIntel, renderIntel, searchConfigured } from '@/lib/integrations/search'
 import { smsConfigured, smsEnabled, setSms, sendSms } from '@/lib/integrations/sms'
 import { bookingUrl } from '@/lib/integrations/booking'
@@ -49,7 +49,7 @@ const HELP = [
   '🔎 /intel Company — research an employer (also a button on leads)',
   '📱 /sms on · off · test — text alerts for the most important moments',
   '📅 /book — your interview booking link',
-  '🎙 Tap “Take over this chat” on a PWEZA alert to answer a visitor yourself · /end hands back',
+  '🎙 Tap “Take over this chat” on a PWEZA alert, then just type — your messages go to the visitor · /end hands back · start with ? to ask the stats assistant meanwhile',
   '💬 Or just ask me in plain English, e.g. "who looked at my AWS projects this week?"',
   '/test — send a sample visitor alert',
   '',
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
         await liveOn(sid)
         await pushOut(sid, '__joined__')
         await tg('answerCallbackQuery', { callback_query_id: cb.id, text: '🎙 You\'re live' })
-        const m = await sendMessage('🎙 <b>You\'re live with this visitor.</b>\nReply to this message (or any of their messages) to talk — they see it instantly in the chat window as “Joseph”.\nSend /end or tap below to hand back to PWEZA.', {
+        const m = await sendMessage('🎙 <b>You\'re live with this visitor.</b>\nJust type your message here — the visitor sees it instantly in the chat window as “Joseph”.\nSend /end or tap below to hand back to PWEZA.', {
           thread, replyTo, silent: true, buttons: [[{ text: '🤖 Hand back to PWEZA', callback_data: `liveoff:${sid}` }]],
         })
         if (m.ok && m.result) await linkChat(m.result.message_id, sid)
@@ -216,6 +216,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
   }
+  // 🎙 While a live chat is open, anything that isn't a command goes straight to that visitor.
+  // (Prefix with "?" to ask the stats assistant instead.)
+  if (!msg.text.startsWith('/') && !msg.text.startsWith('?') && hasDb()) {
+    const sid = await lastLive()
+    if (sid && (await isLive(sid))) {
+      await pushOut(sid, msg.text.trim())
+      await tg('setMessageReaction', { chat_id: mine, message_id: msg.message_id, reaction: [{ type: 'emoji', emoji: '👍' }] })
+      return NextResponse.json({ ok: true })
+    }
+  }
+  if (msg.text.startsWith('?')) msg.text = msg.text.slice(1).trim()
   const [rawCmd, ...rest] = msg.text.trim().split(/\s+/)
   const cmd = rawCmd.toLowerCase().replace(/@.*$/, '')
   const arg = rest.join(' ')
