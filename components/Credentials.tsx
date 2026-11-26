@@ -29,7 +29,7 @@ export default function Credentials() {
             const m = META[c.name] ?? { area: '' }
             const earned = c.status === 'earned'
             return (
-              <li key={c.name} className={`cred-card ${earned ? '' : 'is-progress'}`}>
+              <li key={c.name} className={`cred-card ${earned ? '' : 'is-progress'}${c.name === 'CCNA' ? ' cred-ccna' : ''}`}>
                 <div className="cred-art" aria-hidden="true">
                   {m.img ? (
                     // eslint-disable-next-line @next/next/no-img-element

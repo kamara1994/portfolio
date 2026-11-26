@@ -764,6 +764,27 @@ body { background: #05080F; color: #EEF2F8; -webkit-font-smoothing: antialiased;
   }
 }
 
+/* CCNA: preserve the issuer badge's fine lettering and blue color at compact sizes. */
+#credentials .cred-ccna .cred-art {
+  width: 52%; padding-right: 7px;
+  -webkit-mask-image: linear-gradient(to right,transparent 0%,#000 16%);
+  mask-image: linear-gradient(to right,transparent 0%,#000 16%);
+}
+#credentials .cred-ccna .cred-art img {
+  width: min(100%,140px); max-height: 98%; margin-right: 0;
+  opacity: 1; filter: none;
+  transform-origin: 65% 50%;
+}
+#credentials .cred-ccna::after {
+  background: linear-gradient(90deg,#0a101b 0%,#0a101b 39%,rgba(10,16,27,.82) 48%,rgba(10,16,27,.12) 61%,transparent 72%);
+}
+#credentials .cred-ccna .cred-heading,
+#credentials .cred-ccna .cred-description { max-width: 56%; }
+#credentials .cred-ccna:hover .cred-art img { opacity: 1; }
+@media (max-width:639px) {
+  #credentials .cred-ccna .cred-art img { width: min(100%,130px); }
+}
+
 /* Skills on phones and tablets: every category visible as a chip grid */
 .sk-cat-icon .emoji { font-size: 19px; }
 @media (max-width: 1023px) {
