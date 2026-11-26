@@ -47,25 +47,43 @@
     "id": "cyber375-midterm-ir",
     "num": "31",
     "title": "Security Onion Timeline Analysis",
-    "subtitle": "Alert, network and endpoint event correlation",
+    "subtitle": "Simulated Windows compromise · network evidence, host activity and incident chronology",
     "category": "Security Operations · CYBER375",
-    "duration": "2026",
+    "duration": "February 2026",
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Explain a simulated attack sequence using multiple evidence sources. Organized alerts, network activity and host events into a three-lane chronology.",
+    "description": "An individual Security Onion midterm investigation of a simulated Windows compromise. The recovered submitted report and timeline diagram document the student's analysis of executable retrieval, command-and-control, host reconnaissance and possible outbound archive transfer.",
     "problem": "Explain a simulated attack sequence using multiple evidence sources.",
-    "approach": "Organized alerts, network activity and host events into a three-lane chronology.",
-    "outcome": "Midterm graded 86.25/100. Original midterm report was not recovered; event counts and final configuration are not asserted.",
-    "impact": "Midterm graded 86.25/100. Original midterm report was not recovered; event counts and final configuration are not asserted.",
+    "approach": "Correlated Suricata alert records, HTTP transaction metadata and network flow observations into an incident timeline. Documented suspicious execution, command-and-control and system enumeration, evaluated an outbound archive signature, mapped findings to ATT&CK techniques and recommended containment.",
+    "outcome": "Midterm graded 86.25/100. Instructor praised the diagram and corrected the initial infection sequence: a user downloaded a malicious executable, which then launched PowerShell to retrieve additional files. Hashes, VirusTotal scores and Sysmon command evidence were missing. The report's stronger conclusions are analyst interpretations, not independently verified results.",
+    "impact": "Graded incident timeline and written investigation with documented evidence limitations.",
     "stack": [
       "Security Onion",
-      "Network telemetry",
-      "Host logs"
+      "Suricata",
+      "Sysmon (analysis context)",
+      "HTTP/TCP metadata",
+      "MITRE ATT&CK"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Graded assignment record; detailed evidence not recovered.",
-    "course": "CYBER375"
+    "evidenceNote": "Reopened Canvas submission: original report, timeline PDF and two screenshot attachments recovered; three other listed screenshots still absent. The screenshot shown is a redacted crop. Instructor corrections and missing host/hash evidence are explicitly preserved.",
+    "course": "CYBER375",
+    "screenshot": "/screenshots/coursework-soc-midterm.webp",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/coursework-soc-midterm.webp",
+        "caption": "Original submitted Security Onion SOC 1 screenshot, cropped and redacted: executable-download rule details. This is midterm evidence, not the separate final report."
+      }
+    ],
+    "architecture": [
+      "Simulated initial executable download → Windows endpoint",
+      "Follow-on PowerShell activity → Additional file retrieval",
+      "Suricata alerts and HTTP records → Network event correlation",
+      "Reported command-and-control and enumeration → Analyst chronology",
+      "Outbound archive indicator → Investigative assessment (not independently rerun)",
+      "Incident report and timeline → Recommended containment and documented gaps"
+    ],
+    "report": "/docs/security-onion-midterm-summary.md"
   },
   {
     "id": "cyber375-splunk",
@@ -112,7 +130,7 @@
     "description": "Interpret endpoint telemetry and identify suspicious behavior. Reviewed endpoint event data in Windows and Linux security challenges.",
     "problem": "Interpret endpoint telemetry and identify suspicious behavior.",
     "approach": "Reviewed endpoint event data in Windows and Linux security challenges.",
-    "outcome": "Windows Event and Linux Endpoint Challenge 1 each graded 100/100; Windows Endpoint Analysis 50/50. Separate challenge reports were not recovered.",
+    "outcome": "Windows Event and Linux Endpoint Challenge 1 graded 100/100 each; Windows Endpoint Analysis 50/50. Original submitted score screenshots recovered, but detailed investigative actions and remediation are not independently verified.",
     "impact": "Windows Event and Linux Endpoint Challenge 1 each graded 100/100; Windows Endpoint Analysis 50/50. Separate challenge reports were not recovered.",
     "stack": [
       "Windows event logs",
@@ -120,8 +138,9 @@
       "Endpoint analysis"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Graded exercises; no standalone public endpoint evidence.",
-    "course": "CYBER375"
+    "evidenceNote": "Canvas submission screenshots recovered for Linux Endpoint Analysis, Windows Events and Windows Endpoint Analysis challenges. They document challenge completion scores, not logs or commands. No project-specific terminal/event viewer screenshots, EVTX or Linux log exports recovered. Score images are not used as application previews.",
+    "course": "CYBER375",
+    "report": "/docs/endpoint-coursework-validation.md"
   },
   {
     "id": "cyber375-network-threat",
@@ -136,7 +155,7 @@
     "description": "Identify suspicious network and phishing indicators in controlled datasets. Completed separate IDS, packet analysis and phishing evidence exercises.",
     "problem": "Identify suspicious network and phishing indicators in controlled datasets.",
     "approach": "Completed separate IDS, packet analysis and phishing evidence exercises.",
-    "outcome": "Snort, Wireshark and TCPDUMP challenges each graded 50/50; three phishing challenges each 100/100. No detection-rate claim.",
+    "outcome": "Phishing Analysis Challenge 1–3 submission graded 100/100; one actual submitted challenge score screenshot recovered. Snort, Wireshark and TCPDUMP each graded 50/50 in the assignment list. Specific findings, filters and packet captures not recovered.",
     "impact": "Snort, Wireshark and TCPDUMP challenges each graded 50/50; three phishing challenges each 100/100. No detection-rate claim.",
     "stack": [
       "Snort",
@@ -144,8 +163,9 @@
       "tcpdump"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Confidential assessment files withheld; original challenge submissions not recovered.",
-    "course": "CYBER375"
+    "evidenceNote": "Phishing attachment recovered but is a score screen, not a packet analysis or email investigation screenshot. Raw assessment content and identifiers withheld.",
+    "course": "CYBER375",
+    "report": "/docs/network-phishing-coursework-validation.md"
   },
   {
     "id": "cyber375-vuln-assess",
@@ -168,7 +188,7 @@
       "Recon-NG"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Redacted report summary; target address and credentials omitted.",
+    "evidenceNote": "Reopened Nessus report submission confirms 100/100 with no instructor comments. Redacted derivative retained; raw report contains lab identifiers and a password value and remains private. No scan console screenshot recovered.",
     "course": "CYBER375",
     "report": "/docs/vulnerability-assessment-summary.md"
   },
@@ -255,33 +275,44 @@
     "id": "aws-ha-resilience",
     "num": "38",
     "title": "AWS High Availability & Resilience",
-    "subtitle": "Scalability, failure modes and recovery objectives",
+    "subtitle": "Two-AZ EC2 Auto Scaling and Application Load Balancer lab",
     "category": "Cloud Engineering · ITM 400",
-    "duration": "2026",
+    "duration": "October 2026",
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Select availability patterns and reason about failure and recovery. Completed a high-availability challenge and individual failure-analysis design artifact, including monitoring and recovery considerations.",
+    "description": "An AWS Academy scalable and highly available Café challenge, accompanied by a Blue Bear architecture transfer analysis and a troubleshooting record. The recovered originals document a working lab application and the student's scaling configuration decisions, not measured disaster recovery.",
     "problem": "Select availability patterns and reason about failure and recovery.",
-    "approach": "Completed the graded HA challenge and failure-analysis artifact. A recovered Week 5 individual design proposal specifies a two-AZ public ALB behind WAF, private app/database subnets, restricted security groups, private endpoints and zonal egress; the draft explicitly labels these design proposals, not observed failover results.",
-    "outcome": "Challenge graded 20/20; failure analysis 24/24; guided HA lab 12/12. No measured uptime or recovery times.",
-    "impact": "Challenge graded 20/20; failure analysis 24/24; guided HA lab 12/12. No measured uptime or recovery times.",
+    "approach": "Configured a second-AZ NAT gateway, EC2 launch template, Auto Scaling group across two private subnets, and a public Application Load Balancer. The group used minimum two, desired two and maximum six instances. Investigated unhealthy target health checks and verified HTTP access and instance system checks. Identified a missing dynamic scaling policy in the grader, then documented configuring CPU target tracking at 25% with 60-second warmup.",
+    "outcome": "Original AWS console screenshot shows two instances healthy at desired capacity across two Availability Zones. The submitted analysis reports a working café site through the ALB. Canvas records the challenge at 20/20 and failure-analysis artifact at 24/24. The troubleshooting record did not show a completed CPU stress test, measured failover or verified database HA.",
+    "impact": "Documented scalable AWS lab architecture, health-check investigation and Auto Scaling policy troubleshooting.",
     "stack": [
-      "AWS",
-      "High availability",
-      "RTO/RPO",
-      "Monitoring"
+      "Amazon EC2",
+      "EC2 Auto Scaling",
+      "Application Load Balancer",
+      "Amazon VPC",
+      "NAT Gateway",
+      "Security Groups"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Week 5 individual studio artifact provides a related proposed topology (draft for verification). Exact Week 7 deployed configuration and live failover evidence not recovered.",
+    "evidenceNote": "Recovered Auto Scaling screenshot, challenge result, individual transfer analysis and troubleshooting report. The assignment verifies lab deployment and reported website access; recovery objectives are targets, not observed failover measurements.",
     "course": "ITM 400",
     "architecture": [
-      "Proposed customer traffic → TLS / WAF → Public ALB across two AZs",
-      "ALB → Private application subnets",
-      "Private application tier → Restricted private database access",
-      "Private AWS endpoints → IAM-controlled Session Manager and logging",
-      "Proposed failure validation → Health checks and recovery objectives"
-    ]
+      "Public application request → Application Load Balancer",
+      "Load balancer → EC2 application instances in two private subnets",
+      "EC2 launch template → Auto Scaling group (min 2 / desired 2 / max 6)",
+      "Second-AZ NAT gateway → Outbound connectivity",
+      "Health checks and CPU utilization → Scaling configuration and troubleshooting",
+      "Future production work → Load testing, AZ failure capacity, HA database and monitoring"
+    ],
+    "screenshot": "/screenshots/coursework-aws-autoscaling.webp",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/coursework-aws-autoscaling.webp",
+        "caption": "Genuine AWS Auto Scaling group console from the submitted October 27 lab; cropped to remove account identity and resource identifiers. Two healthy instances, desired/minimum 2, maximum 6, two Availability Zones."
+      }
+    ],
+    "report": "/docs/aws-ha-submission-summary.md"
   },
   {
     "id": "aws-iam-security",
@@ -389,24 +420,38 @@
     "title": "Cisco Wireless AP Administration",
     "subtitle": "Autonomous access point configuration and radio administration",
     "category": "Network Engineering · CYBER345",
-    "duration": "2026",
+    "duration": "October–November 2026",
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
-    "description": "Provision an access point and administer radio and basic access settings. Completed graded console, CLI, GUI, radio, repeater and basic security configuration exercises.",
+    "description": "A series of autonomous Cisco wireless access point labs. The original Basic AP Settings submission shows the Cisco Aironet 3600 Series management GUI, summary status, one associated client, and radio interface states.",
     "problem": "Provision an access point and administer radio and basic access settings.",
-    "approach": "Completed graded console, CLI, GUI, radio, repeater and basic security configuration exercises.",
-    "outcome": "Multiple AP assignments graded 10/10. Separate configuration exports and original AP screenshots were not recovered.",
-    "impact": "Multiple AP assignments graded 10/10. Separate configuration exports and original AP screenshots were not recovered.",
+    "approach": "Completed basic settings, radio GUI, basic security GUI and IOS CLI, filter and repeater exercises. Inspected the AP management summary and radio interface states. The original screenshot documents an active 2.4 GHz radio and inactive Ethernet and 5 GHz interfaces at capture time.",
+    "outcome": "Basic AP Settings and related graded configuration exercises received 10/10 each. The screenshot confirms the management interface and visible status, not successful end-to-end client connectivity or a complete running configuration.",
+    "impact": "Verified management access to a Cisco Aironet 3600 and graded AP configuration exercises.",
     "stack": [
+      "Cisco Aironet 3600",
       "Cisco IOS",
-      "Autonomous AP",
-      "Radio interfaces",
-      "AP GUI"
+      "Autonomous AP GUI",
+      "2.4 GHz / 5 GHz radios"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Graded AP exercises; screenshots/configurations unavailable.",
-    "course": "CYBER345"
+    "evidenceNote": "Basic AP Settings original screenshot recovered. GUI security, radio and WEP attachment downloads remain outstanding. Kali USB submission is separate coursework, not AP evidence.",
+    "course": "CYBER345",
+    "screenshot": "/screenshots/coursework-cisco-aironet.webp",
+    "evidenceImages": [
+      {
+        "src": "/screenshots/coursework-cisco-aironet.webp",
+        "caption": "Actual submitted Cisco Aironet 3600 Series summary interface, cropped with host, IP and MAC identifiers masked."
+      }
+    ],
+    "architecture": [
+      "Management access → Cisco Aironet autonomous AP interface",
+      "AP summary → Client association and radio state inspection",
+      "Separate graded AP exercises → Radio, basic security, filters and repeater settings",
+      "Configuration review → Validation gaps (full configuration and client test not recovered)"
+    ],
+    "report": "/docs/cisco-aironet-lab-summary.md"
   },
   {
     "id": "wireless-vlan-ssid",
@@ -421,7 +466,7 @@
     "description": "Map wireless SSIDs to VLANs and validate client connectivity. Attempted AP association and VLAN inspection and gateway reachability testing.",
     "problem": "Map wireless SSIDs to VLANs and validate client connectivity.",
     "approach": "Attempted AP association and VLAN inspection and gateway reachability testing.",
-    "outcome": "End-to-end validation incomplete; gateway reachability failed. This is not presented as a successful deployment.",
+    "outcome": "Submitted SSID/VLAN mapping activity graded 0/10. No attachment or comment visible in reopened Canvas record; prior evidence records failed gateway reachability. No successful segmentation or repaired configuration verified.",
     "impact": "End-to-end validation incomplete; gateway reachability failed. This is not presented as a successful deployment.",
     "stack": [
       "Cisco IOS",
@@ -430,7 +475,7 @@
       "Multilayer switch"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Incomplete exercise; configuration and successful connectivity evidence not recovered.",
+    "evidenceNote": "Submitted but not validated. Intended path is wireless client → SSID/AP VLAN mapping → VLAN-aware switch → gateway. This is a design objective, not a working configuration.",
     "course": "CYBER345"
   },
   {
@@ -439,14 +484,14 @@
     "title": "Wireless & LAN Protocol Analysis",
     "subtitle": "Packet inspection across common LAN and application protocols",
     "category": "Network Engineering · CYBER345",
-    "duration": "2026",
+    "duration": "October–November 2026",
     "role": "Coursework",
     "status": "case-study",
     "placement": "library",
     "description": "Observe protocol behavior and identify fields in packet captures. Completed guided packet inspection exercises across ARP, DHCP, HTTP and Telnet.",
     "problem": "Observe protocol behavior and identify fields in packet captures.",
     "approach": "Completed guided packet inspection exercises across ARP, DHCP, HTTP and Telnet.",
-    "outcome": "ARP and DHCP labs graded 10/10 each; HTTP and Telnet 5/5 each. No original PCAP or authored report recovered.",
+    "outcome": "ARP and DHCP Wireshark labs submitted October 5, graded 10/10 each; HTTP submitted October 5, graded 5/5; Telnet exercise submitted November 16, graded 5/5. Actual ARP/DHCP/HTTP captures are still missing. Telnet stream attachments contained a cleartext lab VTY password and were excluded.",
     "impact": "ARP and DHCP labs graded 10/10 each; HTTP and Telnet 5/5 each. No original PCAP or authored report recovered.",
     "stack": [
       "Wireshark",
@@ -456,8 +501,9 @@
       "Telnet"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Graded lab records; original packet captures unavailable.",
-    "course": "CYBER345"
+    "evidenceNote": "Individual assignment pages and grades verified. No PCAP or publication-safe protocol screenshots recovered. Course instructions are not presented as student evidence.",
+    "course": "CYBER345",
+    "report": "/docs/lan-protocol-coursework-validation.md"
   },
   {
     "id": "wireless-security",
@@ -465,14 +511,14 @@
     "title": "Wireless Encryption & Security",
     "subtitle": "Legacy encryption configuration and partially completed security exercises",
     "category": "Network Engineering · CYBER345",
-    "duration": "2026",
+    "duration": "November 2026",
     "role": "Coursework exercise",
     "status": "in-development",
     "placement": "library",
     "description": "Study wireless encryption configuration and evaluate its limitations in a controlled lab. Completed the WEP configuration exercise; other wireless testing work is not represented as completed.",
     "problem": "Study wireless encryption configuration and evaluate its limitations in a controlled lab.",
     "approach": "Completed the WEP configuration exercise; other wireless testing work is not represented as completed.",
-    "outcome": "WEP configuration graded 10/10. WPA and attack exercises were not confirmed completed; no attack or credential-recovery result claimed.",
+    "outcome": "WEP-on-AP configuration submitted November 11 and graded 10/10. WPA and wireless attack activities have no verified completed score; Kali wireless-card test graded 0/10. No successful attack, WPA deployment or client security validation claimed.",
     "impact": "WEP configuration graded 10/10. WPA and attack exercises were not confirmed completed; no attack or credential-recovery result claimed.",
     "stack": [
       "Cisco autonomous AP",
@@ -480,7 +526,7 @@
       "Wireless security"
     ],
     "sourceAccess": "unavailable",
-    "evidenceNote": "Partial completion; no validated wireless attack evidence.",
+    "evidenceNote": "The original WEP and GUI security PNG attachment links were visible in Canvas but downloads are still missing. WEP is obsolete and is described only as a legacy lab exercise.",
     "course": "CYBER345"
   }
 ]
