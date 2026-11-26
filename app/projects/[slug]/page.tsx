@@ -32,7 +32,8 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   const idx = shown.findIndex((x) => x.id === params.slug)
   if (idx === -1) notFound()
   const p = shown[idx]
-  const next = shown[(idx + 1) % shown.length]
+  const sequence = shown.filter((x) => (x.placement === 'library') === (p.placement === 'library'))
+  const next = sequence[(sequence.findIndex((x) => x.id === p.id) + 1) % sequence.length]
 
   const facts = [
     ['Role', p.role],
@@ -46,7 +47,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       <main key={p.id} className="pe-project-page" data-project={p.id}>
         <ProjectReadingProgress />
         <header id="project-overview" className="wrap project-wrap pb-7 pt-28 md:pt-32">
-          <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/#work" className="tap text-[15px] text-smoke hover:text-snow">Back to all work</Link><TitleMotionControl /></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><Link href={p.placement === "library" ? "/projects" : "/#work"} className="tap text-[15px] text-smoke hover:text-snow">{p.placement === "library" ? "Back to project library" : "Back to all work"}</Link><TitleMotionControl /></div>
           <div className="mt-5 grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <div className="min-w-0 lg:col-span-5">
               <p className="text-[15px] text-smoke">{p.category}</p>
@@ -55,7 +56,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               <div className="btn-row mt-5 flex flex-wrap gap-3">
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
                 <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>
-                {p.report && <a href={p.report} className="btn-ghost">Download report</a>}
+                {p.report && <a href={p.report} className="btn-ghost">{p.course ? 'Read sanitized summary' : 'Download report'}</a>}
               </div>
               <p className="mt-6 text-[18px] leading-relaxed text-snow/90">{p.description}</p>
             </div>
@@ -83,7 +84,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             <div className="grid gap-8 lg:grid-cols-3">
             {[
               ['The problem', p.problem],
-              ['What I built', p.approach],
+              [p.course ? 'What I did' : 'What I built', p.approach],
               ['Result', p.outcome],
             ].map(([h, body]) => (
               <div key={h}>
@@ -92,6 +93,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               </div>
             ))}
             </div>
+            {p.evidenceNote && <div className="rounded-xl border border-line bg-panel/70 p-5"><h2 className="font-semibold text-snow">Evidence and limitations</h2><p className="mt-2 text-smoke">{p.evidenceNote}</p></div>}
             <ProjectEvidence project={p} />
             <ProjectSource key={p.id} project={p} />
             {p.architecture && <ProjectArchitecture key={p.id} steps={p.architecture} />}
