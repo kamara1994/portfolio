@@ -38,7 +38,7 @@ vec3 bokeh(vec2 p,float sc,vec3 tint,float t){
 // ---------- SOC: wall of monitors ----------
 vec3 soc(vec2 p,float t){
   vec3 col=vec3(.07,.11,.19);
-  vec2 g=p*vec2(1.25,1.6)+vec2(t*.03,.15);vec2 id=floor(g);vec2 f=fract(g);
+  vec2 g=p*vec2(1.25,1.6)+vec2(0.,.15);vec2 id=floor(g);vec2 f=fract(g);
   float r=h21(id);
   float screen=step(.05,f.x)*step(f.x,.95)*step(.07,f.y)*step(f.y,.93);
   vec2 s=(f-vec2(.05,.07))/vec2(.9,.86);
@@ -191,10 +191,13 @@ void main(){
   float yTop=R.y-gl_FragCoord.y;
   float line=floor(yTop/L);
   vec2 p=vec2(gl_FragCoord.x/L+line*3.7,1.-fract(yTop/L));
+  // slow camera pan: the image drifts left to right continuously and seamlessly
+  p.x-=T*.16;
+  float tt=T*.3;                  // calm the motion inside the image
   vec3 c;
-  if(M<.5)c=soc(p,T);else if(M<1.5)c=network(p,T);else if(M<2.5)c=enterprise(p,T);
-  else if(M<3.5)c=cloudscape(p,T);else if(M<4.5)c=threat(p,T);else if(M<5.5)c=voice(p,T);
-  else if(M<6.5)c=engineering(p,T);else c=community(p,T);
+  if(M<.5)c=soc(p,tt);else if(M<1.5)c=network(p,tt);else if(M<2.5)c=enterprise(p,tt);
+  else if(M<3.5)c=cloudscape(p,tt);else if(M<4.5)c=threat(p,tt);else if(M<5.5)c=voice(p,tt);
+  else if(M<6.5)c=engineering(p,tt);else c=community(p,tt);
   // bevel light on the top-left of each glyph, soft shadow bottom-right
   vec2 px=1./R;float e=L*.022;
   float up=texture2D(K,uv+vec2(-1.,1.)*e*px).a;
