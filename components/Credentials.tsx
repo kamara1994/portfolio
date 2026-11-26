@@ -56,12 +56,14 @@ export default function Credentials() {
             )
           })}
           <li className="cred-card cred-degree">
-            <div className="cred-art" aria-hidden="true"><div className="cred-art-degree"><svg viewBox="0 0 100 100" fill="none"><path d="M6 37L50 15 94 37 50 59 6 37Z" stroke="currentColor" strokeWidth="3" strokeLinejoin="round"/><path d="M24 47V70Q50 90 76 70V47M94 37V65" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg></div></div>
+            <div className="cred-art cred-campus" aria-hidden="true">
+              <div className="cred-campus-photo" style={{ backgroundImage: 'url(https://brightspotcdn.byui.edu/dims4/default/15c7b67/2147483647/strip/true/crop/4366x4366%2B1317%2B0/resize/800x800%21/quality/90/?url=http%3A%2F%2Fbyu-idaho-brightspot-production-us-east-2.s3.us-east-2.amazonaws.com%2F7a%2F49%2Ff979a989426690cee17f4a1b9ea4%2F210518-byui-signs-37.jpg)' }} />
+            </div>
             <div className="cred-heading">
                 <p className="text-[18px] font-semibold leading-snug text-snow">B.S. Cybersecurity</p>
                 <p className="mt-1 text-[14.5px] text-smoke">Brigham Young University–Idaho · Dec 2026</p>
             </div>
-            <p className="mt-4 text-[14.5px] leading-relaxed text-snow/75">Networking, operating systems, cryptography, and security fundamentals.</p>
+            <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">Networking, operating systems, cryptography, and security fundamentals.</p>
             <div className="cred-actions mt-4"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
