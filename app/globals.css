@@ -974,3 +974,40 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .back-float:hover, .back-float:focus-visible { border-color: rgba(127,166,255,0.8); background: rgba(20,34,60,0.92); }
 @media (max-width: 767px) { .back-float { top: 84px; height: 38px; font-size: 13px; } }
 @media (prefers-reduced-motion: reduce) { .back-float { transition: opacity .2s; transform: none; } }
+
+/* Live chat takeover: Joseph's own replies inside the PWEZA chat */
+.pz-joseph { border-color: rgba(255,214,126,0.45) !important; background: linear-gradient(180deg, rgba(60,48,20,0.55), rgba(30,26,16,0.6)) !important; }
+.pz-joseph-name { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #FFD67E; margin-bottom: 3px; }
+.pz-system { align-self: center; margin: 4px auto; padding: 4px 12px; border-radius: 999px; font-size: 12px; color: #C9D6EA; background: rgba(127,166,255,0.12); border: 1px solid rgba(127,166,255,0.25); }
+
+/* Telegram Mini App dashboard (/tg/dashboard) */
+.tgd { max-width: 720px; margin: 0 auto; padding: 16px 14px 40px; color: #EEF3FB; font-size: 14px; }
+.tgd-empty { padding: 60px 0; text-align: center; color: #9FB0CC; }
+.tgd-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.tgd-head h1 { font-size: 22px; font-weight: 700; }
+.tgd-live { font-size: 12px; color: #8FA6C8; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(143,166,200,.3); }
+.tgd-live.on { color: #7CF0B4; border-color: rgba(124,240,180,.45); }
+.tgd-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.tgd-tiles div { background: #0F1A30; border: 1px solid rgba(127,166,255,.16); border-radius: 12px; padding: 10px; }
+.tgd-tiles b { display: block; font-size: 20px; }
+.tgd-tiles span { font-size: 11px; color: #9FB0CC; }
+.tgd-tiles em { font-style: normal; color: #7CF0B4; margin-left: 4px; }
+.tgd-card { background: #0F1A30; border: 1px solid rgba(127,166,255,.16); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+.tgd-card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #8FA6C8; margin-bottom: 8px; }
+.tgd-chart { width: 100%; height: auto; }
+.tgd-chart rect { fill: rgba(110,214,255,.45); }
+.tgd-chart rect.wk { fill: #6ED6FF; }
+.tgd-axis { display: flex; justify-content: space-between; font-size: 11px; color: #7F92B2; }
+.tgd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.tgd-card ol { list-style: none; padding: 0; margin: 0; }
+.tgd-card ol li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; font-size: 13px; }
+.tgd-card ol li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tgd-muted { color: #7F92B2; font-size: 13px; }
+.tgd-visits { list-style: none; padding: 0; margin: 0; }
+.tgd-visits li { padding: 10px 0; border-top: 1px solid rgba(127,166,255,.1); }
+.tgd-visits li.pri b { color: #FFD67E; }
+.tgd-visits .row { display: flex; justify-content: space-between; }
+.tgd-visits .score { font-weight: 700; color: #6ED6FF; }
+.tgd-visits .meta, .tgd-visits .pages, .tgd-visits .acts { font-size: 12px; color: #9FB0CC; margin-top: 2px; }
+.tgd-visits .brief { font-size: 12px; color: #C9D6EA; font-style: italic; margin-top: 4px; }
+@media (max-width: 420px) { .tgd-grid { grid-template-columns: 1fr; } }

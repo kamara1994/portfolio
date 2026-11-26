@@ -132,7 +132,7 @@ export default function VisitTracker() {
 
   // One-time setup: restore or begin the visit, wire listeners.
   useEffect(() => {
-    if (isLocal()) return
+    if (isLocal() || window.location.pathname.startsWith('/tg/')) return
     enabled.current = true
     let ses = load<Session>(sessionStorage, SKEY)
     let vis = load<Visitor>(localStorage, VKEY)

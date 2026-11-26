@@ -2,16 +2,19 @@ import type { NextRequest } from 'next/server'
 import { tgConfigured, sendMessage, esc } from './telegram'
 import { getSettings, isHushed } from './settings'
 import { flag } from './format'
+import { bump, logQuestion } from './store'
+import { linkChat, touch } from './live'
 
 // 💬 Sends each PWEZA question (and the start of its answer) to the bot's chat topic.
 // Hiring-related questions buzz the phone; everything else arrives silently.
 
 const HIRING = /\b(hire|hiring|recruit|interview|available|availability|salary|rate|resume|résumé|cv|clearance|relocat|start date|full[- ]time|intern|contract|position|role|job|offer|reach|contact|email|phone|linkedin)\b/i
 
-export async function notifyChat(req: NextRequest, question: string, answer: string, turn: number) {
+export async function notifyChat(req: NextRequest, question: string, answer: string, turn: number, sid?: string) {
   if (!tgConfigured() || !question) return
   try {
     const settings = await getSettings()
+    await Promise.all([bump('chats', settings.tz), logQuestion(question, settings.tz)])
     const city = req.headers.get('x-vercel-ip-city')
     const country = req.headers.get('x-vercel-ip-country') || ''
     let place = ''
@@ -23,6 +26,22 @@ export async function notifyChat(req: NextRequest, question: string, answer: str
       `🤖 <i>${esc(answer.replace(/\s+/g, ' ').slice(0, 280))}${answer.length > 280 ? '…' : ''}</i>`,
       place ? `📍 ${esc(place)} ${flag(country)}` : null,
     ].filter(Boolean).join('\n')
-    await sendMessage(text, { thread: settings.topics?.chats, silent: !hiring || isHushed(settings) })
+    const sent = await sendMessage(text, {
+      thread: settings.topics?.chats, silent: !hiring || isHushed(settings),
+      buttons: sid ? [[{ text: '🎙 Take over this chat', callback_data: `live:${sid}` }]] : undefined,
+    })
+    if (sid && sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
   } catch { /* alerts never break the chat */ }
+}
+
+/** During a takeover: pass the visitor's message to Joseph (reply to it to answer). */
+export async function forwardLive(req: NextRequest, sid: string, message: string) {
+  if (!tgConfigured() || !message) return
+  const settings = await getSettings()
+  const sent = await sendMessage(`👤 <b>Visitor (live chat):</b>\n${esc(message.slice(0, 1500))}\n\n<i>Reply to this message to answer.</i>`, {
+    thread: settings.topics?.chats, silent: false,
+    buttons: [[{ text: '🤖 Hand back to PWEZA', callback_data: `liveoff:${sid}` }]],
+  })
+  if (sent.ok && sent.result) await linkChat(sent.result.message_id, sid)
+  await touch(sid)
 }

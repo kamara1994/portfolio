@@ -5,6 +5,12 @@ import { draftFollowUp, redraft, prepPack } from '@/lib/alerts/assist'
 import { healthReport } from '@/lib/alerts/health'
 import { viaSlug } from '@/lib/alerts/slug'
 import { BOT_COMMANDS } from '@/lib/alerts/commands'
+import { dayReport, weekReport, topReport, voiceScript } from '@/lib/alerts/reports'
+import { sendVoiceNote } from '@/lib/alerts/voice'
+import { answerFromData } from '@/lib/alerts/askdata'
+import { rate, learnedSummary } from '@/lib/alerts/learn'
+import { hasDb, lookupMessage, getVisit, teach, forget, teachings } from '@/lib/alerts/store'
+import { liveOn, liveOff, pushOut, lastLive, linkChat, validSid } from '@/lib/alerts/live'
 import { getSettings, saveSettings, ensureTopics, describe, fmtDuration, validTz, isHushed } from '@/lib/alerts/settings'
 import { renderVisit, visitButtons, type Ctx } from '@/lib/alerts/format'
 
@@ -28,6 +34,13 @@ const HELP = [
   '/watch Deloitte — 🔥 alert when they visit · /unwatch · /watchlist',
   '/qr byui-fair — QR code for a tagged link (career fairs, cards)',
   '/health — check the site, PWEZA AI, voice and lookups',
+  '',
+  '📊 /dashboard — live dashboard inside Telegram (also the Dashboard button by the message box)',
+  '📊 /today · /week · /top — stats   🔊 /briefing — voice summary now',
+  '🧠 /teach question | answer — PWEZA learns it · /taught · /forget question',
+  '📈 /score — what the self-learning lead score has learned from your 👍/👎',
+  '🎙 Tap “Take over this chat” on a PWEZA alert to answer a visitor yourself · /end hands back',
+  '💬 Or just ask me in plain English, e.g. "who looked at my AWS projects this week?"',
   '/test — send a sample visitor alert',
   '',
   '🔗 Company links: put josephkamara.vercel.app/deloitte (any word) in an application — visits through it are tagged and buzz your phone.',
@@ -72,7 +85,11 @@ export async function POST(req: NextRequest) {
   }
   const update = await req.json().catch(() => ({}))
   const mine = chatId()
-  if (!commandsSynced) { commandsSynced = true; await tg('setMyCommands', { commands: BOT_COMMANDS }) } // keeps the menu current after deploys
+  if (!commandsSynced) {
+    commandsSynced = true // keeps the command menu + Dashboard button current after deploys
+    await tg('setMyCommands', { commands: BOT_COMMANDS })
+    if (!mine.startsWith('-')) await tg('setChatMenuButton', { chat_id: mine, menu_button: { type: 'web_app', text: 'Dashboard', web_app: { url: `${SITE}/tg/dashboard` } } })
+  }
 
   // Inline buttons under alerts (🔕 Mute 1h / 8h)
   const cb = update.callback_query
@@ -96,6 +113,34 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ ok: true })
     }
+    const lv = data.match(/^live(off)?:([a-z0-9]{8,40})$/i)
+    if (lv) {
+      const sid = lv[2]
+      if (!hasDb()) { await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'Needs the database' }); return NextResponse.json({ ok: true }) }
+      if (lv[1]) {
+        await liveOff(sid)
+        await tg('answerCallbackQuery', { callback_query_id: cb.id, text: '🤖 PWEZA is answering again' })
+        await sendMessage('🤖 Handed back to PWEZA. The visitor was told.', { thread, replyTo, silent: true })
+      } else {
+        await liveOn(sid)
+        await pushOut(sid, '__joined__')
+        await tg('answerCallbackQuery', { callback_query_id: cb.id, text: '🎙 You\'re live' })
+        const m = await sendMessage('🎙 <b>You\'re live with this visitor.</b>\nReply to this message (or any of their messages) to talk — they see it instantly in the chat window as “Joseph”.\nSend /end or tap below to hand back to PWEZA.', {
+          thread, replyTo, silent: true, buttons: [[{ text: '🤖 Hand back to PWEZA', callback_data: `liveoff:${sid}` }]],
+        })
+        if (m.ok && m.result) await linkChat(m.result.message_id, sid)
+      }
+      return NextResponse.json({ ok: true })
+    }
+    const rm = data.match(/^rate:(1|-1)$/)
+    if (rm) {
+      const vote = Number(rm[1]) as 1 | -1
+      const key = replyTo ? await lookupMessage(replyTo) : null
+      const visit = key?.startsWith('visit:') ? await getVisit(key.slice(6)) : null
+      const ok = visit ? await rate(visit.sid, visit.signals || [], vote) : false
+      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: !hasDb() ? 'Needs the database' : !visit ? 'This alert is too old to rate' : ok ? (vote === 1 ? '👍 Noted — I\'ll score visits like this higher' : '👎 Noted — I\'ll score visits like this lower') : 'Already rated' })
+      return NextResponse.json({ ok: true })
+    }
     const m = data.match(/^mute:(\d+)$/)
     let text = 'Done'
     if (m) {
@@ -110,6 +155,18 @@ export async function POST(req: NextRequest) {
   const msg = update.message
   if (!msg || String(msg.chat?.id) !== mine || typeof msg.text !== 'string') return NextResponse.json({ ok: true })
   const thread: number | undefined = msg.message_thread_id
+  // A reply to a live-chat message goes straight to that visitor.
+  const repliedTo: number | undefined = msg.reply_to_message?.message_id
+  if (repliedTo && !msg.text.startsWith('/')) {
+    const key = await lookupMessage(repliedTo)
+    if (key?.startsWith('chat:')) {
+      const sid = key.slice(5)
+      await liveOn(sid)
+      await pushOut(sid, msg.text.trim())
+      await tg('setMessageReaction', { chat_id: mine, message_id: msg.message_id, reaction: [{ type: 'emoji', emoji: '👍' }] })
+      return NextResponse.json({ ok: true })
+    }
+  }
   const [rawCmd, ...rest] = msg.text.trim().split(/\s+/)
   const cmd = rawCmd.toLowerCase().replace(/@.*$/, '')
   const arg = rest.join(' ')
@@ -167,6 +224,47 @@ export async function POST(req: NextRequest) {
     }
     case '/watchlist':
       await reply(s.watch?.length ? `👁 <b>Watchlist</b>\n${s.watch.map((w) => `• ${esc(w)}`).join('\n')}\n\n/unwatch name to remove` : '👁 Watchlist is empty. Add one with /watch Deloitte', thread); break
+    case '/dashboard':
+      if (mine.startsWith('-')) { await reply('The dashboard opens in your private chat with the bot.', thread); break }
+      await tg('sendMessage', { chat_id: mine, text: '📊 Your live portfolio dashboard', reply_markup: { inline_keyboard: [[{ text: '📊 Open dashboard', web_app: { url: `${SITE}/tg/dashboard` } }]] } })
+      break
+    case '/today':
+      await reply(await dayReport(s.tz, 'Today so far'), thread); break
+    case '/week':
+      await reply('📈 Building your weekly report…', thread)
+      await reply(await weekReport(s.tz), thread); break
+    case '/top':
+      await reply(await topReport(s.tz), thread); break
+    case '/briefing': {
+      const r = await sendVoiceNote(await voiceScript(s.tz), '🔊 PWEZA briefing', { thread, silent: true })
+      if (!r.ok) await reply('Couldn\'t make the voice note right now. /today has the same info as text.', thread)
+      break
+    }
+    case '/score':
+      await reply(['📈 <b>Self-learning lead score</b>', ...(await learnedSummary()).map(esc)].join('\n'), thread); break
+    case '/teach': {
+      const [q, ...rest] = arg.split('|')
+      const a = rest.join('|').trim()
+      if (!q?.trim() || !a) { await reply('Format: /teach question | answer\ne.g. /teach Do you have a security clearance? | Not yet, but I\'m eligible and happy to go through the process.', thread); break }
+      const ok = await teach(q.trim(), a)
+      await reply(ok ? `🧠 PWEZA learned it. When someone asks something like “${esc(q.trim())}”, PWEZA will use your answer.` : 'Couldn\'t save that (database unavailable).', thread); break
+    }
+    case '/taught': {
+      const list = await teachings()
+      await reply(list.length ? `🧠 <b>What you've taught PWEZA</b>\n${list.slice(0, 25).map((t) => `• <b>${esc(t.q)}</b>\n  ${esc(t.a)}`).join('\n')}` : 'Nothing taught yet. Try /teach question | answer', thread); break
+    }
+    case '/forget': {
+      const ok = await forget(arg.trim())
+      await reply(ok ? 'Forgotten.' : 'Not found. /taught lists the exact questions.', thread); break
+    }
+    case '/end': {
+      const sid = validSid(arg.trim()) ? arg.trim() : await lastLive()
+      if (!sid) { await reply('No live chat right now.', thread); break }
+      await liveOff(sid)
+      await reply('🤖 Handed back to PWEZA.', thread); break
+    }
+    case '/ask':
+      await reply(esc(await answerFromData(arg || 'Summarise this week', s.tz)), thread); break
     case '/health':
       await reply('🩺 Checking…', thread)
       await reply(await healthReport(), thread); break
@@ -180,6 +278,7 @@ export async function POST(req: NextRequest) {
     }
     default:
       if (cmd.startsWith('/')) await reply('Unknown command. /help lists what I can do.', thread)
+      else if (msg.text.trim().length > 3) await reply(hasDb() ? `💬 ${esc(await answerFromData(msg.text.trim(), s.tz))}` : 'Plain-English questions need the database connected.', thread)
   }
   return NextResponse.json({ ok: true })
 }

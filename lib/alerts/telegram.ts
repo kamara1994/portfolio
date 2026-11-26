@@ -100,3 +100,21 @@ export async function sendPhoto(photo: string | Uint8Array, caption: string, opt
     return (await res.json()) as TgResult
   } catch (e: any) { return { ok: false, description: e?.message || 'upload-failed' } as TgResult }
 }
+
+/** Upload a file (voice note, audio, document). */
+export async function sendFile(method: 'sendVoice' | 'sendAudio' | 'sendDocument', field: 'voice' | 'audio' | 'document', bytes: Uint8Array, filename: string, mime: string, caption: string, opts: { thread?: number | null; silent?: boolean; extra?: Record<string, string> } = {}) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  if (!token) return { ok: false, description: 'telegram-not-configured' } as TgResult
+  const form = new FormData()
+  form.set('chat_id', chatId())
+  form.set('caption', caption)
+  form.set('parse_mode', 'HTML')
+  form.set('disable_notification', String(!!opts.silent))
+  if (opts.thread) form.set('message_thread_id', String(opts.thread))
+  for (const [k, v] of Object.entries(opts.extra || {})) form.set(k, v)
+  form.set(field, new Blob([new Uint8Array(bytes)], { type: mime }), filename)
+  try {
+    const res = await fetch(`${process.env.TELEGRAM_API_BASE || 'https://api.telegram.org'}/bot${token}/${method}`, { method: 'POST', body: form, signal: AbortSignal.timeout(20000) })
+    return (await res.json()) as TgResult
+  } catch (e: any) { return { ok: false, description: e?.message || 'upload-failed' } as TgResult }
+}

@@ -5,7 +5,18 @@ import Link from 'next/link'
 import { useRole } from './roles'
 
 type ProofLink = { label: string; href: string }
-type Msg = { role: 'user' | 'assistant'; content: string; links?: ProofLink[] }
+type Msg = { role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[] }
+
+/** Same visit ID the tracker uses, so Joseph can take over this chat from Telegram. */
+function chatSid(): string {
+  try {
+    const v = JSON.parse(sessionStorage.getItem('pa-visit') || 'null')
+    if (v?.sid) return v.sid
+    let own = sessionStorage.getItem('pz-sid')
+    if (!own) { own = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); sessionStorage.setItem('pz-sid', own) }
+    return own
+  } catch { return '' }
+}
 
 const GREETING: Msg = {
   role: 'assistant',
@@ -22,6 +33,8 @@ const SUGGESTIONS: Record<string, string[]> = {
 /** PWEZA: verified-facts portfolio assistant. Text chat, optional voice in/out, proof links. */
 export default function AIChat() {
   const role = useRole()
+  const [hidden, setHidden] = useState(false)
+  useEffect(() => { setHidden(window.location.pathname.startsWith('/tg/')) }, [])
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(false)
   const [messages, setMessages] = useState<Msg[]>([GREETING])
@@ -34,6 +47,35 @@ export default function AIChat() {
   const inputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const recRef = useRef<any>(null)
+  const [live, setLive] = useState(false)
+  const liveAfter = useRef(0)
+  const wasLive = useRef(false)
+
+  // Joseph can take over from Telegram: poll for his messages while the chat is open (or he's live).
+  useEffect(() => {
+    if (!open && !live) return
+    let stop = false
+    const tick = async () => {
+      const sid = chatSid()
+      if (!sid || stop) return
+      try {
+        const r = await fetch(`/api/chat/live?sid=${encodeURIComponent(sid)}&after=${liveAfter.current}`, { cache: 'no-store' })
+        const d = await r.json()
+        liveAfter.current = d.next ?? liveAfter.current
+        const incoming: Msg[] = []
+        for (const m of d.messages || []) {
+          if (m.t === '__joined__') incoming.push({ role: 'system', content: 'Joseph joined the chat 👋' })
+          else if (m.t === '__handback__') incoming.push({ role: 'system', content: 'Joseph handed you back to PWEZA.' })
+          else incoming.push({ role: 'joseph', content: m.t })
+        }
+        if (incoming.length) { setMessages((cur) => [...cur, ...incoming]); setOpen(true) }
+        if (!!d.live !== wasLive.current) { wasLive.current = !!d.live; setLive(!!d.live) }
+      } catch { /* try again next tick */ }
+    }
+    tick()
+    const t = setInterval(tick, live ? 2500 : 5000)
+    return () => { stop = true; clearInterval(t) }
+  }, [open, live])
 
   // Show the launcher after the hero, hide it over the footer
   useEffect(() => {
@@ -74,9 +116,14 @@ export default function AIChat() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next.slice(1).map(({ role, content }) => ({ role, content })), wantsAudio: voiceOut }),
+        body: JSON.stringify({
+          messages: next.slice(1).filter((m) => m.role === 'user' || m.role === 'assistant' || m.role === 'joseph').map(({ role, content }) => ({ role: role === 'joseph' ? 'assistant' : role, content })),
+          wantsAudio: voiceOut,
+          sid: chatSid(),
+        }),
       })
       const data = await res.json()
+      if (data.live) { setLive(true); wasLive.current = true; return } // Joseph will answer himself
       const reply = data.content || data.error || "I couldn't answer that right now. You can email Joseph at kamarajosephallan@gmail.com."
       setMessages((m) => [...m, { role: 'assistant', content: reply, links: data.links }])
       if (voiceOut && data.audio) {
@@ -112,6 +159,7 @@ export default function AIChat() {
   const suggestions = SUGGESTIONS[role ?? 'default'] ?? SUGGESTIONS.default
   const asked = new Set(messages.filter((m) => m.role === 'user').map((m) => m.content))
 
+  if (hidden) return null
   return (
     <>
       <button
@@ -151,7 +199,8 @@ export default function AIChat() {
 
         <div ref={listRef} className="pz-list" aria-live="polite">
           {messages.map((m, i) => (
-            <div key={i} className={m.role === 'user' ? 'pz-msg pz-user' : 'pz-msg pz-bot'}>
+            <div key={i} className={m.role === 'user' ? 'pz-msg pz-user' : m.role === 'joseph' ? 'pz-msg pz-bot pz-joseph' : m.role === 'system' ? 'pz-system' : 'pz-msg pz-bot'}>
+              {m.role === 'joseph' && <span className="pz-joseph-name">Joseph</span>}
               <p>{m.content}</p>
               {!!m.links?.length && (
                 <div className="mt-2.5 flex flex-wrap gap-1.5">

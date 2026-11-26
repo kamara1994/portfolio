@@ -44,7 +44,13 @@ const nextConfig = {
     domains: [],
   },
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    const miniApp = securityHeaders.map((h) =>
+      h.key === 'Content-Security-Policy' ? { ...h, value: h.value.replace("frame-ancestors 'none'", 'frame-ancestors https://web.telegram.org https://*.telegram.org') }
+      : h.key === 'X-Frame-Options' ? { key: 'X-Frame-Options', value: 'SAMEORIGIN' } : h)
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      { source: '/tg/:path*', headers: miniApp },
+    ]
   },
 }
 

@@ -5,6 +5,8 @@ import { clientIp, locate, matchTarget, watchMatch, viaSlug, classifyReferrer, p
 import { renderVisit, visitButtons, renderLead, renderAction, dur, location, who, type Ctx, type Live } from '@/lib/alerts/format'
 import { aiBrief } from '@/lib/alerts/brief'
 import { stripUrl } from '@/lib/alerts/strip'
+import { saveVisit, countPages, bump, type VisitRecord } from '@/lib/alerts/store'
+import { signalsOf, learnedAdjust } from '@/lib/alerts/learn'
 
 // Visitor alerts → Telegram.
 // One message per visit that updates live (path, time, scroll, actions), a loud
@@ -71,12 +73,28 @@ function readCtx(body: any): Ctx | null {
   try { return JSON.parse(body.ctx) as Ctx } catch { return null }
 }
 
-function scoreOf(ctx: Ctx, live: Live) {
-  return leadScore({
+async function scoreOf(ctx: Ctx, live: Live) {
+  const base = leadScore({
     target: ctx.target, company: ctx.geo.company, ref: ctx.ref, role: live.role, via: ctx.via, watch: ctx.watch,
     durMs: live.durMs, steps: live.steps, actions: live.actions, visits: ctx.visitor.n,
     bot: !!ctx.bot && !live.human,
   })
+  if (!base) return 0
+  return Math.max(0, Math.min(100, base + (await learnedAdjust(signalsOf(ctx, live)))))
+}
+
+function record(ctx: Ctx, live: Live, score: number, msgId: number, brief?: string): VisitRecord {
+  return {
+    sid: ctx.sid || `${ctx.start}`, start: ctx.start, last: Date.now(), durMs: live.durMs,
+    who: who(ctx), company: ctx.geo.company?.name || ctx.geo.org, companyType: ctx.geo.company?.type,
+    target: ctx.target || undefined, via: ctx.via, watch: ctx.watch,
+    ref: ctx.ref.label, refKind: ctx.ref.kind, role: live.role,
+    city: ctx.geo.city, region: ctx.geo.region, country: ctx.geo.country,
+    device: ctx.device, visitN: ctx.visitor.n, bot: !!ctx.bot && !live.human,
+    pages: live.steps.slice(-30).map((x) => ({ p: x.p, n: pageName(x.p), d: x.d, s: x.s })),
+    sections: live.sections || {}, actions: Array.from(new Set(live.actions)),
+    score, brief, msgId, ended: live.ended, signals: signalsOf(ctx, live),
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -120,11 +138,14 @@ export async function POST(req: NextRequest) {
         landing: str(body.page, 160) || '/',
       }
       ctx.via = viaSlug(ctx.landing) || undefined
-      ctx.target = matchTarget(geo, ref.host, ctx.via)
-      ctx.watch = watchMatch(settings.watch, geo, ref.host, ctx.via) || undefined
+      // A referrer only says who the visitor is when it's an organisation's own site (e.g. an internal wiki
+      // or careers page), not when they came from Google, LinkedIn, a job board or social media.
+      const orgReferrer = ref.kind === 'site' ? ref.host : ''
+      ctx.target = matchTarget(geo, orgReferrer, ctx.via)
+      ctx.watch = watchMatch(settings.watch, geo, orgReferrer, ctx.via) || undefined
       const priority = !!(ctx.target || ctx.watch || ctx.via)
       const live = readLive(body, kind)
-      const score = scoreOf(ctx, live)
+      const score = await scoreOf(ctx, live)
       const topics = await ensureTopics(settings)
       const thread = topics ? (priority ? topics.priority : topics.visits) : null
       const sent = await sendMessage(renderVisit(ctx, live, score, settings.tz), {
@@ -133,6 +154,7 @@ export async function POST(req: NextRequest) {
         buttons: visitButtons(ctx, live),
       })
       if (!sent.ok || !sent.result) return NextResponse.json({ ok: false, error: sent.description || 'send-failed' })
+      await saveVisit(record(ctx, live, score, sent.result.message_id), settings.tz, true)
       const packed = JSON.stringify(ctx)
       return NextResponse.json({ ok: true, msgId: sent.result.message_id, ctx: packed, sig: hmac(packed) })
     }
@@ -142,7 +164,7 @@ export async function POST(req: NextRequest) {
     const msgId = int(body.msgId, 1, 2 ** 31)
     if (!ctx || !msgId) return NextResponse.json({ ok: false, error: 'restart', restart: true })
     const live = readLive(body, kind)
-    const score = scoreOf(ctx, live)
+    const score = await scoreOf(ctx, live)
     let brief = str(body.brief, 400)
 
     if (kind === 'action') {
@@ -172,6 +194,9 @@ export async function POST(req: NextRequest) {
     }
 
     await editMessage(msgId, renderVisit(ctx, live, score, settings.tz, brief || undefined), visitButtons(ctx, live))
+    const rec = record(ctx, live, score, msgId, brief || undefined)
+    await saveVisit(rec, settings.tz, false)
+    if (kind === 'end' && !rec.bot) await countPages(rec, settings.tz)
 
     let lead = false
     if (score >= 70 && body.leadSent !== true && live.durMs >= 45_000 && live.human && (kind === 'end' || score >= 85)) {
@@ -181,6 +206,7 @@ export async function POST(req: NextRequest) {
         buttons: visitButtons(ctx, live).slice(0, 1),
       })
       lead = r.ok
+      if (lead) await bump('leads', settings.tz)
       // A picture of the visit: time per page, scroll depth, sections read.
       if (lead) {
         await sendPhoto(stripUrl(ctx, live, score), `🗺 Visit map · ${who(ctx).replace(/[<>&]/g, '')}`, {

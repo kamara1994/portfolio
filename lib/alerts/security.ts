@@ -1,4 +1,6 @@
 // 🛡 Mini SOC for the portfolio itself. Runs in middleware (edge), so only uses fetch.
+import { bump } from './store'
+
 // Detects vulnerability scanners, credential-file probes and canary traps, maps them to
 // MITRE ATT&CK, and sends a throttled Telegram incident.
 
@@ -50,11 +52,11 @@ async function tg(method: string, body: Record<string, unknown>): Promise<Tg> {
 }
 
 /** Reads topic IDs and mute/quiet from the pinned settings message (same format as lib/alerts/settings.ts). */
-async function settings(): Promise<{ thread?: number; hushed: boolean }> {
+async function settings(): Promise<{ thread?: number; hushed: boolean; tz: string }> {
   const r = await tg('getChat', { chat_id: process.env.TELEGRAM_CHAT_ID })
   const text: string = r.result?.pinned_message?.text || ''
   const m = text.match(/PWEZA-CFG (\{[\s\S]*\})\s*$/)
-  if (!m) return { hushed: false }
+  if (!m) return { hushed: false, tz: 'America/New_York' }
   try {
     const s = JSON.parse(m[1])
     let hushed = !!(s.mutedUntil && s.mutedUntil > Date.now())
@@ -62,13 +64,14 @@ async function settings(): Promise<{ thread?: number; hushed: boolean }> {
       const h = Number(new Intl.DateTimeFormat('en-US', { timeZone: s.tz || 'America/New_York', hour: 'numeric', hourCycle: 'h23' }).format(new Date()))
       hushed = s.quiet.from <= s.quiet.to ? h >= s.quiet.from && h < s.quiet.to : h >= s.quiet.from || h < s.quiet.to
     }
-    return { thread: s.topics?.priority, hushed }
-  } catch { return { hushed: false } }
+    return { thread: s.topics?.priority, hushed, tz: s.tz || 'America/New_York' }
+  } catch { return { hushed: false, tz: 'America/New_York' } }
 }
 
 export async function securityAlert(info: { rule: Pick<Rule, 'title' | 'technique' | 'severity'>; path: string; method: string; ip: string; ua: string; city?: string | null; country?: string | null; extra?: string }) {
   if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) return
-  const { thread, hushed } = await settings()
+  const { thread, hushed, tz } = await settings()
+  await bump('security', tz)
   const icon = info.rule.severity === 'High' ? '🚨' : info.rule.severity === 'Medium' ? '🛡' : '🔎'
   const text = [
     `${icon} <b>Security · ${esc(info.rule.title)}</b>`,

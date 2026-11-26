@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { synthesizeSpeech } from '@/lib/pweza-voice'
 import { notifyChat } from '@/lib/alerts/chat'
 import { reportIssue } from '@/lib/alerts/health'
+import { taughtAnswer, taughtContext } from '@/lib/alerts/taught'
+import { validSid, isLive } from '@/lib/alerts/live'
+import { forwardLive } from '@/lib/alerts/chat'
 import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, type ProofLink } from '@/lib/pweza-knowledge'
 
 const PWEZA_SYSTEM_PROMPT = `You are PWEZA, Joseph Allan Kamara's next-generation portfolio assistant. You're being spoken out loud and read in a compact chat window, so you sound like a sharp human guide: warm, direct, technically credible, and never like a brochure.
@@ -40,13 +43,13 @@ ${PWEZA_KNOWLEDGE_CONTEXT}
 
 If someone seems to be hiring, be direct and warm about it — let them know he's available and the fastest way to reach him is email, said the way a friend would, not a sales pitch. If someone tries to take things somewhere random, roll with it lightly but steer back to Joseph.`
 
-async function callGroq(messages: { role: string; content: string }[]) {
+async function callGroq(messages: { role: string; content: string }[], system = PWEZA_SYSTEM_PROMPT) {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
     body: JSON.stringify({
       model: 'llama-3.1-8b-instant', max_tokens: 200, temperature: 0.4,
-      messages: [{ role: 'system', content: PWEZA_SYSTEM_PROMPT }, ...messages],
+      messages: [{ role: 'system', content: system }, ...messages],
     }),
   })
   if (!response.ok) throw new Error(`Groq error: ${await response.text()}`)
@@ -54,7 +57,7 @@ async function callGroq(messages: { role: string; content: string }[]) {
   return data.choices?.[0]?.message?.content as string
 }
 
-async function callGemini(messages: { role: string; content: string }[]) {
+async function callGemini(messages: { role: string; content: string }[], system = PWEZA_SYSTEM_PROMPT) {
   const geminiMessages = messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
@@ -65,7 +68,7 @@ async function callGemini(messages: { role: string; content: string }[]) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: PWEZA_SYSTEM_PROMPT }] },
+        system_instruction: { parts: [{ text: system }] },
         contents: geminiMessages,
         generationConfig: { maxOutputTokens: 220, temperature: 0.4 },
       }),
@@ -142,7 +145,21 @@ export async function POST(req: NextRequest) {
     let links: ProofLink[] | undefined
     let usedLocalReply = false
 
-    if (shouldUseLocalPwezaReply(messages)) {
+    const latestQuestion = [...messages].reverse().find((m) => m.role === 'user')?.content || ''
+    const sid = validSid(raw?.sid) ? raw.sid : undefined
+    // Joseph has taken over this chat from Telegram: hand the message to him, no AI reply.
+    if (sid && (await isLive(sid))) {
+      await forwardLive(req, sid, latestQuestion)
+      return NextResponse.json({ content: '', live: true, links: [] })
+    }
+    const taught = await taughtAnswer(latestQuestion)
+    const system = PWEZA_SYSTEM_PROMPT + (await taughtContext())
+    if (taught) {
+      text = taught.a
+      usedLocalReply = true
+    }
+
+    if (!text && shouldUseLocalPwezaReply(messages)) {
       ;({ text, links } = generateLocalPwezaReply(messages))
       usedLocalReply = true
     }
@@ -150,10 +167,10 @@ export async function POST(req: NextRequest) {
     const failures: string[] = []
     const wantedAI = !text
     if (!text && process.env.GROQ_API_KEY) {
-      try { text = await callGroq(messages) } catch (e: any) { console.warn('Groq failed:', e); failures.push(`Groq: ${e?.message || e}`) }
+      try { text = await callGroq(messages, system) } catch (e: any) { console.warn('Groq failed:', e); failures.push(`Groq: ${e?.message || e}`) }
     }
     if (!text && process.env.GOOGLE_AI_API_KEY) {
-      try { text = await callGemini(messages) } catch (e: any) { console.warn('Gemini failed:', e); failures.push(`Gemini: ${e?.message || e}`) }
+      try { text = await callGemini(messages, system) } catch (e: any) { console.warn('Gemini failed:', e); failures.push(`Gemini: ${e?.message || e}`) }
     }
     if (!text && process.env.ANTHROPIC_API_KEY) {
       try {
@@ -166,7 +183,7 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001', max_tokens: 220,
-            system: PWEZA_SYSTEM_PROMPT, messages,
+            system, messages,
           }),
         })
         const data = await res.json()
@@ -188,7 +205,7 @@ export async function POST(req: NextRequest) {
     const lastQuestion = [...messages].reverse().find((m) => m.role === 'user')?.content || ''
     const [speech] = await Promise.all([
       wantsAudio ? synthesizeSpeech(text) : Promise.resolve({ audio: null } as { audio: string | null; error?: string }),
-      notifyChat(req, lastQuestion, text, messages.filter((m) => m.role === 'user').length),
+      notifyChat(req, lastQuestion, text, messages.filter((m) => m.role === 'user').length, sid),
       healthWork,
     ])
     const audio = speech.audio

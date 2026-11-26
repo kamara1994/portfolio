@@ -141,6 +141,7 @@ export function visitButtons(ctx: Ctx, live: Live): (Button | null)[][] {
       orgName ? { text: '🔎 LinkedIn', url: `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(orgName)}` } : null,
     ],
     [{ text: '✍️ Draft follow-up', callback_data: 'draft' }, { text: '🎓 Prep pack', callback_data: 'prep' }],
+    [{ text: '👍 Good lead', callback_data: 'rate:1' }, { text: '👎 Not useful', callback_data: 'rate:-1' }],
     [{ text: '🔕 Mute 1h', callback_data: 'mute:60' }, { text: '🌙 Mute 8h', callback_data: 'mute:480' }],
   ]
 }
