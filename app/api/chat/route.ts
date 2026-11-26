@@ -350,8 +350,11 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
         let suggestions: string[] = []
         if (!draft.trim()) {
           const fb = generateLocalPwezaReply(messages)
-          final = fb.text
-          links = fb.links ?? []
+          // If the AI providers are down, don't pretend the site lacks the answer.
+          final = failures.length && couldNotAnswer(fb.text)
+            ? "My AI is having a moment, so I can't give that a proper answer right now. Joseph's projects, skills and certifications are all on this page, or I can ping him to answer you himself. Just say \"yes\"."
+            : fb.text
+          links = fb.links ?? [{ label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }]
           send({ type: 'replace', t: final })
         } else {
           const [fixed, chips] = await Promise.all([factCheck(draft, PWEZA_KNOWLEDGE_CONTEXT, sources), followUps(latestQuestion, draft, r.expert)])
@@ -373,8 +376,8 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
           failures.length && !draft ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
             : failures.length ? reportIssue(`PWEZA AI · ${failures[0].split(':')[0]}`, `${failures.join(' · ')} — a backup answered.`) : Promise.resolve(),
         ])
-        if (couldNotAnswer(plain)) await trackUnanswered(latestQuestion, settings.tz)
-        if (vid) await remember(vid, latestQuestion, r.expert)
+        if (couldNotAnswer(plain) && !failures.length) await trackUnanswered(latestQuestion, settings.tz)
+        if (vid && draft.trim() && latestQuestion.split(/\s+/).length >= 4) await remember(vid, latestQuestion, r.expert)
         const bookUrl = r.hiring ? bookingUrl() : null
         if (bookUrl) links = [...links.slice(0, 2), { label: BOOK_LABEL, href: bookUrl }]
         const nav = wantsNavigation(latestQuestion) ? navTarget(latestQuestion, sources) : null
