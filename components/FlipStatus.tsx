@@ -40,7 +40,34 @@ function NightSky() {
       </svg>
 
       <span className="sky-moon-track">
-        <span className="sky-moon" />
+        <span className="sky-moon-bob">
+          <svg className="sky-moon" viewBox="0 0 40 40">
+            <defs>
+              <radialGradient id="fs-moon-base" cx="38%" cy="34%" r="72%">
+                <stop offset="0%" stopColor="#FFFEF7" />
+                <stop offset="50%" stopColor="#F3E8CB" />
+                <stop offset="100%" stopColor="#C9B88E" />
+              </radialGradient>
+              <radialGradient id="fs-moon-shade" cx="30%" cy="28%" r="80%">
+                <stop offset="55%" stopColor="#000" stopOpacity="0" />
+                <stop offset="100%" stopColor="#2A2416" stopOpacity="0.45" />
+              </radialGradient>
+              <filter id="fs-moon-surface" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="4" seed="11" />
+                <feColorMatrix values="0 0 0 0 0.55  0 0 0 0 0.49  0 0 0 0 0.36  0 0 0 -2.2 1.25" />
+              </filter>
+              <clipPath id="fs-moon-clip"><circle cx="20" cy="20" r="19" /></clipPath>
+            </defs>
+            <g clipPath="url(#fs-moon-clip)">
+              <circle cx="20" cy="20" r="19" fill="url(#fs-moon-base)" />
+              <rect width="40" height="40" filter="url(#fs-moon-surface)" opacity="0.55" />
+              <ellipse cx="24.5" cy="24" rx="5.5" ry="4" fill="#9C8C68" opacity="0.18" />
+              <ellipse cx="14.5" cy="16" rx="4.5" ry="3.5" fill="#9C8C68" opacity="0.16" />
+              <ellipse cx="19" cy="29.5" rx="3" ry="2" fill="#9C8C68" opacity="0.12" />
+              <circle cx="20" cy="20" r="19" fill="url(#fs-moon-shade)" />
+            </g>
+          </svg>
+        </span>
       </span>
 
       <svg className="sky-clouds sky-clouds-front" viewBox="0 0 600 60" preserveAspectRatio="none">
@@ -59,6 +86,21 @@ function NightSky() {
         <rect width="600" height="60" filter="url(#fs-cloud-front)" mask="url(#fs-mask-front)" />
       </svg>
 
+      <svg className="sky-clouds sky-clouds-veil" viewBox="0 0 600 60" preserveAspectRatio="none">
+        <defs>
+          <filter id="fs-cloud-veil" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.014 0.09" numOctaves="4" seed="4" />
+            <feColorMatrix values="0 0 0 0 0.92  0 0 0 0 0.94  0 0 0 0 1  2.2 0 0 0 -1.12" />
+          </filter>
+        </defs>
+        <rect width="600" height="60" filter="url(#fs-cloud-veil)" />
+      </svg>
+
+      <span className="sky-moon-track sky-moonlight-track">
+        <span className="sky-moon-bob"><span className="sky-moonlight" /></span>
+      </span>
+
+      <span className="sky-shooting-star" />
       <span className="sky-sheen" />
     </span>
   )
