@@ -21,13 +21,15 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
     id: 'secops', title: 'Security Operations', icon: 'shield',
     summary: 'Detecting, triaging, and responding to alerts with a human in the loop.',
     skills: [
-      { name: 'Splunk SIEM', what: 'Alert ingestion and webhooks that feed the AI triage pipeline.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
+      { name: 'Splunk SIEM', what: 'Alert ingestion and webhooks that feed the AI triage pipeline.', projects: ['blue-soc-p8', 'cyber375-splunk'], certs: ['TCM PSAA'] },
       { name: 'Alert Triage', what: 'AI-assisted severity classification, reviewed by an analyst.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
-      { name: 'Incident Response', what: 'Response recommendations with analyst-approved containment.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
+      { name: 'Incident Response', what: 'Response recommendations with analyst-approved containment.', projects: ['blue-soc-p8', 'cyber375-final-ir'], certs: ['TCM PSAA'] },
       { name: 'SIEM Detection Rules', what: 'Detection rules that trigger alerts into the automation pipeline.', projects: ['blue-soc-p8'] },
       { name: 'Log Analysis', what: 'Normalizing SIEM events and shipping network logs to S3.', projects: ['blue-soc-p8', 'blue-x'], certs: ['TCM PSAA'] },
-      { name: 'Phishing Analysis', what: 'NLP-assisted phishing detection on email metadata.', projects: ['blue-soc-p8'], certs: ['TCM PSAA'] },
-      { name: 'Packet Analysis', what: 'Network traffic analysis for SOC investigations.', certs: ['TCM PSAA'] },
+      { name: 'Phishing Analysis', what: 'NLP-assisted phishing detection on email metadata.', projects: ['blue-soc-p8', 'cyber375-network-threat'], certs: ['TCM PSAA'] },
+      { name: 'Packet Analysis', what: 'Network traffic analysis for SOC investigations.', projects: ['wireless-wireshark', 'cyber375-network-threat'], certs: ['TCM PSAA'] },
+      { name: 'Security Onion', what: 'Correlated alerts and endpoint events in a documented incident investigation.', projects: ['cyber375-final-ir','cyber375-midterm-ir'] },
+      { name: 'Wireshark', what: 'Completed guided packet inspection and network analysis exercises; original captures are not available for publication.', projects: ['wireless-wireshark','cyber375-network-threat'] },
       { name: 'Threat Intelligence', what: 'Enriching investigations with threat intel sources.', certs: ['TCM PSAA'] },
     ],
   },
@@ -77,7 +79,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
       { name: 'Nmap', what: 'Discovery and port scanning.', certs: ['PenTest+'] },
       { name: 'Metasploit', what: 'Exploitation framework.', certs: ['PenTest+'] },
       { name: 'Burp Suite', what: 'Web application testing.', certs: ['PenTest+'] },
-      { name: 'Vulnerability Assessment', what: 'Scanning, prioritizing, and reporting findings.', certs: ['PenTest+'] },
+      { name: 'Vulnerability Assessment', what: 'Scanning, prioritizing, and reporting findings.', projects: ['cyber375-vuln-assess'], certs: ['PenTest+'] },
       { name: 'Password Attacks', what: 'Cracking with Hashcat and John the Ripper.', certs: ['PenTest+'] },
     ],
   },
@@ -119,7 +121,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
 
 /** Listed on the old site but not yet tied to a project or certification. Hidden until confirmed. */
 export const UNCONFIRMED = [
-  'Security Onion', 'Threat Hunting', 'Malware Triage', 'Network Forensics', 'FortiGate Firewall', 'Scapy',
+  'Threat Hunting', 'Malware Triage', 'Network Forensics', 'FortiGate Firewall', 'Scapy',
   'VPN Configuration', 'Exploit Development', 'OSINT Techniques', 'Pinecone Vector DB', 'RAG Pipelines',
   'Autonomous Agents', 'Bash', 'AWS GuardDuty', 'AWS WAF', 'AWS Security Hub', 'CloudTrail', 'Kill Chain', 'Diamond Model', 'ISO 27001 Basics',
 ]
