@@ -56,7 +56,7 @@ export default function Work() {
       )}
       {flagship.map((p, i) => (
         <article key={p.id} className="wrap project-wrap py-4 md:py-6">
-          <div className="hud-frame grid items-center gap-5 p-5 sm:p-7 lg:grid-cols-12 lg:gap-8 lg:p-8">
+          <div className="hud-frame project-card grid items-center gap-5 p-5 sm:p-7 lg:grid-cols-12 lg:gap-8 lg:p-8">
             <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
             <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
             <div className={`min-w-0 lg:col-span-5 ${i % 2 ? 'lg:order-2' : ''}`}>
@@ -71,7 +71,7 @@ export default function Work() {
               <p className="mt-3 text-[13px] leading-relaxed text-smoke">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
-              <div className="btn-row mt-5 flex flex-wrap gap-3">
+              <div className="btn-row card-actions mt-5 flex flex-wrap gap-3">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
                 <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>
                 {p.sourceAccess && <span className="self-center text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
@@ -81,9 +81,10 @@ export default function Work() {
 
             <div className={`order-first min-w-0 lg:col-span-7 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>
               <div className="relative mx-auto aspect-video w-full max-w-[700px] overflow-hidden rounded-lg border border-line bg-panel">
-                <ProjectMedia project={p} priority={i === 0} />
+                <ProjectMedia project={p} priority={i === 0} controls={false} />
               </div>
             </div>
+            <Link href={`/projects/${p.id}`} className="card-link" aria-label={`Open ${p.title}`} />
           </div>
         </article>
       ))}
@@ -95,18 +96,19 @@ export default function Work() {
             <ul className="mt-7 divide-y divide-line border-y border-line">
               {more.map((p) => (
                 <li key={p.id}>
-                  <div className="grid gap-5 py-5 md:grid-cols-12 md:items-center md:px-4">
-                    <div className="relative aspect-video w-full max-w-[420px] overflow-hidden rounded-lg border border-line bg-panel md:col-span-4"><ProjectMedia project={p} /></div>
+                  <div className="project-card project-row grid gap-5 py-5 md:grid-cols-12 md:items-center md:px-4">
+                    <div className="relative aspect-video w-full max-w-[420px] overflow-hidden rounded-lg border border-line bg-panel md:col-span-4"><ProjectMedia project={p} controls={false} /></div>
                     <div className="md:col-span-8">
-                      <Link href={`/projects/${p.id}`} className="font-display text-[28px] font-semibold uppercase leading-tight hover:text-signal">{p.title}</Link>
+                      <Link href={`/projects/${p.id}`} className="card-actions font-display text-[28px] font-semibold uppercase leading-tight hover:text-signal">{p.title}</Link>
                       <p className="mt-2 text-smoke">{p.subtitle}</p>
-                      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                      <div className="card-actions mt-4 flex flex-wrap items-center gap-4 text-sm">
                         <Link href={`/projects/${p.id}`} className="text-signal">How it works</Link>
                         <Link href={`/projects/${p.id}#source-code`} className="text-signal">View source code</Link>
                         {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="text-signal">Live demo</a>}
                         {p.sourceAccess && <span className="text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
                       </div>
                     </div>
+                    <Link href={`/projects/${p.id}`} className="card-link" aria-label={`Open ${p.title}`} />
                   </div>
                 </li>
               ))}

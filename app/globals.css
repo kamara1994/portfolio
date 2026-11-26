@@ -761,3 +761,12 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .pe-next:has(.pe-next-link:hover) .pe-next-image { opacity:.60; }
 @media(max-width:767px) { .pe-next-backdrop { width:88%;opacity:.57; } .pe-next-link { min-height:170px;gap:12px; } .pe-next-arrow { width:38px;height:38px; } .pe-next-copy { max-width:100%; } }
 @media(prefers-reduced-motion:reduce) { .pe-next-image { transition:none; } }
+
+/* Whole project cards are clickable: a stretched link covers the card; buttons and links inside stay on top. */
+.project-card { position: relative; transition: border-color .3s, box-shadow .3s, transform .3s cubic-bezier(.2,.8,.2,1); }
+.card-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.card-link:focus-visible { outline: 2px solid #7FA6FF; outline-offset: 3px; }
+.card-actions { position: relative; z-index: 2; }
+.project-card:has(.card-link:hover) { border-color: rgba(127,166,255,0.45); box-shadow: 0 24px 60px -30px rgba(76,201,255,0.45); transform: translateY(-2px); }
+.project-row:has(.card-link:hover) { background: rgba(127,166,255,0.04); }
+@media (prefers-reduced-motion: reduce) { .project-card, .project-card:has(.card-link:hover) { transform: none; transition: none; } }

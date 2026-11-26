@@ -70,19 +70,20 @@ export default function RecruiterPage() {
           <h2 className="rs-h">Top projects</h2>
           <ul className="mt-3 grid gap-4">
             {flagship.map((p) => (
-              <li key={p.id} className="sk-card">
+              <li key={p.id} className="sk-card project-card">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-display text-[26px] font-bold uppercase leading-none">{p.title}</p>
                   <p className="text-[13px] text-smoke">{p.category}</p>
                 </div>
                 <p className="mt-2 text-[15.5px] leading-relaxed text-snow/85">{p.impact}</p>
                 <p className="mt-2 text-[13.5px] text-smoke">{p.stack.slice(0, 6).join(', ')}</p>
-                <div className="mt-3 flex flex-wrap gap-2 print:hidden">
+                <div className="card-actions mt-3 flex flex-wrap gap-2 print:hidden">
                   <Link href={`/projects/${p.id}`} className="sk-proof sk-proof-link">Case study</Link>
                   <Link href={`/projects/${p.id}#evidence`} className="sk-proof sk-proof-link">Evidence</Link>
                   <Link href={`/projects/${p.id}#source-code`} className="sk-proof sk-proof-link">Source excerpts</Link>
                   {p.github && <a href={p.github} target="_blank" rel="noopener" className="sk-proof sk-proof-link">Code</a>}
                 </div>
+                <Link href={`/projects/${p.id}`} className="card-link print:hidden" aria-label={`Open ${p.title}`} />
               </li>
             ))}
           </ul>

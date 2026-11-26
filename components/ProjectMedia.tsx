@@ -8,7 +8,7 @@ import { BLUR } from '@/lib/blur'
 const ph = (src?: string) => (src && BLUR[src] ? { backgroundImage: `url(${BLUR[src]})`, backgroundSize: 'cover', backgroundPosition: 'top center' } : undefined)
 
 /** Plays the project's 10-second demo loop; falls back to its screenshot, then to a quiet title card. */
-export default function ProjectMedia({ project, priority = false }: { project: Project; priority?: boolean }) {
+export default function ProjectMedia({ project, priority = false, controls = true }: { project: Project; priority?: boolean; controls?: boolean }) {
   const { video, screenshot, title } = project
 
   const [failed, setFailed] = useState(false)
@@ -19,7 +19,7 @@ export default function ProjectMedia({ project, priority = false }: { project: P
         src={video}
         poster={screenshot}
         onError={() => setFailed(true)}
-        controls
+        controls={controls}
         autoPlay
         muted
         loop
