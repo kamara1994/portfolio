@@ -25,7 +25,7 @@ export default function CredentialDetails({ item }: { item: Detail }) {
   const [shareUrl, setShareUrl] = useState('')
   function open() {
     setFeedback('')
-    const url = new URL(window.location.href)
+    const url = new URL(window.location.pathname, window.location.origin)
     url.hash = item.id
     setShareUrl(url.href)
     dialog.current?.showModal()

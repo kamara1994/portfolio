@@ -78,7 +78,7 @@ export default function Credentials() {
                   ) : null}
                 </div>
                 <div className="cred-heading">
-                  <p className="text-[18px] font-semibold leading-snug text-snow">{d ? <CredentialDetails item={{ id: d.id, name: c.name, issuer: c.issuer, image: m.img, issued: c.date || m.when, earned, directUrl, lookupUrl: earned && !directUrl ? VERIFY[c.name]?.href : undefined, requestUrl: earned && !directUrl ? requestProof(c.name) : undefined, skills: d.skills, projects: related, stackable: c.stackable }} /> : c.name}</p>
+                  <div className="cred-title text-[18px] font-semibold leading-snug text-snow">{d ? <CredentialDetails item={{ id: d.id, name: c.name, issuer: c.issuer, image: m.img, issued: c.date || m.when, earned, directUrl, lookupUrl: earned && !directUrl ? VERIFY[c.name]?.href : undefined, requestUrl: earned && !directUrl ? requestProof(c.name) : undefined, skills: d.skills, projects: related, stackable: c.stackable }} /> : c.name}</div>
                   <p className="mt-1 text-[14.5px] text-smoke">{c.issuer}{m.when ? ` · ${m.when}` : ''}{c.expires ? ` · Expires ${c.expires.replace('March', 'Mar')}` : ''}</p>
                 </div>
                 <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
