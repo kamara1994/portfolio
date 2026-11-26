@@ -4,6 +4,7 @@ import { certs } from '@/data'
 // The PenTest+ reference is listed on the holder's public LinkedIn profile.
 // Until other individual URLs are supplied, distinguish issuer lookup from a request for proof.
 const VERIFY: Record<string, { href: string; label: string; title: string }> = {
+  'Practical SOC Analyst Associate (PSAA)': { href: 'https://certified.tcm-sec.com/bfad6249-bde8-4872-a49d-e7391482f93e', label: 'Verify', title: 'Open individual TCM Security credential on Accredible' },
   'Security+': { href: 'https://cp.certmetrics.com/CompTIA/en/public/verify/credential', label: 'Issuer lookup', title: 'Open CompTIA credential verification (individual verification code required)' },
   CCNA: { href: 'https://cp.certmetrics.com/cisco/en/public/verify/credential', label: 'Issuer lookup', title: 'Open Cisco credential verification (individual verification code required)' },
   'PenTest+': { href: 'https://cp.certmetrics.com/CompTIA/en/public/verify/credential/b849fdfc86d84609affadca6e6dbe640', label: 'Verify', title: 'Open the PenTest+ credential reference published on LinkedIn' },
