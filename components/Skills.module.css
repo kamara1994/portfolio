@@ -106,3 +106,9 @@
 .jobWords{margin:-4px 0 10px!important;font-size:12.5px!important;color:#bff7ec!important}
 .jobWords span{margin-right:8px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6fb8ad}
 @media(max-width:639px){.toolbar{flex-wrap:wrap!important}.search{flex-basis:100%!important}.role{flex:1!important;border-left:0;padding-left:6px}.jobBtn{flex:none}}
+/* Desktop: filter bar sits beside the Skills with proof heading */
+@media (min-width:1024px){
+  .headRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,600px);align-items:end;gap:40px}
+  .headRow .toolbar{margin-top:0!important}
+}
+@media (min-width:1024px){.headRow{margin-bottom:14px}}

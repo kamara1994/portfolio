@@ -123,15 +123,17 @@ export default function Skills() {
  const related=selected?.skill.projects?.flatMap(id=>{const p=projectFor(id);return p?[p]:[]})||[]
  return <section id="skills" className="lazy-section border-t border-line">
   <div className="wrap py-14 md:py-20">
+   <div className={styles.headRow}><div>
    <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">Applied skills</p>
    <h2 className="mt-3 font-display text-[clamp(38px,4.4vw,68px)] font-bold uppercase leading-[0.95]">Skills with <span className="title-accent">proof</span></h2>
    <p className="mt-5 max-w-[60ch] text-[17px] leading-relaxed text-smoke">Explore the technologies, documented work and certification coverage behind each skill.</p>
+   </div>
    <div className={styles.toolbar}>
-     <label className={styles.search}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" aria-label="Search all skills" placeholder="Search skills, tools, certifications…" value={query} onChange={e=>{setJob(null);setQuery(e.target.value)}}/></label>
+     <label className={styles.search}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" aria-label="Search all skills" placeholder="Search skills or tools…" value={query} onChange={e=>{setJob(null);setQuery(e.target.value)}}/></label>
      <label className={styles.role}><span className="sr-only">Recruiter focus</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 3.8-5.5 7-5.5s5.8 1.9 7 5.5"/></svg><select aria-label="Filter skills by role" value={recruiter} onChange={e=>{setJob(null);setRecruiter(e.target.value)}}><option value="">Any role</option>{ROLES.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
      <button type="button" className={styles.jobBtn} aria-expanded={jobOpen} aria-controls="job-match" onClick={()=>setJobOpen(v=>!v)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/></svg><span>Match a job</span></button>
      {searching&&<button className={styles.reset} onClick={clearAll}>Reset ×</button>}
-   </div>
+   </div></div>
    {jobOpen&&<div id="job-match" className={styles.jobPanel}>
      <label htmlFor="job-text"><b>Paste a job posting</b><span>See which skills on this page it asks for, each with its proof. Nothing is sent anywhere; matching happens in your browser.</span></label>
      <textarea id="job-text" rows={5} value={jobText} onChange={e=>setJobText(e.target.value)} placeholder="e.g. SOC Analyst I: monitor SIEM alerts in Splunk, triage incidents, analyze logs and phishing emails, Python scripting a plus…"/>
