@@ -1423,3 +1423,17 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .foot-links .foot-chip:hover{transform:none}
 }
 @media (max-width:639px){.foot-links .foot-short{text-shadow:0 1px 6px #05080f,0 0 2px #05080f;font-weight:600}}
+/* Phone footer v2: all four links inside one glass capsule */
+@media (max-width:639px){
+  .foot-links{gap:0!important;padding:10px 6px;border-radius:999px;
+    background:linear-gradient(180deg,rgba(26,40,62,.78),rgba(8,14,26,.82));border:1px solid rgba(140,200,255,.28);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 30px -14px rgba(0,0,0,.9),0 0 24px -10px rgba(111,214,255,.45)}
+  .foot-links li{width:100%;display:flex;justify-content:center;position:relative}
+  .foot-links li+li::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:1px;background:rgba(140,200,255,.16)}
+  .foot-links .foot-chip{gap:5px!important;padding:4px 0!important;font-size:11.5px!important}
+  .foot-links .foot-ico{width:40px;height:40px;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .foot-links .foot-ico svg{width:24px!important;height:24px!important}
+  .foot-links .foot-chip:active .foot-ico{border:0;box-shadow:none;transform:scale(.9)}
+  .foot-links .foot-short{text-shadow:none}
+}
