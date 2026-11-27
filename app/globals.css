@@ -1423,17 +1423,24 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .foot-links .foot-chip:hover{transform:none}
 }
 @media (max-width:639px){.foot-links .foot-short{text-shadow:0 1px 6px #05080f,0 0 2px #05080f;font-weight:600}}
-/* Phone footer v2: all four links inside one glass capsule */
+/* Phone footer v3: four circles around one glass ring, "Let's connect" in the middle */
+.foot-ring-center{display:none}
 @media (max-width:639px){
-  .foot-links{gap:0!important;padding:10px 6px;border-radius:999px;
-    background:linear-gradient(180deg,rgba(26,40,62,.78),rgba(8,14,26,.82));border:1px solid rgba(140,200,255,.28);
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 30px -14px rgba(0,0,0,.9),0 0 24px -10px rgba(111,214,255,.45)}
-  .foot-links li{width:100%;display:flex;justify-content:center;position:relative}
-  .foot-links li+li::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:1px;background:rgba(140,200,255,.16)}
-  .foot-links .foot-chip{gap:5px!important;padding:4px 0!important;font-size:11.5px!important}
-  .foot-links .foot-ico{width:40px;height:40px;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-  .foot-links .foot-ico svg{width:24px!important;height:24px!important}
-  .foot-links .foot-chip:active .foot-ico{border:0;box-shadow:none;transform:scale(.9)}
-  .foot-links .foot-short{text-shadow:none}
+  .foot-head{display:none}
+  .foot-ring{position:relative;width:300px;height:300px;margin:4px auto 0}
+  .foot-ring::before{content:'';position:absolute;inset:38px;border-radius:50%;
+    border:1px solid rgba(140,200,255,.35);
+    background:radial-gradient(circle,rgba(20,34,56,.55) 0%,rgba(8,14,26,.35) 70%,transparent 72%);
+    box-shadow:0 0 30px -8px rgba(111,214,255,.55),inset 0 0 30px -10px rgba(111,214,255,.4);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .foot-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+  .foot-ring-center b{font-family:"Barlow Condensed",Barlow,sans-serif;font-size:34px;line-height:.95;font-weight:700;text-transform:uppercase;color:#f3f6fb}
+  .foot-ring-center b span{font-size:inherit}
+  .foot-links{display:block!important;position:absolute!important;inset:0}
+  .foot-links li{position:absolute;width:auto}
+  .foot-links li:nth-child(1){top:0;left:50%;transform:translateX(-50%)}
+  .foot-links li:nth-child(2){top:50%;right:0;transform:translateY(-38%)}
+  .foot-links li:nth-child(3){bottom:-14px;left:50%;transform:translateX(-50%)}
+  .foot-links li:nth-child(4){top:50%;left:0;transform:translateY(-38%)}
+  .foot-links .foot-ico{width:58px;height:58px}
 }

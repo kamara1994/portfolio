@@ -50,7 +50,7 @@ export default function Footer() {
       <div aria-hidden className="footer-portrait" />
       <div className="foot-main wrap relative z-[2] flex flex-col gap-7 py-12 md:flex-row md:items-center md:justify-between md:py-16 lg:py-20">
         <div>
-          <p className="font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
+          <p className="foot-head font-display text-[clamp(30px,3vw,40px)] font-bold uppercase leading-none">
             Let&apos;s <span className="title-accent">connect</span>
           </p>
           <p className="foot-status mt-3 flex items-center gap-2.5 text-[15px] text-smoke">
@@ -59,6 +59,8 @@ export default function Footer() {
           </p>
         </div>
 
+        <div className="foot-ring">
+        <p className="foot-ring-center" aria-hidden="true"><b>Let&apos;s<br /><span className="title-accent">connect</span></b></p>
         <ul className="foot-links grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
           {LINKS.map((l) => (
             <li key={l.label}>
@@ -70,6 +72,7 @@ export default function Footer() {
             </li>
           ))}
         </ul>
+        </div>
       </div>
 
       <div className="relative z-[2] border-t border-line">
