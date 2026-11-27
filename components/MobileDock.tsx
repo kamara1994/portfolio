@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PwezaMark from './PwezaMark'
 import { RESUME } from './Nav'
 
@@ -12,10 +12,39 @@ const ITEMS = [
   { label: 'Contact', href: '/#contact', icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></> },
 ] as const
 
+const H = 64 // bar height
+const BH = 30 // how far the glass rises around the Ask button
+const R = 22 // corner radius
+
+/** Glass outline: a rounded bar whose top edge swells smoothly around the centered Ask button. */
+function shape(w: number) {
+  const cx = w / 2, bw = 132, y = BH, b = H + BH
+  const l = cx - bw / 2, r = cx + bw / 2
+  return [
+    `M ${R} ${y}`, `L ${l} ${y}`,
+    `C ${l + 30} ${y} ${cx - 38} ${y - BH} ${cx} ${y - BH}`,
+    `C ${cx + 38} ${y - BH} ${r - 30} ${y} ${r} ${y}`,
+    `L ${w - R} ${y}`, `A ${R} ${R} 0 0 1 ${w} ${y + R}`,
+    `L ${w} ${b - R}`, `A ${R} ${R} 0 0 1 ${w - R} ${b}`,
+    `L ${R} ${b}`, `A ${R} ${R} 0 0 1 0 ${b - R}`,
+    `L 0 ${y + R}`, `A ${R} ${R} 0 0 1 ${R} ${y}`, 'Z',
+  ].join(' ')
+}
+
 /** App-style bottom dock for phones: four shortcuts and a raised AI button. */
 export default function MobileDock() {
   const [active, setActive] = useState('')
   const [shown, setShown] = useState(false)
+  const nav = useRef<HTMLElement>(null)
+  const [w, setW] = useState(0)
+
+  useEffect(() => {
+    const el = nav.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setW(el.clientWidth))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   useEffect(() => {
     const ids = ['work', 'skills', 'contact']
@@ -39,7 +68,26 @@ export default function MobileDock() {
   }, [])
 
   return (
-    <nav aria-label="Quick links" className={`dock lg:hidden ${shown ? 'is-on' : ''}`}>
+    <nav ref={nav} aria-label="Quick links" className={`dock lg:hidden ${shown ? 'is-on' : ''}`}>
+      {w > 0 && (
+        <span className="dock-shape" aria-hidden="true" style={{ top: -BH, height: H + BH }}>
+          <svg className="dock-shadow" width={w} height={H + BH} viewBox={`0 0 ${w} ${H + BH}`}><path d={shape(w)} /></svg>
+          <span className="dock-glass" style={{ clipPath: `path('${shape(w)}')` }} />
+          <svg className="dock-line" width={w} height={H + BH} viewBox={`0 0 ${w} ${H + BH}`}>
+            <defs>
+              <linearGradient id="dock-glow" x1="0" x2={w} y1="0" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="#6FD6FF" stopOpacity=".18" />
+                <stop offset=".34" stopColor="#6FD6FF" stopOpacity=".45" />
+                <stop offset=".5" stopColor="#7FF0E0" stopOpacity="1" />
+                <stop offset=".66" stopColor="#6FD6FF" stopOpacity=".45" />
+                <stop offset="1" stopColor="#6FD6FF" stopOpacity=".18" />
+              </linearGradient>
+            </defs>
+            <path className="dock-line-glow" d={shape(w)} />
+            <path className="dock-line-core" d={shape(w)} />
+          </svg>
+        </span>
+      )}
       {ITEMS.map((it) =>
         it === null ? (
           <button
