@@ -1252,18 +1252,23 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .pz-proof-actions button, .pz-proof-actions a { font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 9px; color: #6FD6FF; border: 1px solid rgba(111,214,255,.3); background: rgba(76,201,255,.06); }
 .pz-proof-actions button:hover, .pz-proof-actions a:hover { color: #fff; border-color: #6FD6FF; }
 
-/* ---------- Phone/tablet first screen ---------- */
-.m-hero-top{display:grid;grid-template-columns:minmax(118px,36%) 1fr;align-items:end;gap:18px}
-.m-hero-photo{position:relative;margin:0}
-.m-hero-photo .portrait-glow{width:150%;opacity:.8}
-.m-hero-focus{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-.m-hero-focus li{font-size:12.5px;font-weight:600;letter-spacing:.01em;padding:5px 10px;border-radius:999px;border:1px solid rgba(144,186,255,.28);background:rgba(144,186,255,.07);color:#cfe0ff}
-.m-hero-certs{display:flex;gap:12px;margin-top:16px}
-.m-hero-certs li{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:rgba(232,238,248,.75)}
-.m-hero-certs .m-cert{width:52px;height:52px}
-.m-hero-actions{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-top:20px}
-.m-hero-actions>a{justify-content:center;text-align:center;min-height:50px;display:inline-flex;align-items:center}
-@media (min-width:640px){.m-hero-certs .m-cert{width:64px;height:64px}.m-hero-top{grid-template-columns:minmax(160px,32%) 1fr}.m-hero-actions{max-width:520px}}
+/* ---------- Phone/tablet first screen (quiet, premium) ---------- */
+.m-hero{text-align:center}
+.m-hero-photo{position:relative;margin:0 auto;width:min(54vw,240px)}
+.m-hero-photo .portrait-glow{width:150%;opacity:.85}
+.m-hero-certs{position:relative;display:flex;justify-content:center;gap:8px;margin-top:-22px}
+.m-hero-certs .m-cert{width:40px;height:40px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.m-hero-name{margin-top:22px;font-weight:700;text-transform:uppercase;line-height:.92;letter-spacing:.01em;font-size:clamp(40px,11.5vw,68px);color:#f3f6fb}
+.m-hero-focus{margin-top:14px;font-size:11.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:rgba(232,238,248,.62)}
+.m-hero-tag{margin-top:10px;font-size:17px;font-weight:600;}
+.m-hero-actions{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:24px}
+.m-hero-actions .btn-primary{min-height:50px;padding-inline:30px;display:inline-flex;align-items:center}
+.m-hero-link{min-height:48px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,238,248,.85);border-bottom:1px solid transparent}
+.m-hero-link:hover{color:#fff}
+.m-hero-more{margin:56px auto 0;max-width:34ch;font-size:16px;line-height:1.6;color:rgba(232,238,248,.82)}
+.m-hero-more .m-hero-edu{margin-top:10px;font-size:14px;color:rgba(232,238,248,.55)}
+.m-hero-more .now-line{justify-content:center;text-align:left}
+@media (min-width:640px){.m-hero-photo{width:280px}.m-hero-certs .m-cert{width:48px;height:48px}.m-hero-focus{font-size:13px}.m-hero-tag{font-size:19px}}
 
 /* ---------- Comfortable tap targets on touch screens (44px minimum) ---------- */
 @media (pointer:coarse){
