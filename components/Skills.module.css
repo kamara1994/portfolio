@@ -56,3 +56,4 @@
 }
 @media(prefers-reduced-motion:reduce){.indicator{transition:none}.card:hover,.card:focus-within{transform:none}}
 @media(min-width:768px) and (max-width:1023px){.tabs{margin-inline:-40px!important;padding-inline:40px!important;scroll-padding-inline:40px}}
+@media(pointer:coarse){.skillName{min-height:44px;margin-block:2px}}

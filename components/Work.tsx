@@ -3,7 +3,10 @@ import Link from 'next/link'
 import { projects } from '@/data/projects'
 import ProjectMedia from './ProjectMedia'
 import { RESUME } from './Nav'
+import { useState } from 'react'
 import { ROLES, RoleIcon, chooseRole, useRole } from './roles'
+
+const FIRST = 4
 
 const flagshipAll = projects.filter((p) => p.placement === 'flagship')
 
@@ -24,6 +27,7 @@ const more = projects.filter((p) => p.placement === 'more')
 
 export default function Work() {
   const role = useRole()
+  const [all, setAll] = useState(false)
   const current = ROLES.find((r) => r.id === role)
   const rank = (id: string) => {
     const i = current ? current.order.indexOf(id) : -1
@@ -54,7 +58,7 @@ export default function Work() {
           </div>
         </div>
       )}
-      {flagship.map((p, i) => (
+      {(all ? flagship : flagship.slice(0, FIRST)).map((p, i) => (
         <article key={p.id} className="wrap project-wrap py-4 md:py-6">
           <div className="hud-frame project-card grid items-center gap-5 p-5 sm:p-7 lg:grid-cols-12 lg:gap-8 lg:p-8">
             <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
@@ -68,7 +72,7 @@ export default function Work() {
               <p className="mt-3 max-w-[46ch] text-[17px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
               {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
               <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-smoke">{p.impact}</p>
-              <p className="mt-3 text-[13px] leading-relaxed text-smoke">
+              <p className="mt-3 hidden text-[13px] leading-relaxed text-smoke sm:block">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
               <div className="btn-row card-actions mt-5 flex flex-wrap gap-3">
@@ -89,7 +93,17 @@ export default function Work() {
         </article>
       ))}
 
-      {more.length > 0 && (
+      {!all && (flagship.length > FIRST || more.length > 0) && (
+        <div className="wrap project-wrap py-6 text-center">
+          <button type="button" className="btn-ghost show-all" aria-expanded={false} onClick={() => setAll(true)}>
+            Show all projects <span aria-hidden="true">↓</span>
+          </button>
+          <p className="mt-3 text-[14px] text-smoke">
+            Also: {[...flagship.slice(FIRST), ...more].map((p) => p.title).join(' · ')}
+          </p>
+        </div>
+      )}
+      {all && more.length > 0 && (
         <div className="border-t border-line">
           <div className="wrap project-wrap py-12 md:py-16">
             <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More <span className="title-accent">work</span></h2>
