@@ -26,62 +26,51 @@ function CertBadge({ c, size }: { c: (typeof CERTS)[number]; size: string }) {
 }
 
 /**
- * Phone and tablet first screen: everything a recruiter checks in the first seconds
- * (name, focus, graduation, certifications, and the two main actions) fits above the fold.
+ * Phone and tablet first screen, kept deliberately quiet: one portrait, the name, one
+ * focus line, the certifications and one main action. Details sit just below the fold.
  */
 function MobileHero() {
   return (
     <div className="m-hero lg:hidden">
-      <div className="m-hero-top">
-        <figure className="m-hero-photo hero-rise">
-          <span aria-hidden className="portrait-glow" />
-          <BlurImage
-            src="/profile/joseph-cutout.webp"
-            alt="Portrait of Joseph Allan Kamara"
-            width={806}
-            height={1143}
-            fetchPriority="high"
-            className="cutout relative w-full"
-          />
-        </figure>
-        <h1 className="hero-rise min-w-0">
-          <span className="block text-[15px] font-medium text-snow/70 sm:text-[18px]">Hi, my name is</span>
-          <span className="mt-1.5 block font-display text-[clamp(34px,10vw,64px)] font-bold uppercase leading-[0.9]">
-            Joseph
-            <br />
-            Allan
-            <br />
-            Kamara
-          </span>
-        </h1>
-      </div>
+      <figure className="m-hero-photo hero-rise">
+        <span aria-hidden className="portrait-glow" />
+        <BlurImage
+          src="/profile/joseph-cutout.webp"
+          alt="Portrait of Joseph Allan Kamara"
+          width={806}
+          height={1143}
+          fetchPriority="high"
+          className="cutout relative w-full"
+        />
+        <ul className="m-hero-certs" aria-label="Certifications">
+          {CERTS.map((c) => (
+            <li key={c.name} title={c.name}>
+              <CertBadge c={c} size="m-cert" />
+            </li>
+          ))}
+        </ul>
+      </figure>
 
-      <p className="hero-rise mt-5 text-[19px] font-semibold leading-snug text-signal sm:text-[22px]">Securing systems. Automating defense.</p>
-      <p className="hero-rise mt-2 text-[16px] leading-relaxed text-snow/85 sm:text-[18px]">
-        I build SOC automation, AWS cloud security labs, and AI tools that catch threats faster.
-      </p>
-      <ul className="m-hero-focus hero-rise" aria-label="Focused on">
-        <li>Cybersecurity</li><li>Cloud Security</li><li>IT Infrastructure</li>
-      </ul>
-      <p className="hero-rise mt-3 text-[14px] text-smoke">B.S. Cybersecurity, BYU-Idaho · graduating December 2026</p>
-
-      <ul className="m-hero-certs hero-rise" aria-label="Certifications">
-        {CERTS.map((c) => (
-          <li key={c.name}>
-            <CertBadge c={c} size="m-cert" />
-            <span>{c.name}</span>
-          </li>
-        ))}
-      </ul>
+      <h1 className="m-hero-name font-display hero-rise">
+        <span className="sr-only">Joseph Allan Kamara</span>
+        <span aria-hidden="true">Joseph Allan<br />Kamara</span>
+      </h1>
+      <p className="m-hero-focus hero-rise">Cybersecurity · Cloud&nbsp;Security · IT&nbsp;Infrastructure</p>
+      <p className="m-hero-tag text-signal hero-rise">Securing systems. Automating defense.</p>
 
       <div className="m-hero-actions hero-rise">
         <a href="#work" className="btn-primary">See my work</a>
-        <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Résumé</a>
+        <a href={RESUME} target="_blank" rel="noopener" className="m-hero-link">Résumé <span aria-hidden="true">↗</span></a>
       </div>
-      <p className="now-line mt-5">
-        <span className="now-tag">Now</span>
-        Final semester, and preparing for the AWS Security Specialty exam.
-      </p>
+
+      <div className="m-hero-more">
+        <p>I build SOC automation, AWS cloud security labs, and AI tools that catch threats faster.</p>
+        <p className="m-hero-edu">B.S. Cybersecurity, BYU-Idaho · graduating December 2026</p>
+        <p className="now-line mt-4">
+          <span className="now-tag">Now</span>
+          Final semester, and preparing for the AWS Security Specialty exam.
+        </p>
+      </div>
     </div>
   )
 }
