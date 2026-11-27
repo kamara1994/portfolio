@@ -3,10 +3,13 @@ import Link from 'next/link'
 import { projects } from '@/data/projects'
 import ProjectMedia from './ProjectMedia'
 import { RESUME } from './Nav'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ROLES, RoleIcon, chooseRole, useRole } from './roles'
 
-const FIRST = 4
+const FIRST = 3
+/** Strongest, evidence-backed projects lead by default (a chosen reader role re-sorts them). */
+const LEAD = ['blue-soc-p8', 'fortress-v2', 'blue-x']
+const leadRank = (id: string) => { const i = LEAD.indexOf(id); return i === -1 ? 99 : i }
 
 const flagshipAll = projects.filter((p) => p.placement === 'flagship')
 
@@ -28,12 +31,20 @@ const more = projects.filter((p) => p.placement === 'more')
 export default function Work() {
   const role = useRole()
   const [all, setAll] = useState(false)
+  const panel = useRef<HTMLDivElement>(null)
+  // Collapsed projects stay in the page for search engines but can't be tabbed into (React 18 lacks the inert prop).
+  useEffect(() => { if (panel.current) panel.current.inert = !all }, [all])
   const current = ROLES.find((r) => r.id === role)
   const rank = (id: string) => {
     const i = current ? current.order.indexOf(id) : -1
     return i === -1 ? 99 : i
   }
-  const flagship = current ? [...flagshipAll].sort((a, b) => rank(a.id) - rank(b.id)) : flagshipAll
+  const flagship = current ? [...flagshipAll].sort((a, b) => rank(a.id) - rank(b.id)) : [...flagshipAll].sort((a, b) => leadRank(a.id) - leadRank(b.id))
+  const extra = [...flagship.slice(FIRST), ...more]
+  const toggle = () => {
+    if (all) document.getElementById('featured-projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setAll((v) => !v)
+  }
 
   return (
     <section id="work" aria-label="Work">
@@ -58,17 +69,23 @@ export default function Work() {
           </div>
         </div>
       )}
-      {(all ? flagship : flagship.slice(0, FIRST)).map((p, i) => (
+      <div id="featured-projects" className="wrap project-wrap scroll-mt-24 pt-12 md:pt-16">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-signal">Selected work</p>
+        <h2 className="mt-2 font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">
+          Featured <span className="title-accent">projects</span>
+        </h2>
+      </div>
+      {flagship.slice(0, FIRST).map((p, i) => (
         <article key={p.id} className="wrap project-wrap py-4 md:py-6">
           <div className="hud-frame project-card grid items-center gap-5 p-5 sm:p-7 lg:grid-cols-12 lg:gap-8 lg:p-8">
             <span aria-hidden className="hud-corner tl" /><span aria-hidden className="hud-corner tr" />
             <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
             <div className={`min-w-0 lg:col-span-5 ${i % 2 ? 'lg:order-2' : ''}`}>
               <p className="text-[15px] text-smoke">{p.category}</p>
-              <h2 className="mt-3 font-display text-[clamp(32px,3.5vw,56px)] font-bold uppercase leading-[0.9]">
+              <h3 className="mt-3 font-display text-[clamp(32px,3.5vw,56px)] font-bold uppercase leading-[0.9]">
                 {splitTitle(p.title)[0]}
                 {splitTitle(p.title)[1] && <span className="title-accent">{splitTitle(p.title)[1]}</span>}
-              </h2>
+              </h3>
               <p className="mt-3 max-w-[46ch] text-[17px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
               {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
               <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-smoke">{p.impact}</p>
@@ -93,40 +110,40 @@ export default function Work() {
         </article>
       ))}
 
-      {!all && (flagship.length > FIRST || more.length > 0) && (
-        <div className="wrap project-wrap py-6 text-center">
-          <button type="button" className="btn-ghost show-all" aria-expanded={false} onClick={() => setAll(true)}>
-            Show all projects <span aria-hidden="true">↓</span>
-          </button>
-          <p className="mt-3 text-[14px] text-smoke">
-            Also: {[...flagship.slice(FIRST), ...more].map((p) => p.title).join(' · ')}
-          </p>
-        </div>
-      )}
-      {all && more.length > 0 && (
-        <div className="border-t border-line">
-          <div className="wrap project-wrap py-12 md:py-16">
-            <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">More <span className="title-accent">work</span></h2>
-            <ul className="mt-7 divide-y divide-line border-y border-line">
-              {more.map((p) => (
-                <li key={p.id}>
-                  <div className="project-card project-row grid gap-5 py-5 md:grid-cols-12 md:items-center md:px-4">
-                    <div className="relative aspect-video w-full max-w-[420px] overflow-hidden rounded-lg border border-line bg-panel md:col-span-4"><ProjectMedia project={p} controls={false} /></div>
-                    <div className="md:col-span-8">
-                      <Link href={`/projects/${p.id}`} className="card-actions font-display text-[28px] font-semibold uppercase leading-tight hover:text-signal">{p.title}</Link>
-                      <p className="mt-2 text-smoke">{p.subtitle}</p>
-                      <div className="card-actions mt-4 flex flex-wrap items-center gap-4 text-sm">
-                        <Link href={`/projects/${p.id}`} className="text-signal">How it works</Link>
-                        <Link href={`/projects/${p.id}#source-code`} className="text-signal">View source code</Link>
-                        {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="text-signal">Live demo</a>}
-                        {p.sourceAccess && <span className="text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
+      {extra.length > 0 && (
+        <div className="wrap project-wrap pb-10 pt-4">
+          <div className="more-toggle-row">
+            <button type="button" className="more-toggle" aria-expanded={all} aria-controls="more-projects" onClick={toggle}>
+              <span>{all ? 'Show fewer projects' : `Show ${extra.length} more projects`}</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            {!all && <p className="more-teaser">{extra.map((p) => p.title).join(' · ')}</p>}
+          </div>
+
+          <div id="more-projects" className="more-panel" data-open={all} ref={panel}>
+            <div className="more-panel-inner">
+              <ul className="divide-y divide-line border-y border-line">
+                {extra.map((p) => (
+                  <li key={p.id}>
+                    <div className="project-card project-row grid gap-5 py-5 md:grid-cols-12 md:items-center md:px-4">
+                      <div className="relative aspect-video w-full max-w-[420px] overflow-hidden rounded-lg border border-line bg-panel md:col-span-4"><ProjectMedia project={p} controls={false} /></div>
+                      <div className="md:col-span-8">
+                        <p className="text-[14px] text-smoke">{p.category}</p>
+                        <h3 className="mt-1"><Link href={`/projects/${p.id}`} className="card-actions font-display text-[28px] font-semibold uppercase leading-tight hover:text-signal">{p.title}</Link></h3>
+                        <p className="mt-2 text-smoke">{splitSub(p.subtitle)[0]}</p>
+                        <div className="card-actions mt-4 flex flex-wrap items-center gap-4 text-sm">
+                          <Link href={`/projects/${p.id}`} className="text-signal">How it works</Link>
+                          <Link href={`/projects/${p.id}#source-code`} className="text-signal">View source code</Link>
+                          {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="text-signal">Live demo</a>}
+                          {p.sourceAccess && <span className="text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
+                        </div>
                       </div>
+                      <Link href={`/projects/${p.id}`} className="card-link" aria-label={`Open ${p.title}`} />
                     </div>
-                    <Link href={`/projects/${p.id}`} className="card-link" aria-label={`Open ${p.title}`} />
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
