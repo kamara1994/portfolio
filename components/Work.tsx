@@ -92,12 +92,12 @@ export default function Work() {
               <p className="mt-3 hidden text-[13px] leading-relaxed text-smoke sm:block">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
-              <div className="btn-row card-actions mt-5 flex flex-wrap gap-3">
+              <div className="btn-row card-actions card-btns mt-5">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
                 <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>
-                {p.sourceAccess && <span className="self-center text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="btn-ghost">Live demo</a>}
               </div>
+              {p.sourceAccess && <p className="mb-4 mt-3 text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</p>}
             </div>
 
             <div className={`order-first min-w-0 lg:col-span-7 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>

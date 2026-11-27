@@ -1283,3 +1283,10 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .more-library-cta{display:inline-flex;align-items:center;gap:8px;min-height:48px;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9fc2ff;border-bottom:1px solid rgba(159,194,255,.35)}
 .more-library-cta:hover{color:#fff;border-color:#fff}
 @media (pointer:coarse){.more-library{display:inline-flex;align-items:center;min-height:44px}}
+
+/* Project card buttons: always side by side */
+.card-btns{display:flex;flex-wrap:wrap;gap:12px}
+.card-btns>a{white-space:nowrap}
+@media (min-width:640px){.card-btns>a{padding-inline:24px}}
+@media (min-width:1024px) and (max-width:1279px){.card-btns>a{padding-inline:18px;font-size:12.5px;letter-spacing:.12em}}
+@media (max-width:639px){.card-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card-btns>a{padding-inline:8px!important;letter-spacing:.1em!important}}
