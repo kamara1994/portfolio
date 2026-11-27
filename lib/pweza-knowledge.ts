@@ -93,6 +93,10 @@ export function wantsJoseph(text: string, previousAssistant = '') {
 }
 const lc = (x: string) => x.charAt(0).toLowerCase() + x.slice(1)
 /** Old projects that are not documented on the site (no working repo or evidence yet). */
+// Questions Joseph answers himself. Never guessed by the AI.
+const PERSONAL = ['work permit', 'work authori', 'authorized to work', 'authorised to work', 'eligible to work', 'right to work', 'visa', 'sponsor', 'green card', 'citizen', 'immigration', 'opt', 'cpt', 'h-1b', 'h1b', 'salary', 'pay range', 'expected pay', 'compensation', 'how much does he want', 'rate per hour', 'hourly rate']
+const isPersonal = (t: string) => PERSONAL.some((k) => (k.length <= 4 ? new RegExp(`\\b${k.replace(/[-]/g, '\\-')}\\b`).test(t) : t.includes(k)))
+
 const UNDOCUMENTED = ['ids', 'intrusion detection', 'cve', 'vulnerability scanner', 'threat intel', 'blue v3', 'blue-v3', 'toolkit', 'visitor intelligence']
 const isThanks = (t: string) => /\b(thank|thanks|thank you|thank u|appreciate it)\b/.test(t)
 const isGreeting = (t: string) => /^(hello|hi|hey|yo|good (morning|afternoon|evening)|what'?s up|whats up)[!. ]*$/.test(t)
@@ -233,7 +237,7 @@ export function shouldUseLocalPwezaReply(messages: Msg[]) {
   // Only small talk is scripted. Real questions go to the AI with the full knowledge base,
   // so follow-ups, detail and phrasing are understood; the scripted topics are the offline backup.
   const t = latest(messages).toLowerCase().trim()
-  return !t || isThanks(t) || isGreeting(t) || isMicCheck(t) || isAck(t) || has(t, UNDOCUMENTED)
+  return !t || isThanks(t) || isGreeting(t) || isMicCheck(t) || isAck(t) || isPersonal(t) || has(t, UNDOCUMENTED)
 }
 
 export function generateLocalPwezaReply(messages: Msg[]): PwezaReply {
@@ -243,6 +247,10 @@ export function generateLocalPwezaReply(messages: Msg[]): PwezaReply {
   if (isGreeting(t)) return { text: "Hey, I'm PWEZA. Ask me anything about Joseph's work, and I'll show you the proof." }
   if (isMicCheck(t)) return { text: "Yes, I can hear you loud and clear. Ask me anything about Joseph's work, skills or fit for a role." }
   if (isAck(t)) return { text: 'What would you like to look at next?' }
+  if (isPersonal(t)) return {
+    text: "That's one Joseph answers personally, so I won't guess. Email him with the role and location and he'll reply directly.",
+    links: [{ label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }],
+  }
   if (has(t, UNDOCUMENTED)) return {
     text: `That project isn't documented on this site, so I can't speak to it. The documented ones are ${shown.filter((p) => p.placement === 'flagship').map((p) => p.title).join(', ')}.`,
     links: [LINKS.work, LINKS.email],
