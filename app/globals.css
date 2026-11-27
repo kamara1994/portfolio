@@ -1489,3 +1489,4 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .foot-links .foot-chip:active .foot-ico{box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 24px -2px rgba(127,240,224,.9)!important}
   .foot-links::before{top:26px}.foot-links::after{top:24px}
 }
+@media (max-width:639px){.foot-links .foot-short{padding-left:.18em}}
