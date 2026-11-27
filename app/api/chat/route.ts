@@ -346,6 +346,12 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
 
         const { text: draft, failures } = await streamAnswer(sys, messages, (t) => send({ type: 'delta', t }), talk ? 220 : deep || mode === 'interview' ? 520 : 320)
         if (failures.length) console.warn('PWEZA provider failures:', failures.join(' || '), '| system chars:', sys.length)
+        // Tell Joseph on Telegram (rate-limited to one alert per 30 min) with the real error text
+        const healthWork = failures.length
+          ? (!draft.trim()
+              ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
+              : reportIssue(`PWEZA AI · ${failures[0].split(':')[0].split(' ')[0]}`, `${failures.join(' · ')} — a backup provider answered.`))
+          : Promise.resolve()
         let final = draft
         let links: ProofLink[] = []
         let suggestions: string[] = []
@@ -383,6 +389,7 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
         if (bookUrl) links = [...links.slice(0, 2), { label: BOOK_LABEL, href: bookUrl }]
         const nav = wantsNavigation(latestQuestion) ? navTarget(latestQuestion, sources) : null
         send({ type: 'done', links, audio: speech.audio, hiring: r.hiring, suggestions, nav })
+        await healthWork
       } catch (e) {
         console.error('PWEZA stream error:', e)
         send({ type: 'replace', t: "I hit a snag answering that. Try again, or email Joseph at kamarajosephallan@gmail.com." })
