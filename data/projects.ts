@@ -88,7 +88,7 @@ const projectList: Project[] = [
       'Dashboard → Live Metrics & Threat Visualization',
     ],
     sourceAccess: 'private',
-    demo: 'https://blue-dashboard-ten.vercel.app',
+    // demo: 'https://blue-dashboard-ten.vercel.app', // hidden 2026-11-27: deployment returns an error; restore when it is back up
     featured: true,
   },
   {
@@ -193,7 +193,7 @@ const projectList: Project[] = [
       'Pinecone → Vector Memory (Context Persistence)',
     ],
     github: 'https://github.com/kamara1994/blue-v3',
-    demo: 'https://blue-dashboard-ten.vercel.app',
+    // demo: 'https://blue-dashboard-ten.vercel.app', // hidden 2026-11-27: deployment returns an error
     screenshot: '/screenshots/blue-v3.webp',
   },
   {
