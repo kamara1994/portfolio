@@ -1,3 +1,5 @@
+'use client'
+import { useState } from 'react'
 import { certs } from '@/data'
 import { projects } from '@/data/projects'
 import CredentialDetails from './CredentialDetails'
@@ -35,7 +37,15 @@ const DETAIL: Record<string, { id: string; skills: string[]; projectIds: string[
 }
 const publicCredential = (c: typeof certs[number]) => c.credlyUrl || (c.name === 'Practical SOC Analyst Associate (PSAA)' ? VERIFY[c.name].href : undefined)
 
+// Strongest first for SOC, security and cloud roles
+const ORDER = ['Security+', 'Practical SOC Analyst Associate (PSAA)', 'CCNA', 'PenTest+', 'Network Vulnerability Assessment Professional (CNVP)', 'AWS Security Specialty']
+const rank = (n: string) => { const i = ORDER.indexOf(n); return i === -1 ? 99 : i }
+const PHONE_FIRST = 3
+
 export default function Credentials() {
+  const [all, setAll] = useState(false)
+  const sorted = [...certs].sort((a, b) => rank(a.name) - rank(b.name))
+  const hidden = [...sorted.slice(PHONE_FIRST).map(c => c.name.replace(/ \(.*\)$/, '')), 'B.S. Cybersecurity']
   return (
     <section id="credentials" className="lazy-section border-t border-line">
       {/* Preserve the original badge colors while making its dark ink legible on a dark card. */}
@@ -57,15 +67,15 @@ export default function Credentials() {
           Earned certifications, each with a way to verify it. Tap a name for its skills and projects.
         </p>
 
-        <ul className="cred-grid mt-8">
-          {certs.map((c) => {
+        <ul className="cred-grid mt-8" data-all={all}>
+          {sorted.map((c, i) => {
             const m = META[c.name] ?? { area: '' }
             const earned = c.status === 'earned'
             const d = DETAIL[c.name]
             const directUrl = publicCredential(c)
             const related = d ? d.projectIds.flatMap(id => { const p = projects.find(p => p.id === id && p.placement); return p ? [{ id: p.id, title: p.title }] : [] }) : []
             return (
-              <li key={c.name} id={d?.id} className={`cred-card ${earned ? '' : 'is-progress'}${c.name === 'CCNA' ? ' cred-ccna' : ''}`}>
+              <li key={c.name} id={d?.id} className={`cred-card ${earned ? '' : 'is-progress'}${c.name === 'CCNA' ? ' cred-ccna' : ''}${i >= PHONE_FIRST ? ' cred-more' : ''}`}>
                 <div className="cred-art" aria-hidden="true">
                   {m.img ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -83,17 +93,17 @@ export default function Credentials() {
                 </div>
                 <p className="cred-description mt-4 text-[14.5px] leading-relaxed text-snow/75">{m.area}</p>
                 <div className="cred-actions flex items-center justify-between gap-3">
-                  <span className={`cred-status ${earned ? 'is-earned' : ''}`}>{directUrl && earned ? '✓ Verified link' : earned ? '✅ Earned' : '⏳ In progress'}</span>
+                  {!earned && <span className="cred-status">⏳ In progress</span>}
                   {earned && (c.credlyUrl || VERIFY[c.name] ? (
-                    <a href={c.credlyUrl || VERIFY[c.name].href} target="_blank" rel="noopener noreferrer" className="tap cred-verify" title={c.credlyUrl ? 'Open individual issuer-backed credential on Credly' : VERIFY[c.name].title} aria-label={(c.credlyUrl ? 'Verify' : VERIFY[c.name].label) + ' — ' + c.name}>{c.credlyUrl ? 'Verify' : VERIFY[c.name].label} ↗</a>
+                    <a href={c.credlyUrl || VERIFY[c.name].href} target="_blank" rel="noopener noreferrer" className="tap cred-verify ml-auto" title={c.credlyUrl ? 'Open individual issuer-backed credential on Credly' : VERIFY[c.name].title} aria-label={(c.credlyUrl ? 'Verify' : VERIFY[c.name].label) + ' — ' + c.name}>{c.credlyUrl ? 'Verify' : VERIFY[c.name].label} ↗</a>
                   ) : (
-                    <a href={requestProof(c.name)} className="tap cred-verify" aria-label={'Request individual verification link for ' + c.name}>Request proof ↗</a>
+                    <a href={requestProof(c.name)} className="tap cred-verify ml-auto" aria-label={'Request individual verification link for ' + c.name}>Request proof ↗</a>
                   ))}
                 </div>
               </li>
             )
           })}
-          <li id="credential-degree" className="cred-card cred-degree">
+          <li id="credential-degree" className="cred-card cred-degree cred-more">
             <div className="cred-art cred-campus" aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="cred-campus-logo" src="/certs/byui-logo.svg" alt="" width={177} height={105} loading="eager" decoding="async" />
@@ -106,6 +116,15 @@ export default function Credentials() {
             <div className="cred-actions"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
+        {!all && (
+          <div className="cred-more-row">
+            <button type="button" className="more-toggle" aria-expanded={false} onClick={() => setAll(true)}>
+              <span>Show all credentials</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <p className="more-teaser">Also: {hidden.join(' · ')}</p>
+          </div>
+        )}
         <p className="cred-footer">
           <a href="https://www.credly.com/users/joseph-allan-kamara" target="_blank" rel="noopener noreferrer">View all on Credly ↗</a>
           <span aria-hidden="true">·</span>
