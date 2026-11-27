@@ -9,79 +9,12 @@ const CERTS = [
   { name: 'PSAA', img: '/certs/tcm-psaa.webp' },
 ]
 
-function CertBadge({ c, size }: { c: (typeof CERTS)[number]; size: string }) {
-  return (
-    <div className={`cert-box ${size}`}>
-      {c.img ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={c.img} alt={`${c.name} badge`} width={240} height={240} className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center bg-[#0E2A4A] leading-none">
-          <span className="text-[7px] font-semibold tracking-[0.18em] text-[#9CC7F0] sm:text-[9px]">CISCO</span>
-          <span className="mt-0.5 font-display text-[13px] font-bold text-white sm:text-[17px]">{c.name}</span>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/**
- * Phone and tablet first screen, kept deliberately quiet: one portrait, the name, one
- * focus line, the certifications and one main action. Details sit just below the fold.
- */
-function MobileHero() {
-  return (
-    <div className="m-hero lg:hidden">
-      <figure className="m-hero-photo hero-rise">
-        <span aria-hidden className="portrait-glow" />
-        <BlurImage
-          src="/profile/joseph-cutout.webp"
-          alt="Portrait of Joseph Allan Kamara"
-          width={806}
-          height={1143}
-          fetchPriority="high"
-          className="cutout relative w-full"
-        />
-        <ul className="m-hero-certs" aria-label="Certifications">
-          {CERTS.map((c) => (
-            <li key={c.name} title={c.name}>
-              <CertBadge c={c} size="m-cert" />
-            </li>
-          ))}
-        </ul>
-      </figure>
-
-      <h1 className="m-hero-name font-display hero-rise">
-        <span className="sr-only">Joseph Allan Kamara</span>
-        <span aria-hidden="true">Joseph Allan<br />Kamara</span>
-      </h1>
-      <p className="m-hero-focus hero-rise">Cybersecurity · Cloud&nbsp;Security · IT&nbsp;Infrastructure</p>
-      <p className="m-hero-tag text-signal hero-rise">Securing systems. Automating defense.</p>
-
-      <div className="m-hero-actions hero-rise">
-        <a href="#work" className="btn-primary">See my work</a>
-        <a href={RESUME} target="_blank" rel="noopener" className="m-hero-link">Résumé <span aria-hidden="true">↗</span></a>
-      </div>
-
-      <div className="m-hero-more">
-        <p>I build SOC automation, AWS cloud security labs, and AI tools that catch threats faster.</p>
-        <p className="m-hero-edu">B.S. Cybersecurity, BYU-Idaho · graduating December 2026</p>
-        <p className="now-line mt-4">
-          <span className="now-tag">Now</span>
-          Final semester, and preparing for the AWS Security Specialty exam.
-        </p>
-      </div>
-    </div>
-  )
-}
-
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-line pb-10 pt-[88px] md:pb-16 md:pt-24">
+    <section className="relative overflow-hidden border-b border-line pb-12 pt-20 md:pb-16 md:pt-24">
       <div className="wrap relative">
-        <MobileHero />
-        {/* Desktop: name | portrait | focus */}
-        <div className="hidden items-center gap-7 lg:grid lg:grid-cols-12 lg:gap-6">
+        {/* Name | portrait | focus */}
+        <div className="grid items-center gap-7 lg:grid-cols-12 lg:gap-6">
           <figure className="hero-rise relative mx-auto w-[56%] max-w-[230px] sm:w-[70%] sm:max-w-[340px] lg:order-2 lg:col-span-4 lg:col-start-5 lg:w-full lg:max-w-[440px]">
             <span aria-hidden className="portrait-glow" />
             <BlurImage
