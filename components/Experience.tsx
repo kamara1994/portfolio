@@ -1,3 +1,5 @@
+'use client'
+import { useState } from 'react'
 import { experiences } from '@/data'
 import RevealRows from './RevealRows'
 
@@ -8,21 +10,25 @@ const META: Record<string, { icon: string; tags: string[] }> = {
   'ELITECOM Engineers Sierra Leone': { icon: '🏗️', tags: ['Next.js', 'Tailwind CSS', 'Security controls', 'Secure deployment'] },
 }
 
+const PHONE_FIRST = 2
+
 export default function Experience() {
+  const [all, setAll] = useState(false)
+  const rest = experiences.slice(PHONE_FIRST)
   return (
     <section id="experience" className="lazy-section border-t border-line">
-      <div className="wrap py-16 md:py-32">
+      <div className="wrap pb-8 pt-16 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Exper<span className="title-accent">ience</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
           Support, teaching, and building: the work that sits behind the projects.
         </p>
 
         <RevealRows selector=".exp-row" />
-        <ol className="exp-list-wrap mt-10 md:mt-14">
-          {experiences.map((e) => {
+        <ol className="exp-list-wrap mt-10 md:mt-14" data-all={all}>
+          {experiences.map((e, i) => {
             const m = META[e.company] ?? { icon: '🤝', tags: ['Operations', 'Documentation', 'Coordination'] }
             return (
-              <li key={e.company + e.role} className="exp-row">
+              <li key={e.company + e.role} className={`exp-row${i >= PHONE_FIRST ? ' phone-more' : ''}`}>
                 <p className="exp-date">
                   {e.current && <span aria-hidden className="status-dot !h-1.5 !w-1.5" />}
                   {e.dates === 'Current' ? 'Now' : e.dates}
@@ -43,6 +49,15 @@ export default function Experience() {
             )
           })}
         </ol>
+        {!all && rest.length > 0 && (
+          <div className="phone-more-row">
+            <button type="button" className="more-toggle" aria-expanded={false} onClick={() => setAll(true)}>
+              <span>Show all experience</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <p className="more-teaser">Also: {rest.map((e) => e.role).join(' · ')}</p>
+          </div>
+        )}
       </div>
     </section>
   )

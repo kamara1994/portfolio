@@ -1490,3 +1490,9 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .foot-links::before{top:26px}.foot-links::after{top:24px}
 }
 @media (max-width:639px){.foot-links .foot-short{padding-left:.18em}}
+/* Phone: Experience and Story show the essentials first */
+.phone-more-row{display:none}
+@media (max-width:639px){
+  [data-all="false"] > .phone-more{display:none!important}
+  .phone-more-row{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px;text-align:center}
+}
