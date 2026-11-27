@@ -17,7 +17,7 @@ export default function Experience() {
   const rest = experiences.slice(PHONE_FIRST)
   return (
     <section id="experience" className="lazy-section border-t border-line">
-      <div className="wrap pb-8 pt-16 md:py-32">
+      <div className="wrap pb-8 pt-16 md:pb-20 md:pt-24">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Exper<span className="title-accent">ience</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
           Support, teaching, and building: the work that sits behind the projects.

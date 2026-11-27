@@ -61,7 +61,7 @@ export default function Credentials() {
           </filter>
         </defs>
       </svg>
-      <div className="wrap py-16 md:py-32">
+      <div className="wrap py-16 md:py-24">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
           Earned certifications, each with a way to verify it. Tap a name for its skills and projects.
