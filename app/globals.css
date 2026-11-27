@@ -1481,3 +1481,11 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 }
 @media (max-width:639px) and (prefers-reduced-motion:reduce){.foot-links::after{animation:none;display:none}}
 @media (max-width:639px){.foot-ring{width:100%!important;max-width:360px;margin-left:auto!important;margin-right:auto!important;align-self:stretch}}
+/* Phone footer: rounded-square glass tiles instead of circles */
+@media (max-width:639px){
+  .foot-links .foot-ico{width:58px!important;height:52px!important;border-radius:14px!important;
+    background:linear-gradient(180deg,rgba(34,56,88,.6),rgba(6,12,24,.9))!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 18px -6px rgba(127,240,224,.6)!important}
+  .foot-links .foot-chip:active .foot-ico{box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 24px -2px rgba(127,240,224,.9)!important}
+  .foot-links::before{top:26px}.foot-links::after{top:24px}
+}
