@@ -57,3 +57,37 @@
 @media(prefers-reduced-motion:reduce){.indicator{transition:none}.card:hover,.card:focus-within{transform:none}}
 @media(min-width:768px) and (max-width:1023px){.tabs{margin-inline:-40px!important;padding-inline:40px!important;scroll-padding-inline:40px}}
 @media(pointer:coarse){.skillName{min-height:44px;margin-block:2px}}
+
+/* ---------- Calmer cards: dot instead of label box, one line of proof links ---------- */
+.evDot{flex:none;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:2px}
+.ev-both{background:#c4b5fd;box-shadow:0 0 8px rgba(196,181,253,.7)}
+.ev-built{background:#6fd6ff;box-shadow:0 0 8px rgba(111,214,255,.7)}
+.ev-cert{background:#4be3c8;box-shadow:0 0 8px rgba(75,227,200,.7)}
+.proofLine{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;margin-top:auto!important;margin-bottom:0!important;max-width:100%!important;font-size:13px!important;line-height:1.5}
+.proofLabel{margin-right:8px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7d8da3}
+.proofItem{display:inline-flex;align-items:center}
+.sep{margin:0 7px;color:#4d5d74}
+.lineProj{color:#9fc8ff}
+.lineCert{color:#7fe3c9}
+.lineProj:hover,.lineCert:hover{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.moreRow{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px;text-align:center}
+.moreNames{max-width:62ch;font-size:13.5px;line-height:1.6;color:rgba(232,238,248,.5)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:12px;color:#8495ab}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+/* ---------- One simple filter bar ---------- */
+.toolbar{align-items:center!important;padding:6px!important}
+.search{height:44px;border-color:transparent!important;background:transparent!important}
+.role{flex-direction:row!important;align-items:center;gap:6px!important;min-width:0!important;padding:0 4px 0 12px;border-left:1px solid #26364b;color:#93c6ed}
+.role svg{width:17px;height:17px;flex:none}
+.role select{min-height:40px!important;border:0!important;background:transparent!important;padding:0 6px!important;font-size:13.5px!important;color:#cfe0f5!important;cursor:pointer}
+@media(max-width:639px){.toolbar{flex-wrap:nowrap!important}.search{flex-basis:auto!important;flex:1}.role{flex:none!important;padding-left:8px}.role select{max-width:108px}}
+@media (pointer:coarse){.proofLine a{display:inline-flex;align-items:center;min-height:36px}}
+/* proof line flows as text so wrapped lines never start with a separator */
+.proofLine{display:block!important;line-height:1.75!important}
+.proofItem{display:inline;white-space:nowrap}
+.proofLabel{display:inline-block}
+@media (pointer:coarse){.proofLine{line-height:2.1!important}.proofLine a{display:inline;min-height:0;padding-block:6px}}
+.proofItem{margin-right:16px}
+.askPweza{display:inline-flex;align-items:center;gap:9px;min-height:46px;margin-top:18px;padding:0 18px;border-radius:999px;border:1px solid rgba(127,240,224,.4);background:linear-gradient(180deg,rgba(127,240,224,.12),rgba(127,240,224,.04));color:#c9fff4;font-size:14px;font-weight:600;transition:background .2s,border-color .2s}
+.askPweza svg{width:16px;height:16px;color:#7ff0e0}
+.askPweza:hover{background:rgba(127,240,224,.18);border-color:#7ff0e0;color:#fff}

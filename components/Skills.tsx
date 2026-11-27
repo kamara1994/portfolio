@@ -53,6 +53,15 @@ function projectFor(id:string) {return projects.find(p=>p.id===id && p.placement
 function Proof({skill,onNavigate}:{skill:Skill;onNavigate?:()=>void}) {
  return <div className={styles.proofs}>{skill.projects?.map(id=>{const p=projectFor(id);return p?<Link key={id} onClick={onNavigate} href={'/projects/'+id} className={'sk-proof sk-proof-link '+styles.proj} title="Project evidence"><span aria-hidden="true">🛠️</span>{PROJECT_NAMES[id]||p.title} ↗</Link>:null})}{skill.certs?.map(c=>CERTS[c]?<Link key={c} onClick={onNavigate} href={'/#'+CERTS[c]} className={'sk-proof sk-proof-link '+styles.cert} title="Certification coverage"><span aria-hidden="true">🏅</span>{c} ↗</Link>:<span key={c} className={'sk-proof '+styles.cert}><span aria-hidden="true">🏅</span>{c}</span>)}</div>
 }
+/** Card version of the proof: one quiet line of links instead of a row of chips. */
+function ProofLine({skill}:{skill:Skill}) {
+ const items=[
+  ...(skill.projects||[]).flatMap(id=>{const p=projectFor(id);return p?[<Link key={id} href={'/projects/'+id} className={'sk-proof-link '+styles.lineProj}>{PROJECT_NAMES[id]||p.title}</Link>]:[]}),
+  ...(skill.certs||[]).map(c=>CERTS[c]?<Link key={c} href={'/#'+CERTS[c]} className={'sk-proof-link '+styles.lineCert}>{c}</Link>:<span key={c} className={styles.lineCert}>{c}</span>),
+ ]
+ if(!items.length)return null
+ return <p className={styles.proofLine}><span className={styles.proofLabel}>Proven in</span>{items.map((it,i)=><span key={i}><span className={styles.proofItem}>{it}</span>{' '}</span>)}</p>
+}
 function Preview({project:p}:{project:Project}) {
  const source=p.screenshot||p.evidenceImages?.[0]?.src
  const caption=p.evidenceImages?.find(i=>i.src===source)?.caption || p.mediaLabel || 'Existing project image'
@@ -68,6 +77,7 @@ export default function Skills() {
  const [active,setActive]=useState(SKILL_CATEGORIES[0].id)
  const [query,setQuery]=useState('')
  const [recruiter,setRecruiter]=useState('')
+ const [expanded,setExpanded]=useState(false)
  const [selected,setSelected]=useState<{cat:SkillCategory;skill:Skill}|null>(null)
  const dialog=useRef<HTMLDialogElement>(null)
  const tabs=useRef<(HTMLButtonElement|null)[]>([])
@@ -94,7 +104,10 @@ export default function Skills() {
  const searching=Boolean(query.trim()||chosenRole)
  const results=useMemo(()=>{const tokens=query.trim().toLowerCase().split(/\s+/).filter(Boolean);return ALL.filter(({cat:c,skill:s})=>(!chosenRole||chosenRole.cats.includes(c.id))&&tokens.every(t=>[s.name,s.what,c.title,...(s.certs||[]),...(s.projects||[]).map(p=>projectFor(p)?.title||p)].join(' ').toLowerCase().includes(t)))},[query,chosenRole])
  const shown=searching?results:cat.skills.map(skill=>({cat,skill}))
- function choose(id:string){setActive(id);setQuery('');setRecruiter('')}
+ const FIRST=4
+ const visible=searching||expanded?shown:shown.slice(0,FIRST)
+ const hiddenCount=shown.length-visible.length
+ function choose(id:string){setActive(id);setQuery('');setRecruiter('');setExpanded(false)}
  function onKey(e:KeyboardEvent){const i=SKILL_CATEGORIES.findIndex(c=>c.id===active);const n=SKILL_CATEGORIES.length;const to:Record<string,number>={ArrowDown:i+1,ArrowRight:i+1,ArrowUp:i-1,ArrowLeft:i-1,Home:0,End:n-1};if(!(e.key in to))return;e.preventDefault();const j=(to[e.key]+n)%n;choose(SKILL_CATEGORIES[j].id);tabs.current[j]?.focus()}
  function open(c:SkillCategory,s:Skill){lastFocus.current=document.activeElement as HTMLElement;setSelected({cat:c,skill:s})}
  useEffect(()=>{if(selected&&dialog.current&&!dialog.current.open)dialog.current.showModal()},[selected])
@@ -102,13 +115,13 @@ export default function Skills() {
  function afterClose(){setSelected(null);lastFocus.current?.focus({preventScroll:true})}
  const related=selected?.skill.projects?.flatMap(id=>{const p=projectFor(id);return p?[p]:[]})||[]
  return <section id="skills" className="lazy-section border-t border-line">
-  <div className="wrap py-16 md:py-32">
+  <div className="wrap py-14 md:py-20">
    <p className="text-[clamp(18px,1.4vw,22px)] font-medium text-signal">Applied skills</p>
    <h2 className="mt-3 font-display text-[clamp(38px,4.4vw,68px)] font-bold uppercase leading-[0.95]">Skills with <span className="title-accent">proof</span></h2>
    <p className="mt-5 max-w-[60ch] text-[17px] leading-relaxed text-smoke">Explore the technologies, documented work and certification coverage behind each skill.</p>
    <div className={styles.toolbar}>
      <label className={styles.search}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" aria-label="Search all skills" placeholder="Search skills, tools, certifications…" value={query} onChange={e=>setQuery(e.target.value)}/></label>
-     <label className={styles.role}><span>Recruiter focus</span><select aria-label="Filter skills by role" value={recruiter} onChange={e=>setRecruiter(e.target.value)}><option value="">All roles</option>{ROLES.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
+     <label className={styles.role}><span className="sr-only">Recruiter focus</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 3.8-5.5 7-5.5s5.8 1.9 7 5.5"/></svg><select aria-label="Filter skills by role" value={recruiter} onChange={e=>setRecruiter(e.target.value)}><option value="">Any role</option>{ROLES.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
      {searching&&<button className={styles.reset} onClick={()=>{setQuery('');setRecruiter('')}}>Reset ×</button>}
    </div>
    <div className={styles.layout}>
@@ -120,7 +133,9 @@ export default function Skills() {
      <div className={styles.heading} style={artStyle(cat)}><Icon name={cat.icon}/><div><h3>{searching?'Matching skills':cat.title}</h3><p>{searching?shown.length+' skill'+(shown.length===1?'':'s')+(chosenRole?' · '+chosenRole.label:'') :cat.summary}</p></div></div>
      {searching&&chosenRole&&<p className={styles.note}>Role filters match subject areas, not measured proficiency.</p>}
      {!searching&&<details className={styles.relationship}><summary>How these skills connect <span aria-hidden="true">+</span></summary><p>Illustrative technical workflow — not a claim that every step was deployed together.</p><div className={styles.nodes}>{(FLOWS[cat.id]||[]).map((name,i)=>{const s=cat.skills.find(s=>s.name===name);return s?<div key={name}>{i>0&&<span aria-hidden="true">→</span>}<button onClick={()=>open(cat,s)}>{name}</button></div>:null})}</div></details>}
-     <ul className={styles.cards}>{shown.map(({cat:c,skill:s})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}>{BRAND[s.name]&&<Artwork cat={c} skill={s}/>}<div className={styles.cardContent}><div className={styles.meta}>{searching&&<span>{c.title}</span>}<span className={'sk-ev '+ev.cls}>{ev.text}</span></div><button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog">{s.name}<span aria-hidden="true">↗</span></button><p>{s.what}</p><Proof skill={s}/></div></li>})}</ul>
+     <ul className={styles.cards}>{visible.map(({cat:c,skill:s})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}>{BRAND[s.name]&&<Artwork cat={c} skill={s}/>}<div className={styles.cardContent}>{searching&&<div className={styles.meta}><span>{c.title}</span></div>}<button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog"><i className={styles.evDot+' '+styles[ev.cls]} title={ev.text} aria-hidden="true"/>{s.name}<span className="sr-only"> ({ev.text})</span><span aria-hidden="true">↗</span></button><p>{s.what}</p><ProofLine skill={s}/></div></li>})}</ul>
+     {!searching&&shown.length>FIRST&&<div className={styles.moreRow}><button type="button" className="more-toggle" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}><span>{expanded?'Show fewer skills':'Show all skills'}</span><svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>{!expanded&&hiddenCount>0&&<p className={styles.moreNames}>Also: {shown.slice(FIRST).map(x=>x.skill.name).join(' · ')}</p>}</div>}
+     <p className={styles.legend}><span><i className={styles.evDot+' '+styles['ev-both']} aria-hidden="true"/>Project + cert</span><span><i className={styles.evDot+' '+styles['ev-built']} aria-hidden="true"/>Project evidence</span><span><i className={styles.evDot+' '+styles['ev-cert']} aria-hidden="true"/>Cert coverage</span></p>
      {!shown.length&&<div className={styles.empty}>No matching skills. Try a different search or reset the role filter.</div>}
     </div>
    </div>
@@ -129,6 +144,7 @@ export default function Skills() {
    {selected&&<div className={styles.dialogInner} style={artStyle(selected.cat)}>
     <header className={styles.dialogTop}><span>{selected.cat.title} / Skill evidence</span><button type="button" autoFocus onClick={close} aria-label="Close skill details">×</button></header>
     <div className={styles.detailHero}><Artwork skill={selected.skill} cat={selected.cat} large/><div><h2 id="skill-viewer-title">{selected.skill.name}</h2><span className={'sk-ev '+evidence(selected.skill).cls}>{evidence(selected.skill).text}</span><p>{selected.skill.what}</p></div></div>
+    <button type="button" className={styles.askPweza} onClick={()=>{const q=`How has Joseph used ${selected.skill.name}? Which project or certification shows it?`;close();window.dispatchEvent(new CustomEvent('pweza:ask',{detail:q}))}}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" fill="currentColor"/></svg>Ask PWEZA how Joseph used this<span aria-hidden="true">→</span></button>
     <section className={styles.detailSection}><h3>Supporting credentials and case studies</h3><Proof skill={selected.skill} onNavigate={close}/><p className={styles.note}>Certification coverage describes relevant topics, not a separate endorsement for each technology.</p></section>
     {related.length>0?<section className={styles.detailSection}><h3>Documented project evidence</h3><div className={styles.previewGrid}>{related.map(p=><Preview key={p.id} project={p}/>)}</div></section>:<p className={styles.note}>No published implementation is linked to this skill yet; certification coverage only.</p>}
    </div>}
