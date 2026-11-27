@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import { attackStats } from '@/lib/pweza/guard'
+import { lastEval, CASES } from '@/lib/pweza/eval'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
@@ -20,11 +21,13 @@ const LAYERS = [
   ['Independent fact-checker', 'A second agent reviews every answer against the knowledge base and rewrites anything unsupported before it is final.'],
   ['Least-privilege tools', 'The assistant cannot browse, run code or reach private data. Its only actions are answering, linking pages and alerting Joseph.'],
   ['Rate limits & abuse controls', 'Per-visitor throttles on chat, alerts, briefings and résumé generation; attack alerts are de-duplicated.'],
+  ['Honesty tests on every change', 'Automated tests run on every code change: visa, salary and work-authorization questions must go to Joseph, injections must be refused, and the facts may never overclaim. A failing test blocks the change.'],
+  ['Daily honesty exam', 'Once a day the live assistant answers a set of trick questions (fake employers, fake projects, injected instructions, overclaiming bait) and is scored automatically. Results are below.'],
   ['Human in the loop', 'Joseph is alerted to attacks, hiring conversations and unanswered questions, and can take over any chat live.'],
 ]
 
 export default async function AISecurityPage() {
-  const { counts, recent } = await attackStats()
+  const [{ counts, recent }, exam] = await Promise.all([attackStats(), lastEval()])
   const total = Number(counts.total || 0)
   const cats = Object.entries(counts).filter(([k]) => k !== 'total').sort((a, b) => Number(b[1]) - Number(a[1]))
   return (
@@ -46,6 +49,27 @@ export default async function AISecurityPage() {
           <ol className="aisec-layers">
             {LAYERS.map(([t, d], i) => <li key={t}><span>{i + 1}</span><div><b>{t}</b><p>{d}</p></div></li>)}
           </ol>
+        </section>
+
+        <section className="aisec-card">
+          <h2>Daily honesty exam</h2>
+          {exam ? (
+            <>
+              <p className="aisec-exam-score"><b>{exam.passed}/{exam.total}</b> trick questions passed · {new Date(exam.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
+              <ul className="aisec-exam">
+                {exam.results.map((r) => (
+                  <li key={r.id} className={r.pass ? 'ok' : 'bad'}>
+                    <span className="tag">{r.pass ? '✓ Pass' : '✗ Fail'}</span>
+                    <span className="area">{r.area}</span>
+                    <span className="q">{r.q}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="aisec-muted">The first exam runs within a day. It asks the live assistant {CASES.length} trick questions and scores the answers automatically.</p>
+          )}
+          <p className="aisec-muted">Scored by rules, not by another AI: an answer fails if it invents an employer or project, claims an unearned certification, quotes unconfirmed figures, answers a visa or salary question itself, or follows an injected instruction.</p>
         </section>
 
         <section className="aisec-card">

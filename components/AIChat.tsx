@@ -11,7 +11,7 @@ type Source = { n: number; title: string; href: string }
 type FitItem = { requirement: string; status: 'strong' | 'partial' | 'gap'; evidence: string; href?: string }
 type Fit = { role: string; company?: string; score: number; summary: string; items: FitItem[]; strengths: string[]; gaps: string[] }
 type Triage = { verdict: string; severity: 'Low' | 'Medium' | 'High' | 'Critical'; mitre: { id: string; name: string }[]; why: string[]; next: string[] }
-type Card = { title: string; subtitle: string; href: string; image: string | null; status: string; stack: string[] }
+type Card = { title: string; subtitle: string; href: string; image: string | null; video?: string | null; github?: string | null; result?: string; status: string; stack: string[] }
 type Msg = {
   role: 'user' | 'assistant' | 'joseph' | 'system'; content: string; links?: ProofLink[]; sources?: Source[]; fit?: Fit; checked?: boolean; streaming?: boolean; href?: string
   triage?: Triage; card?: Card; hrefLabel?: string; nav?: string | null; voice?: string; q?: string; vote?: 'up' | 'down'; jobPost?: string
@@ -97,6 +97,7 @@ export default function AIChat() {
   const [canListen, setCanListen] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const langRef = useRef<string>("en")
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const recRef = useRef<any>(null)
   const [live, setLive] = useState(false)
@@ -245,7 +246,7 @@ export default function AIChat() {
       const playAudio = async (audio?: string | null, text?: string) => {
         if (!(voiceOut || talkRef.current)) return
         if (!audio && text) {
-          try { audio = (await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }).then((r) => r.json())).audio } catch { /* fall through */ }
+          try { audio = (await fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, lang: langRef.current }) }).then((r) => r.json())).audio } catch { /* fall through */ }
         }
         if (!audio) {
           const resume = () => { if (talkRef.current) setTimeout(() => listen(true), 300) }
@@ -285,11 +286,11 @@ export default function AIChat() {
             if (!line.trim()) continue
             let ev: any
             try { ev = JSON.parse(line) } catch { continue }
-            if (ev.type === 'meta') { begin(); patch((m) => ({ ...m, sources: ev.sources, card: ev.card, q })) }
+            if (ev.type === 'meta') { begin(); if (typeof ev.lang === 'string') langRef.current = ev.lang; patch((m) => ({ ...m, sources: ev.sources, card: ev.card, q })) }
             else if (ev.type === 'delta') { begin(); spoken += ev.t; pending += ev.t; flush(); patch((m) => ({ ...m, content: m.content + ev.t })) }
             else if (ev.type === 'replace') { begin(); spoken = ev.t; if (talking && !voiced) { pending = ev.t; flush(true) } patch((m) => ({ ...m, content: ev.t, checked: !!ev.checked })) }
             else if (ev.type === 'done') {
-              begin(); patch((m) => ({ ...m, links: ev.links, nav: ev.nav, streaming: false, q }))
+              begin(); patch((m) => ({ ...m, links: ev.links, nav: ev.nav, streaming: false, q, ...(ev.card && !m.card ? { card: ev.card } : {}) }))
               if (Array.isArray(ev.suggestions)) setSmart(ev.suggestions.slice(0, 3))
               if (ev.hiring) setLeadOpen(true)
               if (talking) { flush(true); speechDone() } else playAudio(ev.audio, spoken)
@@ -347,7 +348,7 @@ export default function AIChat() {
     if (auto && !talkRef.current) return
     if (listening && !auto) { recRef.current?.stop(); return }
     const r = new SR()
-    r.lang = 'en-US'
+    r.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US'
     r.interimResults = false
     r.onstart = () => setListening(true)
     r.onend = () => setListening(false)
@@ -361,7 +362,7 @@ export default function AIChat() {
   }
   // ---------- 🎙 Live-call voice engine ----------
   function fetchVoice(text: string): Promise<string | null> {
-    return fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) })
+    return fetch('/api/chat/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, lang: langRef.current }) })
       .then((r) => r.json()).then((d) => d.audio || null).catch(() => null)
   }
   function stopSpeaking() {
@@ -412,7 +413,7 @@ export default function AIChat() {
     const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
     if (!SR || !talkRef.current || bargeRef.current) return
     const r = new SR()
-    r.lang = 'en-US'; r.interimResults = true; r.continuous = false
+    r.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US'; r.interimResults = true; r.continuous = false
     let barged = false, sent = false
     const isEcho = (t: string) => {
       const words = t.toLowerCase().match(/[a-z']{3,}/g) || []
@@ -574,10 +575,25 @@ export default function AIChat() {
               )}
               {m.voice && <audio controls preload="none" src={m.voice} className="pz-voice" />}
               {m.card && (
-                <button type="button" onClick={() => goTo(m.card!.href)} className="pz-card">
-                  {m.card.image && <img src={m.card.image} alt="" loading="lazy" />}
-                  <span><b>{m.card.title}</b><em>{m.card.subtitle}</em><small>{m.card.stack.join(' · ')}</small></span>
-                </button>
+                <div className="pz-proof-card">
+                  {(m.card.video || m.card.image) && (
+                    <button type="button" className="pz-proof-media" aria-label={`Enlarge ${m.card.title} preview`} onClick={(e) => e.currentTarget.classList.toggle('is-big')}>
+                      {m.card.video
+                        ? <video src={m.card.video} poster={m.card.image || undefined} muted autoPlay loop playsInline />
+                        : <img src={m.card.image!} alt={`${m.card.title} screenshot`} loading="lazy" />}
+                    </button>
+                  )}
+                  <div className="pz-proof-body">
+                    <div className="pz-proof-top"><b>{m.card.title}</b><span className="pz-proof-status">{m.card.status.replace(/-/g, ' ')}</span></div>
+                    <em>{m.card.subtitle}</em>
+                    {m.card.result && <p className="pz-proof-result"><span>Result</span>{m.card.result}</p>}
+                    <small>{m.card.stack.join(' · ')}</small>
+                    <div className="pz-proof-actions">
+                      <button type="button" onClick={() => goTo(m.card!.href)}>Case study →</button>
+                      {m.card.github && <a href={m.card.github} target="_blank" rel="noopener">Code ↗</a>}
+                    </div>
+                  </div>
+                </div>
               )}
               {m.triage && (
                 <div className="pz-triage">

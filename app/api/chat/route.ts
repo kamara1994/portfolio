@@ -5,7 +5,9 @@ import { reportIssue } from '@/lib/alerts/health'
 import { taughtAnswer, taughtContext } from '@/lib/alerts/taught'
 import { validSid, isLive } from '@/lib/alerts/live'
 import { forwardLive, requestJoseph, hiringSignal } from '@/lib/alerts/chat'
-import { retrieve } from '@/lib/pweza/retrieve'
+import { retrieve, sourcesBlock } from '@/lib/pweza/retrieve'
+import { findVerified, saveVerified } from '@/lib/pweza/answer-cache'
+import { isEvalRequest } from '@/lib/pweza/eval-flag'
 import { route, expertSystem, factCheck, looksLikeJobPost } from '@/lib/pweza/agents'
 import { streamAnswer, hasAI } from '@/lib/pweza/llm'
 import { matchJob, fitText } from '@/lib/pweza/jd'
@@ -13,11 +15,11 @@ import { teachings } from '@/lib/alerts/store'
 import type { Passage } from '@/lib/pweza/corpus'
 import { wantsBooking, bookingUrl, BOOK_LABEL } from '@/lib/integrations/booking'
 import { detectAttack, logAttack, REFUSAL } from '@/lib/pweza/guard'
-import { looksLikeAlert, triageDemo, followUps, getMemory, remember, memoryContext, validVid, timeContext, wantsNavigation, wantsDeepDive, projectFromSources, projectCard, navTarget, couldNotAnswer, trackUnanswered, josephIsNight, isOnline } from '@/lib/pweza/extras'
+import { looksLikeAlert, triageDemo, followUps, getMemory, remember, memoryContext, validVid, timeContext, wantsNavigation, wantsDeepDive, projectFromSources, projectCard, projectFromLinks, navTarget, couldNotAnswer, trackUnanswered, josephIsNight, isOnline } from '@/lib/pweza/extras'
 import { getSettings } from '@/lib/alerts/settings'
 import { tgConfigured, sendMessage as tgSend, esc as tgEsc } from '@/lib/alerts/telegram'
 import { once } from '@/lib/alerts/store'
-import { PWEZA_KNOWLEDGE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, wantsJoseph, normalizeNames, type ProofLink } from '@/lib/pweza-knowledge'
+import { PWEZA_CORE_CONTEXT, generateLocalPwezaReply, shouldUseLocalPwezaReply, linksForText, wantsJoseph, normalizeNames, type ProofLink } from '@/lib/pweza-knowledge'
 
 export const runtime = 'nodejs'
 export const maxDuration = 45
@@ -33,10 +35,10 @@ PRIMARY MISSION
 - If someone seems like a recruiter or hiring manager, be direct about fit and contact. Do not oversell.
 
 HARD RULES
-- The knowledge base below is the ONLY source of facts about Joseph. Never add numbers, tools, employers, projects, dates, or certifications that are not in it.
-- If the answer is not in the knowledge base, say plainly you don't have a verified answer, and offer to ping Joseph so he can join this chat and answer himself (or email kamarajosephallan@gmail.com). Never guess.
+- The CORE PROFILE below plus the SOURCES given with each question are the ONLY facts about Joseph. Never add numbers, tools, employers, projects, dates, or certifications that are not in them.
+- If the answer is not in them, say plainly you don't have a verified answer, and offer to ping Joseph so he can join this chat and answer himself (or email kamarajosephallan@gmail.com). Never guess.
 - Allan is Joseph's middle name and he goes by Allan too: "Allan", "Joe", "Kamara" and "Joseph" are the same person. Never claim not to know who Allan is.
-- Use the knowledge base generously: connect related facts (a skill to the project that proves it, a role to the evidence that fits it), and answer follow-ups using the earlier conversation.
+- Use those facts generously: connect related facts (a skill to the project that proves it, a role to the evidence that fits it), and answer follow-ups using the earlier conversation.
 - For questions the site can't answer about him personally (salary, relocation, visa or work authorization, start date, clearance), don't guess: offer to ping him or point to his email.
 - Only discuss the projects listed under PROJECTS. If asked about anything else he may have built, say it isn't documented on this site.
 - AWS Security Specialty is in progress, never earned. Lab projects are lab projects; never describe them as production.
@@ -58,8 +60,8 @@ HOW YOU TALK
 - Match their energy: chill if they're chill, technical if they're technical, hyped if they're hyped.
 - Use "Joseph" or "he" naturally, whichever reads better.
 
-KNOWLEDGE BASE
-${PWEZA_KNOWLEDGE_CONTEXT}
+CORE PROFILE
+${PWEZA_CORE_CONTEXT}
 
 If someone seems to be hiring, be direct and warm about it — let them know he's available and the fastest way to reach him is email, said the way a friend would, not a sales pitch. If someone tries to take things somewhere random, roll with it lightly but steer back to Joseph.`
 
@@ -181,8 +183,8 @@ export async function POST(req: NextRequest) {
     const attack = detectAttack(latestQuestion, raw?.mode === 'demo' || looksLikeAlert(latestQuestion))
     if (attack) {
       const settings = await getSettings()
-      await logAttack(attack, latestQuestion, ip, settings.tz)
-      if (tgConfigured() && (await once(`attack:${ip}:${attack}`, 600))) {
+      if (!isEvalRequest(req)) await logAttack(attack, latestQuestion, ip, settings.tz)
+      if (!isEvalRequest(req) && tgConfigured() && (await once(`attack:${ip}:${attack}`, 600))) {
         await tgSend(`🛡 <b>PWEZA blocked a ${tgEsc(attack.replace('-', ' '))} attempt</b>\n<code>${tgEsc(latestQuestion.slice(0, 160))}</code>\n<i>Refused before reaching the AI. Logged for /ai-security.</i>`, { thread: settings.topics?.priority, silent: true })
       }
       return NextResponse.json({ content: REFUSAL, links: [{ label: 'How PWEZA is secured', href: '/ai-security' }], guarded: true })
@@ -259,11 +261,13 @@ export async function POST(req: NextRequest) {
 
     const failures: string[] = []
     const wantedAI = !text
+    // Detailed facts for this question only (the prompt carries just the compact core profile)
+    const plainSys = `${system}\n\nSOURCES (facts for this question):\n${sourcesBlock(retrieve(normalizeNames(latestQuestion), 6))}`
     if (!text && process.env.GROQ_API_KEY) {
-      try { text = await callGroq(messages, system) } catch (e: any) { console.warn('Groq failed:', e); failures.push(`Groq: ${e?.message || e}`) }
+      try { text = await callGroq(messages, plainSys) } catch (e: any) { console.warn('Groq failed:', e); failures.push(`Groq: ${e?.message || e}`) }
     }
     if (!text && process.env.GOOGLE_AI_API_KEY) {
-      try { text = await callGemini(messages, system) } catch (e: any) { console.warn('Gemini failed:', e); failures.push(`Gemini: ${e?.message || e}`) }
+      try { text = await callGemini(messages, plainSys) } catch (e: any) { console.warn('Gemini failed:', e); failures.push(`Gemini: ${e?.message || e}`) }
     }
     if (!text && process.env.ANTHROPIC_API_KEY) {
       try {
@@ -276,7 +280,7 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001', max_tokens: 280,
-            system, messages,
+            system: plainSys, messages,
           }),
         })
         const data = await res.json()
@@ -289,6 +293,10 @@ export async function POST(req: NextRequest) {
       ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
       : failures.length ? reportIssue(`PWEZA AI · ${failures[0].split(':')[0]}`, `${failures.join(' · ')} — a backup provider answered.`) : Promise.resolve()
 
+    if (!text && allAIDown) {
+      const cached = await findVerified(normalizeNames(latestQuestion))
+      if (cached) { text = cached.a; links = cached.links; usedLocalReply = true }
+    }
     if (!text) {
       ;({ text, links } = generateLocalPwezaReply(messages))
       usedLocalReply = true
@@ -334,7 +342,7 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
         const sources = retrieve(normalizeNames(`${latestQuestion} ${prevUser}`), 6, extra)
         const deep = wantsDeepDive(latestQuestion)
         const project = deep || wantsNavigation(latestQuestion) ? projectFromSources(sources) : null
-        send({ type: 'meta', expert: r.expert, sources: sources.map((p, i) => ({ n: i + 1, title: p.title, href: p.href })), card: deep && project ? projectCard(project) : undefined })
+        send({ type: 'meta', expert: r.expert, lang: r.language, sources: sources.map((p, i) => ({ n: i + 1, title: p.title, href: p.href })), card: deep && project ? projectCard(project) : undefined })
 
         let sys = expertSystem(system, r, sources)
         if (visitorRole && ROLE_LENS[visitorRole]) sys += `\n${ROLE_LENS[visitorRole]}`
@@ -346,25 +354,22 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
 
         const { text: draft, failures } = await streamAnswer(sys, messages, (t) => send({ type: 'delta', t }), talk ? 220 : deep || mode === 'interview' ? 520 : 320)
         if (failures.length) console.warn('PWEZA provider failures:', failures.join(' || '), '| system chars:', sys.length)
-        // Tell Joseph on Telegram (rate-limited to one alert per 30 min) with the real error text
-        const healthWork = failures.length
-          ? (!draft.trim()
-              ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
-              : reportIssue(`PWEZA AI · ${failures[0].split(':')[0].split(' ')[0]}`, `${failures.join(' · ')} — a backup provider answered.`))
-          : Promise.resolve()
         let final = draft
         let links: ProofLink[] = []
         let suggestions: string[] = []
         if (!draft.trim()) {
           const fb = generateLocalPwezaReply(messages)
-          // If the AI providers are down, don't pretend the site lacks the answer.
-          final = failures.length && couldNotAnswer(fb.text)
-            ? "My AI is having a moment, so I can't give that a proper answer right now. Joseph's projects, skills and certifications are all on this page, or I can ping him to answer you himself. Just say \"yes\"."
-            : fb.text
-          links = fb.links ?? [{ label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }]
+          // AI providers down: answer from the closest verified past answer before apologising.
+          const cached = failures.length && couldNotAnswer(fb.text) ? await findVerified(normalizeNames(latestQuestion)) : null
+          final = cached
+            ? cached.a
+            : failures.length && couldNotAnswer(fb.text)
+              ? "My AI is having a moment, so I can't give that a proper answer right now. Joseph's projects, skills and certifications are all on this page, or I can ping him to answer you himself. Just say \"yes\"."
+              : fb.text
+          links = cached?.links?.length ? cached.links : fb.links ?? [{ label: 'Email Joseph', href: 'mailto:kamarajosephallan@gmail.com' }]
           send({ type: 'replace', t: final })
         } else {
-          const [fixed, chips] = await Promise.all([factCheck(draft, PWEZA_KNOWLEDGE_CONTEXT, sources), followUps(latestQuestion, draft, r.expert)])
+          const [fixed, chips] = await Promise.all([factCheck(draft, PWEZA_CORE_CONTEXT, sources), followUps(latestQuestion, draft, r.expert)])
           suggestions = chips
           if (fixed) { final = fixed; send({ type: 'replace', t: fixed, checked: true }) }
           const cited = Array.from(new Set(Array.from(final.matchAll(/\[(\d+)\]/g)).map((m) => Number(m[1]))))
@@ -373,23 +378,26 @@ function streamingAnswer({ req, messages, latestQuestion, system, sid, wantsAudi
           const seen = new Set<string>()
           const norm = (h: string) => h.split('#')[0] || h
           links = [...cited, ...linksForText(final)].filter((l) => { const k = `${l.label}|${norm(l.href)}`; if (seen.has(k) || seen.has(norm(l.href))) return false; seen.add(k); seen.add(norm(l.href)); return true }).slice(0, 3)
+          // Fact-checked → keep it as a verified fallback answer (citation numbers stripped)
+          if (!talk && mode !== 'interview' && !isEvalRequest(req)) await saveVerified(normalizeNames(latestQuestion), stripCites(final), links)
         }
 
         const plain = stripCites(final)
         const [speech] = await Promise.all([
-          wantsAudio ? synthesizeSpeech(plain) : Promise.resolve({ audio: null } as { audio: string | null; error?: string }),
+          wantsAudio ? synthesizeSpeech(plain, r.language) : Promise.resolve({ audio: null } as { audio: string | null; error?: string }),
           notifyChat(req, latestQuestion, plain, turn, sid),
           sid && r.hiring ? hiringSignal(req, sid, latestQuestion, r.expert) : Promise.resolve(),
           failures.length && !draft ? reportIssue('PWEZA AI', `Every AI provider failed, visitors got the built-in answer. ${failures.join(' · ')}`, true)
             : failures.length ? reportIssue(`PWEZA AI · ${failures[0].split(':')[0]}`, `${failures.join(' · ')} — a backup answered.`) : Promise.resolve(),
         ])
-        if (couldNotAnswer(plain) && !failures.length) await trackUnanswered(latestQuestion, settings.tz)
+        if (couldNotAnswer(plain) && !failures.length && !isEvalRequest(req)) await trackUnanswered(latestQuestion, settings.tz)
         if (vid && draft.trim() && latestQuestion.split(/\s+/).length >= 4) await remember(vid, latestQuestion, r.expert)
         const bookUrl = r.hiring ? bookingUrl() : null
         if (bookUrl) links = [...links.slice(0, 2), { label: BOOK_LABEL, href: bookUrl }]
         const nav = wantsNavigation(latestQuestion) ? navTarget(latestQuestion, sources) : null
-        send({ type: 'done', links, audio: speech.audio, hiring: r.hiring, suggestions, nav })
-        await healthWork
+        // 🧾 Proof inside the chat: a card for the project this answer is about
+        const proofProject = !deep && draft.trim() ? projectFromLinks(links) : null
+        send({ type: 'done', links, audio: speech.audio, hiring: r.hiring, suggestions, nav, card: proofProject ? projectCard(proofProject) : undefined })
       } catch (e) {
         console.error('PWEZA stream error:', e)
         send({ type: 'replace', t: "I hit a snag answering that. Try again, or email Joseph at kamarajosephallan@gmail.com." })

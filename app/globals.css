@@ -1225,3 +1225,29 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .cred-timeline li { grid-template-columns: 1fr; gap: 2px; }
 }
 @media(min-width:640px) and (max-width:1023px) { .cred-explore { max-width: 578px; } }
+.aisec-exam-score { font-size: 15px; color: #B9C6DC; margin: 0 0 12px; }
+.aisec-exam-score b { font-size: 28px; color: #7CF0B4; margin-right: 6px; }
+.aisec-exam { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 0; }
+.aisec-exam li { display: grid; grid-template-columns: 70px 92px 1fr; gap: 10px; align-items: baseline; font-size: 13.5px; padding: 9px 0; border-top: 1px solid rgba(127,166,255,.1); }
+.aisec-exam .tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-align: center; }
+.aisec-exam .ok .tag { color: #7CF0B4; background: rgba(124,240,180,.1); }
+.aisec-exam .bad .tag { color: #FB8F7F; background: rgba(251,143,127,.12); }
+.aisec-exam .area { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: #8D97AA; }
+.aisec-exam .q { color: #DCE6F5; }
+@media (max-width: 600px) { .aisec-exam li { grid-template-columns: 64px 1fr; } .aisec-exam .area { display: none; } }
+/* PWEZA in-chat proof card */
+.pz-proof-card { margin-top: 10px; border-radius: 14px; overflow: hidden; background: rgba(8,14,28,.85); border: 1px solid rgba(124,200,255,.25); }
+.pz-proof-media { display: block; width: 100%; padding: 0; border: 0; background: #05080F; cursor: zoom-in; max-height: 130px; overflow: hidden; transition: max-height .35s ease; }
+.pz-proof-media.is-big { max-height: 420px; cursor: zoom-out; }
+.pz-proof-media img, .pz-proof-media video { display: block; width: 100%; object-fit: cover; object-position: top; }
+.pz-proof-body { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; }
+.pz-proof-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pz-proof-top b { font-size: 14px; color: #F2F6FC; }
+.pz-proof-status { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; color: #7CF0B4; background: rgba(124,240,180,.1); white-space: nowrap; }
+.pz-proof-body em { font-style: normal; font-size: 12.5px; color: #AFC0DA; }
+.pz-proof-result { margin: 4px 0 2px; font-size: 12.5px; line-height: 1.45; color: #DCE6F5; padding: 7px 9px; border-radius: 9px; background: rgba(76,201,255,.06); border-left: 2px solid #4CC9FF; }
+.pz-proof-result span { display: block; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #6FD6FF; margin-bottom: 2px; }
+.pz-proof-body small { font-size: 11px; color: #7F92B2; }
+.pz-proof-actions { display: flex; gap: 8px; margin-top: 6px; }
+.pz-proof-actions button, .pz-proof-actions a { font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 9px; color: #6FD6FF; border: 1px solid rgba(111,214,255,.3); background: rgba(76,201,255,.06); }
+.pz-proof-actions button:hover, .pz-proof-actions a:hover { color: #fff; border-color: #6FD6FF; }
