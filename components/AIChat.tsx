@@ -455,6 +455,20 @@ export default function AIChat() {
     fetch('/api/chat/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vote, q: m.q || '', a: m.content.slice(0, 1500), sid: chatSid() }) }).catch(() => {})
   }
 
+  // Other parts of the site can open PWEZA with a question, e.g. "Ask PWEZA about this skill".
+  const sendRef = useRef(send)
+  sendRef.current = send
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const q = (e as CustomEvent<string>).detail
+      if (!q) return
+      setOpen(true)
+      setTimeout(() => sendRef.current(q), 250)
+    }
+    window.addEventListener('pweza:ask', onAsk)
+    return () => window.removeEventListener('pweza:ask', onAsk)
+  }, [])
+
   const sendLead = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
