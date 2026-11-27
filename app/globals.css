@@ -1450,3 +1450,7 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .foot-links .foot-ico{background:rgba(30,46,70,.05)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 0 14px -6px rgba(111,214,255,.5)!important}
   .foot-links .foot-short,.foot-ring-center b{text-shadow:0 1px 8px #05080f,0 0 3px #05080f}
 }
+/* Footer icons: one white line style; cyan when hovered or pressed */
+.foot-chip .foot-svg{color:#eef4fc;transition:color .2s}
+.foot-chip:hover .foot-svg,.foot-chip:active .foot-svg,.foot-chip:focus-visible .foot-svg{color:#7ff0e0}
+@media (max-width:639px){.foot-ring{margin-top:56px}}
