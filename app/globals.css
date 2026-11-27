@@ -1353,3 +1353,15 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .card-title-btn{padding:0 13px 0 12px!important;font-size:11px!important;letter-spacing:.1em!important}
 }
 @media (max-width:359px){.card-title-row h3{white-space:normal}}
+
+/* ---------- Top menu v2: box only on hover, current section floats as a raised bubble ---------- */
+.nav-glass{transition:background .35s,border-color .35s,box-shadow .35s,backdrop-filter .35s}
+.nav-glass:not(:hover):not(:focus-within){background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* the beam only appears while the mouse is over the menu */
+.nav-glass:not(:hover):not(:focus-within) .nav-glass-light{opacity:0}
+/* raised bubble for the section in view (third design); its dark ring cuts a notch into the glass */
+.nav-glass-link{transition:color .25s,transform .4s cubic-bezier(.2,.8,.2,1),background .3s,box-shadow .3s,border-color .3s;border:1px solid transparent}
+.nav-glass-link.is-current{color:#fff;transform:translateY(-3px);
+  background:radial-gradient(circle at 50% 25%,rgba(70,170,160,.55),rgba(18,62,70,.9) 75%);border-color:rgba(127,240,224,.5);
+  box-shadow:0 0 0 4px #05080f,0 10px 22px -8px rgba(127,240,224,.55),inset 0 1px 0 rgba(255,255,255,.18)}
+@media (prefers-reduced-motion:reduce){.nav-glass-link.is-current{transform:none}}
