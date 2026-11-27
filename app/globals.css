@@ -1454,3 +1454,4 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .foot-chip .foot-svg{color:#eef4fc;transition:color .2s}
 .foot-chip:hover .foot-svg,.foot-chip:active .foot-svg,.foot-chip:focus-visible .foot-svg{color:#7ff0e0}
 @media (max-width:639px){.foot-ring{margin-top:56px}}
+@media (max-width:639px){.foot-ring::before{display:none}}
