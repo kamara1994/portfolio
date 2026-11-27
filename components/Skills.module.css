@@ -91,3 +91,18 @@
 .askPweza{display:inline-flex;align-items:center;gap:9px;min-height:46px;margin-top:18px;padding:0 18px;border-radius:999px;border:1px solid rgba(127,240,224,.4);background:linear-gradient(180deg,rgba(127,240,224,.12),rgba(127,240,224,.04));color:#c9fff4;font-size:14px;font-weight:600;transition:background .2s,border-color .2s}
 .askPweza svg{width:16px;height:16px;color:#7ff0e0}
 .askPweza:hover{background:rgba(127,240,224,.18);border-color:#7ff0e0;color:#fff}
+/* ---------- Match a job posting ---------- */
+.jobBtn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;margin-left:4px;border-radius:9px;border:1px solid rgba(127,240,224,.35);background:rgba(127,240,224,.07);color:#bff7ec;font-size:13.5px;font-weight:600;white-space:nowrap;transition:background .2s,border-color .2s}
+.jobBtn svg{width:17px;height:17px}
+.jobBtn:hover,.jobBtn[aria-expanded="true"]{background:rgba(127,240,224,.15);border-color:#7ff0e0;color:#fff}
+.jobPanel{display:grid;gap:10px;margin-top:10px;padding:16px;border:1px solid rgba(127,240,224,.25);border-radius:13px;background:linear-gradient(180deg,rgba(127,240,224,.05),rgba(11,17,30,.9))}
+.jobPanel label{display:grid;gap:4px}
+.jobPanel label b{font-size:15px;color:#eaf3ff}
+.jobPanel label span{font-size:13px;color:#93a4ba}
+.jobPanel textarea{width:100%;min-height:120px;resize:vertical;padding:12px;border-radius:10px;border:1px solid #34475f;background:#0a1320;color:#dce9fa;font-size:14px;line-height:1.55}
+.jobPanel textarea:focus{outline:2px solid rgba(127,240,224,.6);outline-offset:1px}
+.jobActions{display:flex;align-items:center;gap:12px}
+.jobActions :global(.btn-primary)[disabled]{opacity:.45;pointer-events:none}
+.jobWords{margin:-4px 0 10px!important;font-size:12.5px!important;color:#bff7ec!important}
+.jobWords span{margin-right:8px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6fb8ad}
+@media(max-width:639px){.toolbar{flex-wrap:wrap!important}.search{flex-basis:100%!important}.role{flex:1!important;border-left:0;padding-left:6px}.jobBtn{flex:none}}

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { SKILL_CATEGORIES, PROJECT_NAMES, type Skill, type SkillCategory } from '@/data/skills'
 import { projects, type Project } from '@/data/projects'
 import { useRole } from './roles'
+import { matchPosting, type SkillMatch } from '@/lib/skill-match'
 import styles from './Skills.module.css'
 
 const ROLE_CATEGORY: Record<string,string> = { recruiter: 'secops', soc: 'secops', engineer: 'cloud' }
@@ -78,6 +79,9 @@ export default function Skills() {
  const [query,setQuery]=useState('')
  const [recruiter,setRecruiter]=useState('')
  const [expanded,setExpanded]=useState(false)
+ const [jobOpen,setJobOpen]=useState(false)
+ const [jobText,setJobText]=useState('')
+ const [job,setJob]=useState<SkillMatch[]|null>(null)
  const [selected,setSelected]=useState<{cat:SkillCategory;skill:Skill}|null>(null)
  const dialog=useRef<HTMLDialogElement>(null)
  const tabs=useRef<(HTMLButtonElement|null)[]>([])
@@ -101,13 +105,16 @@ export default function Skills() {
  useEffect(()=>{if(role&&ROLE_CATEGORY[role])setActive(ROLE_CATEGORY[role])},[role])
  const chosenRole=ROLES.find(r=>r.id===recruiter)
  const cat=SKILL_CATEGORIES.find(c=>c.id===active)||SKILL_CATEGORIES[0]
- const searching=Boolean(query.trim()||chosenRole)
+ const searching=Boolean(query.trim()||chosenRole||job)
  const results=useMemo(()=>{const tokens=query.trim().toLowerCase().split(/\s+/).filter(Boolean);return ALL.filter(({cat:c,skill:s})=>(!chosenRole||chosenRole.cats.includes(c.id))&&tokens.every(t=>[s.name,s.what,c.title,...(s.certs||[]),...(s.projects||[]).map(p=>projectFor(p)?.title||p)].join(' ').toLowerCase().includes(t)))},[query,chosenRole])
- const shown=searching?results:cat.skills.map(skill=>({cat,skill}))
+ const jobResults=useMemo(()=>job?job.flatMap(m=>{const hit=ALL.find(x=>x.skill.name===m.skill);return hit?[{...hit,words:m.words}]:[]}):[],[job])
+ const shown:{cat:SkillCategory;skill:Skill;words?:string[]}[]=job?jobResults:searching?results:cat.skills.map(skill=>({cat,skill}))
+ function runMatch(){setQuery('');setRecruiter('');setJob(matchPosting(jobText))}
+ function clearAll(){setQuery('');setRecruiter('');setJob(null);setJobText('')}
  const FIRST=4
  const visible=searching||expanded?shown:shown.slice(0,FIRST)
  const hiddenCount=shown.length-visible.length
- function choose(id:string){setActive(id);setQuery('');setRecruiter('');setExpanded(false)}
+ function choose(id:string){setActive(id);setQuery('');setRecruiter('');setJob(null);setExpanded(false)}
  function onKey(e:KeyboardEvent){const i=SKILL_CATEGORIES.findIndex(c=>c.id===active);const n=SKILL_CATEGORIES.length;const to:Record<string,number>={ArrowDown:i+1,ArrowRight:i+1,ArrowUp:i-1,ArrowLeft:i-1,Home:0,End:n-1};if(!(e.key in to))return;e.preventDefault();const j=(to[e.key]+n)%n;choose(SKILL_CATEGORIES[j].id);tabs.current[j]?.focus()}
  function open(c:SkillCategory,s:Skill){lastFocus.current=document.activeElement as HTMLElement;setSelected({cat:c,skill:s})}
  useEffect(()=>{if(selected&&dialog.current&&!dialog.current.open)dialog.current.showModal()},[selected])
@@ -120,20 +127,26 @@ export default function Skills() {
    <h2 className="mt-3 font-display text-[clamp(38px,4.4vw,68px)] font-bold uppercase leading-[0.95]">Skills with <span className="title-accent">proof</span></h2>
    <p className="mt-5 max-w-[60ch] text-[17px] leading-relaxed text-smoke">Explore the technologies, documented work and certification coverage behind each skill.</p>
    <div className={styles.toolbar}>
-     <label className={styles.search}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" aria-label="Search all skills" placeholder="Search skills, tools, certifications…" value={query} onChange={e=>setQuery(e.target.value)}/></label>
-     <label className={styles.role}><span className="sr-only">Recruiter focus</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 3.8-5.5 7-5.5s5.8 1.9 7 5.5"/></svg><select aria-label="Filter skills by role" value={recruiter} onChange={e=>setRecruiter(e.target.value)}><option value="">Any role</option>{ROLES.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
-     {searching&&<button className={styles.reset} onClick={()=>{setQuery('');setRecruiter('')}}>Reset ×</button>}
+     <label className={styles.search}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" aria-label="Search all skills" placeholder="Search skills, tools, certifications…" value={query} onChange={e=>{setJob(null);setQuery(e.target.value)}}/></label>
+     <label className={styles.role}><span className="sr-only">Recruiter focus</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 3.8-5.5 7-5.5s5.8 1.9 7 5.5"/></svg><select aria-label="Filter skills by role" value={recruiter} onChange={e=>{setJob(null);setRecruiter(e.target.value)}}><option value="">Any role</option>{ROLES.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
+     <button type="button" className={styles.jobBtn} aria-expanded={jobOpen} aria-controls="job-match" onClick={()=>setJobOpen(v=>!v)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/></svg><span>Match a job</span></button>
+     {searching&&<button className={styles.reset} onClick={clearAll}>Reset ×</button>}
    </div>
+   {jobOpen&&<div id="job-match" className={styles.jobPanel}>
+     <label htmlFor="job-text"><b>Paste a job posting</b><span>See which skills on this page it asks for, each with its proof. Nothing is sent anywhere; matching happens in your browser.</span></label>
+     <textarea id="job-text" rows={5} value={jobText} onChange={e=>setJobText(e.target.value)} placeholder="e.g. SOC Analyst I: monitor SIEM alerts in Splunk, triage incidents, analyze logs and phishing emails, Python scripting a plus…"/>
+     <div className={styles.jobActions}><button type="button" className="btn-primary" disabled={jobText.trim().length<20} onClick={runMatch}>Find matching skills</button>{(job||jobText)&&<button type="button" className={styles.reset} onClick={clearAll}>Clear</button>}</div>
+   </div>}
    <div className={styles.layout}>
     <div ref={tabsBox} className={styles.tabs} role="tablist" aria-label="Skill categories" onKeyDown={onKey} data-searching={searching}>
       <span className={styles.indicator} aria-hidden="true"/>
       {SKILL_CATEGORIES.map((c,i)=><button type="button" key={c.id} id={'skill-tab-'+c.id} ref={el=>{tabs.current[i]=el}} role="tab" tabIndex={c.id===active?0:-1} aria-selected={c.id===active&&!searching} aria-controls="skill-panel" className={styles.tab} data-active={c.id===active&&!searching} onClick={()=>choose(c.id)} style={artStyle(c)}><Icon name={c.icon} className={styles.tabIcon}/><span className={styles.tabText}><b>{c.title}</b><em>{c.skills.slice(0,3).map(x=>x.name).join(' · ')}</em></span><Icon name={c.icon} className={styles.tabWatermark}/></button>)}
     </div>
     <div id="skill-panel" role={searching?'region':'tabpanel'} aria-labelledby={searching?undefined:'skill-tab-'+cat.id} aria-label={searching?'Skill search results':undefined} className={styles.panel}>
-     <div className={styles.heading} style={artStyle(cat)}><Icon name={cat.icon}/><div><h3>{searching?'Matching skills':cat.title}</h3><p>{searching?shown.length+' skill'+(shown.length===1?'':'s')+(chosenRole?' · '+chosenRole.label:'') :cat.summary}</p></div></div>
+     <div className={styles.heading} style={artStyle(cat)}><Icon name={cat.icon}/><div><h3>{job?'Skills this posting asks for':searching?'Matching skills':cat.title}</h3><p>{job?(shown.length?'Each card shows the words from the posting that matched. Keyword matching, not a proficiency score.':'No skills on this page matched that posting.'):searching?shown.length+' skill'+(shown.length===1?'':'s')+(chosenRole?' · '+chosenRole.label:'') :cat.summary}</p></div></div>
      {searching&&chosenRole&&<p className={styles.note}>Role filters match subject areas, not measured proficiency.</p>}
      {!searching&&<details className={styles.relationship}><summary>How these skills connect <span aria-hidden="true">+</span></summary><p>Illustrative technical workflow — not a claim that every step was deployed together.</p><div className={styles.nodes}>{(FLOWS[cat.id]||[]).map((name,i)=>{const s=cat.skills.find(s=>s.name===name);return s?<div key={name}>{i>0&&<span aria-hidden="true">→</span>}<button onClick={()=>open(cat,s)}>{name}</button></div>:null})}</div></details>}
-     <ul className={styles.cards}>{visible.map(({cat:c,skill:s})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}>{BRAND[s.name]&&<Artwork cat={c} skill={s}/>}<div className={styles.cardContent}>{searching&&<div className={styles.meta}><span>{c.title}</span></div>}<button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog"><i className={styles.evDot+' '+styles[ev.cls]} title={ev.text} aria-hidden="true"/>{s.name}<span className="sr-only"> ({ev.text})</span><span aria-hidden="true">↗</span></button><p>{s.what}</p><ProofLine skill={s}/></div></li>})}</ul>
+     <ul className={styles.cards}>{visible.map(({cat:c,skill:s,words})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}>{BRAND[s.name]&&<Artwork cat={c} skill={s}/>}<div className={styles.cardContent}>{searching&&<div className={styles.meta}><span>{c.title}</span></div>}<button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog"><i className={styles.evDot+' '+styles[ev.cls]} title={ev.text} aria-hidden="true"/>{s.name}<span className="sr-only"> ({ev.text})</span><span aria-hidden="true">↗</span></button><p>{s.what}</p>{words&&<p className={styles.jobWords}><span>Posting mentions</span>{words.join(', ')}</p>}<ProofLine skill={s}/></div></li>})}</ul>
      {!searching&&shown.length>FIRST&&<div className={styles.moreRow}><button type="button" className="more-toggle" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}><span>{expanded?'Show fewer skills':'Show all skills'}</span><svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>{!expanded&&hiddenCount>0&&<p className={styles.moreNames}>Also: {shown.slice(FIRST).map(x=>x.skill.name).join(' · ')}</p>}</div>}
      <p className={styles.legend}><span><i className={styles.evDot+' '+styles['ev-both']} aria-hidden="true"/>Project + cert</span><span><i className={styles.evDot+' '+styles['ev-built']} aria-hidden="true"/>Project evidence</span><span><i className={styles.evDot+' '+styles['ev-cert']} aria-hidden="true"/>Cert coverage</span></p>
      {!shown.length&&<div className={styles.empty}>No matching skills. Try a different search or reset the role filter.</div>}
