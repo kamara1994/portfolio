@@ -9,12 +9,90 @@ const CERTS = [
   { name: 'PSAA', img: '/certs/tcm-psaa.webp' },
 ]
 
+function CertBadge({ c, size }: { c: (typeof CERTS)[number]; size: string }) {
+  return (
+    <div className={`cert-box ${size}`}>
+      {c.img ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={c.img} alt={`${c.name} badge`} width={240} height={240} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center bg-[#0E2A4A] leading-none">
+          <span className="text-[7px] font-semibold tracking-[0.18em] text-[#9CC7F0] sm:text-[9px]">CISCO</span>
+          <span className="mt-0.5 font-display text-[13px] font-bold text-white sm:text-[17px]">{c.name}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Phone and tablet first screen: everything a recruiter checks in the first seconds
+ * (name, focus, graduation, certifications, and the two main actions) fits above the fold.
+ */
+function MobileHero() {
+  return (
+    <div className="m-hero lg:hidden">
+      <div className="m-hero-top">
+        <figure className="m-hero-photo hero-rise">
+          <span aria-hidden className="portrait-glow" />
+          <BlurImage
+            src="/profile/joseph-cutout.webp"
+            alt="Portrait of Joseph Allan Kamara"
+            width={806}
+            height={1143}
+            fetchPriority="high"
+            className="cutout relative w-full"
+          />
+        </figure>
+        <h1 className="hero-rise min-w-0">
+          <span className="block text-[15px] font-medium text-snow/70 sm:text-[18px]">Hi, my name is</span>
+          <span className="mt-1.5 block font-display text-[clamp(34px,10vw,64px)] font-bold uppercase leading-[0.9]">
+            Joseph
+            <br />
+            Allan
+            <br />
+            Kamara
+          </span>
+        </h1>
+      </div>
+
+      <p className="hero-rise mt-5 text-[19px] font-semibold leading-snug text-signal sm:text-[22px]">Securing systems. Automating defense.</p>
+      <p className="hero-rise mt-2 text-[16px] leading-relaxed text-snow/85 sm:text-[18px]">
+        I build SOC automation, AWS cloud security labs, and AI tools that catch threats faster.
+      </p>
+      <ul className="m-hero-focus hero-rise" aria-label="Focused on">
+        <li>Cybersecurity</li><li>Cloud Security</li><li>IT Infrastructure</li>
+      </ul>
+      <p className="hero-rise mt-3 text-[14px] text-smoke">B.S. Cybersecurity, BYU-Idaho · graduating December 2026</p>
+
+      <ul className="m-hero-certs hero-rise" aria-label="Certifications">
+        {CERTS.map((c) => (
+          <li key={c.name}>
+            <CertBadge c={c} size="m-cert" />
+            <span>{c.name}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="m-hero-actions hero-rise">
+        <a href="#work" className="btn-primary">See my work</a>
+        <a href={RESUME} target="_blank" rel="noopener" className="btn-ghost">Résumé</a>
+      </div>
+      <p className="now-line mt-5">
+        <span className="now-tag">Now</span>
+        Final semester, and preparing for the AWS Security Specialty exam.
+      </p>
+    </div>
+  )
+}
+
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-line pb-12 pt-20 md:pb-16 md:pt-24">
+    <section className="relative overflow-hidden border-b border-line pb-10 pt-[88px] md:pb-16 md:pt-24">
       <div className="wrap relative">
-        {/* Name | portrait | focus */}
-        <div className="grid items-center gap-7 lg:grid-cols-12 lg:gap-6">
+        <MobileHero />
+        {/* Desktop: name | portrait | focus */}
+        <div className="hidden items-center gap-7 lg:grid lg:grid-cols-12 lg:gap-6">
           <figure className="hero-rise relative mx-auto w-[56%] max-w-[230px] sm:w-[70%] sm:max-w-[340px] lg:order-2 lg:col-span-4 lg:col-start-5 lg:w-full lg:max-w-[440px]">
             <span aria-hidden className="portrait-glow" />
             <BlurImage

@@ -42,14 +42,14 @@ export default function Nav() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
         solid || open ? 'bg-ink/95 backdrop-blur border-b border-line' : 'bg-transparent'
-      } ${open ? 'h-[100dvh] overflow-y-auto md:h-auto' : ''
+      } ${open ? 'h-[100dvh] overflow-y-auto lg:h-auto' : ''
       }`}
     >
       <span aria-hidden className="scroll-progress" />
       <nav className="wrap flex h-[72px] items-center justify-between" aria-label="Main">
         <FlipStatus />
 
-        <ul className="hidden items-center gap-9 md:flex">
+        <ul className="hidden items-center gap-9 lg:flex">
           {LINKS.map((l) => (
             <li key={l.href}>
               <a
@@ -69,7 +69,7 @@ export default function Nav() {
         </ul>
 
         <button
-          className="md:hidden -mr-2 flex h-11 w-11 flex-col items-center justify-center"
+          className="lg:hidden -mr-2 flex h-11 w-11 flex-col items-center justify-center"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? 'Close menu' : 'Open menu'}
@@ -81,7 +81,7 @@ export default function Nav() {
       </nav>
 
       {open && (
-        <ul id="mobile-menu" className="wrap flex flex-col gap-1 pb-8 md:hidden">
+        <ul id="mobile-menu" className="wrap flex flex-col gap-1 pb-8 lg:hidden">
           <li>
             <a href="/#work" onClick={() => setOpen(false)} className="block py-3 font-display text-3xl font-semibold uppercase tracking-wide">
               Work

@@ -1251,3 +1251,26 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .pz-proof-actions { display: flex; gap: 8px; margin-top: 6px; }
 .pz-proof-actions button, .pz-proof-actions a { font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 9px; color: #6FD6FF; border: 1px solid rgba(111,214,255,.3); background: rgba(76,201,255,.06); }
 .pz-proof-actions button:hover, .pz-proof-actions a:hover { color: #fff; border-color: #6FD6FF; }
+
+/* ---------- Phone/tablet first screen ---------- */
+.m-hero-top{display:grid;grid-template-columns:minmax(118px,36%) 1fr;align-items:end;gap:18px}
+.m-hero-photo{position:relative;margin:0}
+.m-hero-photo .portrait-glow{width:150%;opacity:.8}
+.m-hero-focus{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.m-hero-focus li{font-size:12.5px;font-weight:600;letter-spacing:.01em;padding:5px 10px;border-radius:999px;border:1px solid rgba(144,186,255,.28);background:rgba(144,186,255,.07);color:#cfe0ff}
+.m-hero-certs{display:flex;gap:12px;margin-top:16px}
+.m-hero-certs li{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:rgba(232,238,248,.75)}
+.m-hero-certs .m-cert{width:52px;height:52px}
+.m-hero-actions{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-top:20px}
+.m-hero-actions>a{justify-content:center;text-align:center;min-height:50px;display:inline-flex;align-items:center}
+@media (min-width:640px){.m-hero-certs .m-cert{width:64px;height:64px}.m-hero-top{grid-template-columns:minmax(160px,32%) 1fr}.m-hero-actions{max-width:520px}}
+
+/* ---------- Comfortable tap targets on touch screens (44px minimum) ---------- */
+@media (pointer:coarse){
+  .sk-proof-link,.cred-verify,#credentials .cred-verify,.cred-detail-trigger,.status-pill{min-height:44px!important;display:inline-flex;align-items:center}
+  #work .card-actions a.text-signal{min-height:44px;display:inline-flex;align-items:center}
+  #work .project-row a.font-display{display:inline-block;padding-block:6px}
+  .cred-combination a,.cred-detail li a{display:inline-flex;align-items:center;min-height:44px}
+  footer a{display:inline-flex;align-items:center;min-height:44px}
+}
+.show-all{min-height:48px}
