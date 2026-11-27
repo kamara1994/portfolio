@@ -59,12 +59,12 @@ export default function Footer() {
           </p>
         </div>
 
-        <ul className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
+        <ul className="foot-links grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
           {LINKS.map((l) => (
             <li key={l.label}>
-              <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip">
-                {typeof l.icon === 'string' ? <span aria-hidden className="emoji">{l.icon}</span> : l.icon}
-                <span className="sm:hidden">{l.short}</span>
+              <a href={l.href} {...(l.ext ? { target: '_blank', rel: 'noopener' } : {})} className="foot-chip" aria-label={l.label}>
+                <span className="foot-ico">{typeof l.icon === 'string' ? <span aria-hidden className="emoji">{l.icon}</span> : l.icon}</span>
+                <span className="foot-short sm:hidden">{l.short}</span>
                 <span className="hidden sm:inline">{l.label}</span>
               </a>
             </li>
