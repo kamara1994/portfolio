@@ -125,3 +125,4 @@
   .panel:not([role=region]) .heading p{font-size:14px;color:#9fb0c6}
   .relationship{display:none}
 }
+.cards{align-items:stretch!important}.card{height:100%}.cardContent>p:not([class]){flex:0 0 auto}
