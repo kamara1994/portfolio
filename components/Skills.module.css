@@ -112,3 +112,16 @@
   .headRow .toolbar{margin-top:0!important}
 }
 @media (min-width:1024px){.headRow{margin-bottom:14px}}
+
+/* ---------- Phone: fewer controls before the first skill ---------- */
+@media (max-width:639px){
+  .toolbar{flex-wrap:nowrap!important;gap:6px!important}
+  .search{flex:1!important;flex-basis:auto!important;min-width:0}
+  .role{display:none!important}
+  .jobBtn{margin-left:0;padding:0 12px}
+  /* the selected chip already names the category: keep only its one-line description */
+  .panel:not([role=region]) .heading>svg,.panel:not([role=region]) .heading h3{display:none}
+  .panel:not([role=region]) .heading{padding-bottom:4px;border-bottom:0}
+  .panel:not([role=region]) .heading p{font-size:14px;color:#9fb0c6}
+  .relationship{display:none}
+}
