@@ -87,18 +87,22 @@ export default function Work() {
             <span aria-hidden className="hud-corner bl" /><span aria-hidden className="hud-corner br" />
             <div className={`min-w-0 lg:col-span-5 ${i % 2 ? 'lg:order-2' : ''}`}>
               <p className="text-[15px] text-smoke">{p.category}</p>
-              <h3 className="mt-3 font-display text-[clamp(32px,3.5vw,56px)] font-bold uppercase leading-[0.9]">
-                {splitTitle(p.title)[0]}
-                {splitTitle(p.title)[1] && <span className="title-accent">{splitTitle(p.title)[1]}</span>}
-              </h3>
+              <div className="card-title-row mt-3">
+                <h3 className="font-display text-[clamp(32px,3.5vw,56px)] font-bold uppercase leading-[0.9]">
+                  {splitTitle(p.title)[0]}
+                  {splitTitle(p.title)[1] && <span className="title-accent">{splitTitle(p.title)[1]}</span>}
+                </h3>
+                {/* Phone: the main action sits beside the project name */}
+                <Link href={`/projects/${p.id}`} className="btn-primary card-title-btn card-actions sm:hidden">How it works</Link>
+              </div>
               <p className="mt-3 max-w-[46ch] text-[17px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
               {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
               <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-smoke"><span className="card-result">{lead(p.impact)[0]}</span>{lead(p.impact)[1] && <> {lead(p.impact)[1]}</>}</p>
               <p className="mt-3 hidden text-[13px] leading-relaxed text-smoke sm:block">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
-              <div className="btn-row card-actions card-btns mt-5">
-                <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
+              <div className={`btn-row card-actions card-btns mt-5 ${!p.sourceAccess || p.demo ? '' : 'max-sm:hidden'}`}>
+                <Link href={`/projects/${p.id}`} className="btn-primary max-sm:hidden">How it works</Link>
                 {!p.sourceAccess && <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>}
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="btn-ghost">Live demo</a>}
               </div>
