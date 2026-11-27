@@ -1272,3 +1272,7 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .more-panel[data-open="true"]{grid-template-rows:1fr;opacity:1;margin-top:28px}
 .more-panel-inner{overflow:hidden;min-height:0}
 @media (prefers-reduced-motion:reduce){.more-panel,.more-caret{transition:none}}
+
+/* ---------- Phone/tablet hero: name | portrait | focus, like desktop ---------- */
+.p-hero-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:8px}
+@media (min-width:640px){.p-hero-row{gap:20px}}
