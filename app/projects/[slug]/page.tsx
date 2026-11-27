@@ -57,9 +57,10 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               <p className="mt-4 max-w-[60ch] text-[clamp(19px,1.8vw,24px)] leading-snug text-snow/85">{p.subtitle}</p>
               <div className="btn-row mt-5 flex flex-wrap gap-3">
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener" className="btn-primary">Open live demo</a>}
-                <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>
+                {!p.sourceAccess && <a href="#source-code" className={p.demo ? 'btn-ghost' : 'btn-primary'}>View source code</a>}
                 {p.report && <a href={p.report} className="btn-ghost">{p.course ? 'Read sanitized summary' : 'Download report'}</a>}
               </div>
+              {p.sourceAccess && <p className="mt-3 text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</p>}
               <p className="mt-6 text-[18px] leading-relaxed text-snow/90">{p.description}</p>
             </div>
             <div className="min-w-0 lg:col-span-7">

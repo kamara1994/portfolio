@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import LineReveal from './LineReveal'
 
 type Milestone = {
@@ -31,6 +31,7 @@ const MILESTONES: Milestone[] = [
 ]
 
 export default function Story() {
+  const [all, setAll] = useState(false)
   const root = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export default function Story() {
   }, [])
 
   return (
-    <section ref={root} id="story" className="wrap pb-16 pt-16 md:pb-24 md:pt-32">
+    <section ref={root} id="story" className="wrap pb-16 pt-10 md:pb-24 md:pt-32">
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
@@ -110,9 +111,9 @@ export default function Story() {
             <span className="jt-lantern"><Lantern /></span>
           </div>
 
-          <ol className="space-y-5">
-            {MILESTONES.map((m) => (
-              <li key={m.title} className="jt-row group" style={{ ['--c' as string]: m.color }}>
+          <ol className="space-y-5" data-all={all}>
+            {MILESTONES.map((m, i) => (
+              <li key={m.title} className={`jt-row group${i > 1 && !m.now ? ' phone-more' : ''}`} style={{ ['--c' as string]: m.color }}>
                 <span className={`jt-node ${m.now ? 'is-now' : ''}`}>
                   <span aria-hidden className="jt-emoji">{m.icon}</span>
                   {m.now && <><span aria-hidden className="jt-ring" /><span aria-hidden className="jt-ring r2" /></>}
@@ -135,6 +136,14 @@ export default function Story() {
               </li>
             ))}
           </ol>
+          {!all && (
+            <div className="phone-more-row">
+              <button type="button" className="more-toggle" aria-expanded={false} onClick={() => setAll(true)}>
+                <span>Show the full journey</span>
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+          )}
         </div>
         </div>
       </div>
