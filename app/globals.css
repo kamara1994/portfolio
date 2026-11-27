@@ -1455,3 +1455,29 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .foot-chip:hover .foot-svg,.foot-chip:active .foot-svg,.foot-chip:focus-visible .foot-svg{color:#7ff0e0}
 @media (max-width:639px){.foot-ring{margin-top:56px}}
 @media (max-width:639px){.foot-ring::before{display:none}}
+
+/* ---------- Phone footer v4: one straight row, linked like a circuit ---------- */
+@media (max-width:639px){
+  .foot-head{display:block!important}
+  .foot-ring{position:static!important;width:auto!important;height:auto!important;margin:6px 0 0!important}
+  .foot-ring::before,.foot-ring-center{display:none!important}
+  .foot-links{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+  .foot-links li{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;display:flex;justify-content:center}
+  .foot-links li::before{display:none}
+  /* circuit line through the centers of the circles, with a travelling pulse */
+  .foot-links::before{content:'';position:absolute;left:12.5%;right:12.5%;top:28px;height:1px;z-index:0;
+    background:linear-gradient(90deg,rgba(111,214,255,.15),rgba(127,240,224,.55),rgba(167,139,250,.45),rgba(111,214,255,.15))}
+  .foot-links::after{content:'';position:absolute;top:26px;left:12.5%;width:44px;height:5px;margin-left:-22px;border-radius:5px;z-index:0;
+    background:radial-gradient(closest-side,#bffff4,rgba(127,240,224,.55),transparent);filter:blur(1px);
+    animation:foot-pulse 3.2s cubic-bezier(.45,0,.55,1) infinite}
+  @keyframes foot-pulse{0%{left:12.5%;opacity:0}12%{opacity:1}88%{opacity:1}100%{left:87.5%;opacity:0}}
+  .foot-links .foot-chip{position:relative;z-index:1;gap:10px!important}
+  .foot-links .foot-ico{width:56px!important;height:56px!important;
+    background:radial-gradient(circle at 50% 30%,rgba(40,70,110,.55),rgba(6,12,24,.92) 70%)!important;
+    border:1px solid rgba(127,240,224,.38)!important;
+    box-shadow:inset 0 0 0 4px rgba(6,12,24,.9),inset 0 0 0 5px rgba(127,240,224,.14),0 0 18px -6px rgba(127,240,224,.6)!important}
+  .foot-links .foot-chip:active .foot-ico{transform:scale(.92);border-color:#7ff0e0!important;box-shadow:inset 0 0 0 4px rgba(6,12,24,.9),inset 0 0 0 5px rgba(127,240,224,.4),0 0 24px -2px rgba(127,240,224,.9)!important}
+  .foot-links .foot-short{font-size:10.5px!important;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#cfe3f5;text-shadow:0 1px 8px #05080f}
+}
+@media (max-width:639px) and (prefers-reduced-motion:reduce){.foot-links::after{animation:none;display:none}}
+@media (max-width:639px){.foot-ring{width:100%!important;max-width:360px;margin-left:auto!important;margin-right:auto!important;align-self:stretch}}
