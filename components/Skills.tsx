@@ -43,6 +43,9 @@ const FLOWS:Record<string,string[]> = {
  frameworks:['NIST CSF','GRC Fundamentals','Zero Trust'],
 }
 const ALL = SKILL_CATEGORIES.flatMap(cat=>cat.skills.map(skill=>({cat,skill})))
+const CAT_SKILLS = Object.fromEntries(SKILL_CATEGORIES.map(c=>[c.id,c.skills.map(s=>s.name)]))
+/** Generic words that say nothing about a skill; ignored by search so "network engineering" still finds networking. */
+const FILLER = new Set(['engineer','engineering','engineers','analyst','analysis','skills','skill','experience','role','job','and','with','the','for','of','in','a','an','to'])
 const evidence = (s:Skill) => s.projects?.length && s.certs?.length ? {text:'Project + cert',cls:'ev-both'} : s.projects?.length ? {text:'Project evidence',cls:'ev-built'} : {text:'Cert coverage',cls:'ev-cert'}
 function Icon({name,className}: {name:string;className?:string}) {return <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={ICONS[name] || ICONS.code}/></svg>}
 function artStyle(cat:SkillCategory):CSSProperties {return {'--skill-accent':ACCENTS[cat.id]||'#90baff'} as CSSProperties}
@@ -106,10 +109,24 @@ export default function Skills() {
  const chosenRole=ROLES.find(r=>r.id===recruiter)
  const cat=SKILL_CATEGORIES.find(c=>c.id===active)||SKILL_CATEGORIES[0]
  const searching=Boolean(query.trim()||chosenRole||job)
- const results=useMemo(()=>{const tokens=query.trim().toLowerCase().split(/\s+/).filter(Boolean);return ALL.filter(({cat:c,skill:s})=>(!chosenRole||chosenRole.cats.includes(c.id))&&tokens.every(t=>[s.name,s.what,c.title,...(s.certs||[]),...(s.projects||[]).map(p=>projectFor(p)?.title||p)].join(' ').toLowerCase().includes(t)))},[query,chosenRole])
+ const results=useMemo(()=>{
+  const raw=query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  const tokens=raw.filter(t=>!FILLER.has(t)).map(t=>t.replace(/(ing|s)$/,'').length>=3?t.replace(/(ing|s)$/,''):t)
+  const pool=ALL.filter(({cat:c})=>!chosenRole||chosenRole.cats.includes(c.id))
+  if(!tokens.length)return raw.length?pool.filter(({skill:s})=>raw.some(t=>s.name.toLowerCase().includes(t))):pool
+  const hay=({cat:c,skill:s}:{cat:SkillCategory;skill:Skill})=>[s.name,s.what,c.title,c.summary,...(s.certs||[]),...(s.projects||[]).map(p=>projectFor(p)?.title||p)].join(' ').toLowerCase()
+  // Rank: skill name beats category title beats description
+  const whole=raw.filter(t=>!FILLER.has(t))
+  const score=({cat:c,skill:s}:{cat:SkillCategory;skill:Skill})=>tokens.reduce((n,t)=>n+(s.name.toLowerCase().includes(t)?3:c.title.toLowerCase().includes(t)?2:0),0)+whole.reduce((n,t)=>n+(c.title.toLowerCase().includes(t)?1:0),0)
+  const all=pool.filter(x=>tokens.every(t=>hay(x).includes(t)))
+  let list=all.length?all:pool.filter(x=>tokens.some(t=>hay(x).includes(t)))
+  // Nothing in the text: fall back to the words a job posting would use (e.g. "firewall" finds Palo Alto NGFW)
+  if(!list.length){const names=matchPosting(query,CAT_SKILLS).map(m=>m.skill);list=pool.filter(x=>names.includes(x.skill.name))}
+  return list.map((x,i)=>({x,i,sc:score(x)})).sort((a,b)=>b.sc-a.sc||a.i-b.i).map(o=>o.x)
+ },[query,chosenRole])
  const jobResults=useMemo(()=>job?job.flatMap(m=>{const hit=ALL.find(x=>x.skill.name===m.skill);return hit?[{...hit,words:m.words}]:[]}):[],[job])
  const shown:{cat:SkillCategory;skill:Skill;words?:string[]}[]=job?jobResults:searching?results:cat.skills.map(skill=>({cat,skill}))
- function runMatch(){setQuery('');setRecruiter('');setJob(matchPosting(jobText))}
+ function runMatch(){setQuery('');setRecruiter('');setJob(matchPosting(jobText,CAT_SKILLS))}
  function clearAll(){setQuery('');setRecruiter('');setJob(null);setJobText('')}
  const FIRST=4
  const visible=searching||expanded?shown:shown.slice(0,FIRST)
@@ -137,7 +154,7 @@ export default function Skills() {
    {jobOpen&&<div id="job-match" className={styles.jobPanel}>
      <label htmlFor="job-text"><b>Paste a job posting</b><span>See which skills on this page it asks for, each with its proof. Nothing is sent anywhere; matching happens in your browser.</span></label>
      <textarea id="job-text" rows={5} value={jobText} onChange={e=>setJobText(e.target.value)} placeholder="e.g. SOC Analyst I: monitor SIEM alerts in Splunk, triage incidents, analyze logs and phishing emails, Python scripting a plus…"/>
-     <div className={styles.jobActions}><button type="button" className="btn-primary" disabled={jobText.trim().length<20} onClick={runMatch}>Find matching skills</button>{(job||jobText)&&<button type="button" className={styles.reset} onClick={clearAll}>Clear</button>}</div>
+     <div className={styles.jobActions}><button type="button" className="btn-primary" disabled={jobText.trim().length<3} onClick={runMatch}>Find matching skills</button>{(job||jobText)&&<button type="button" className={styles.reset} onClick={clearAll}>Clear</button>}</div>
    </div>}
    <div className={styles.layout}>
     <div ref={tabsBox} className={styles.tabs} role="tablist" aria-label="Skill categories" onKeyDown={onKey} data-searching={searching}>
@@ -145,13 +162,13 @@ export default function Skills() {
       {SKILL_CATEGORIES.map((c,i)=><button type="button" key={c.id} id={'skill-tab-'+c.id} ref={el=>{tabs.current[i]=el}} role="tab" tabIndex={c.id===active?0:-1} aria-selected={c.id===active&&!searching} aria-controls="skill-panel" className={styles.tab} data-active={c.id===active&&!searching} onClick={()=>choose(c.id)} style={artStyle(c)}><Icon name={c.icon} className={styles.tabIcon}/><span className={styles.tabText}><b>{c.title}</b><em>{c.skills.slice(0,3).map(x=>x.name).join(' · ')}</em></span><Icon name={c.icon} className={styles.tabWatermark}/></button>)}
     </div>
     <div id="skill-panel" role={searching?'region':'tabpanel'} aria-labelledby={searching?undefined:'skill-tab-'+cat.id} aria-label={searching?'Skill search results':undefined} className={styles.panel}>
-     <div className={styles.heading} style={artStyle(cat)}><Icon name={cat.icon}/><div><h3>{job?'Skills this posting asks for':searching?'Matching skills':cat.title}</h3><p>{job?(shown.length?'Each card shows the words from the posting that matched. Keyword matching, not a proficiency score.':'No skills on this page matched that posting.'):searching?shown.length+' skill'+(shown.length===1?'':'s')+(chosenRole?' · '+chosenRole.label:'') :cat.summary}</p></div></div>
+     <div className={styles.heading} style={artStyle(cat)}><Icon name={cat.icon}/><div><h3>{job?'Skills this posting asks for':searching?'Matching skills':cat.title}</h3><p>{job?(shown.length?'Each card shows the words from the posting that matched. Keyword matching, not a proficiency score.':'No skills matched yet.'):searching?shown.length+' skill'+(shown.length===1?'':'s')+(chosenRole?' · '+chosenRole.label:'') :cat.summary}</p></div></div>
      {searching&&chosenRole&&<p className={styles.note}>Role filters match subject areas, not measured proficiency.</p>}
      {!searching&&<details className={styles.relationship}><summary>How these skills connect <span aria-hidden="true">+</span></summary><p>Illustrative technical workflow — not a claim that every step was deployed together.</p><div className={styles.nodes}>{(FLOWS[cat.id]||[]).map((name,i)=>{const s=cat.skills.find(s=>s.name===name);return s?<div key={name}>{i>0&&<span aria-hidden="true">→</span>}<button onClick={()=>open(cat,s)}>{name}</button></div>:null})}</div></details>}
      <ul className={styles.cards}>{visible.map(({cat:c,skill:s,words})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}>{BRAND[s.name]&&<Artwork cat={c} skill={s}/>}<div className={styles.cardContent}>{searching&&<div className={styles.meta}><span>{c.title}</span></div>}<button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog"><i className={styles.evDot+' '+styles[ev.cls]} title={ev.text} aria-hidden="true"/>{s.name}<span className="sr-only"> ({ev.text})</span><span aria-hidden="true">↗</span></button><p>{s.what}</p>{words&&<p className={styles.jobWords}><span>Posting mentions</span>{words.join(', ')}</p>}<ProofLine skill={s}/></div></li>})}</ul>
      {!searching&&shown.length>FIRST&&<div className={styles.moreRow}><button type="button" className="more-toggle" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}><span>{expanded?'Show fewer skills':'Show all skills'}</span><svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>{!expanded&&hiddenCount>0&&<p className={styles.moreNames}>Also: {shown.slice(FIRST).map(x=>x.skill.name).join(' · ')}</p>}</div>}
      <p className={styles.legend}><span><i className={styles.evDot+' '+styles['ev-both']} aria-hidden="true"/>Project + cert</span><span><i className={styles.evDot+' '+styles['ev-built']} aria-hidden="true"/>Project evidence</span><span><i className={styles.evDot+' '+styles['ev-cert']} aria-hidden="true"/>Cert coverage</span></p>
-     {!shown.length&&<div className={styles.empty}>No matching skills. Try a different search or reset the role filter.</div>}
+     {!shown.length&&<div className={styles.empty}>{job?'Nothing on this page matched. Try pasting the full job posting, or a role like “network engineer” or “SOC analyst”.':'No matching skills. Try a tool name like Splunk, AWS or Python.'}</div>}
     </div>
    </div>
   </div>
