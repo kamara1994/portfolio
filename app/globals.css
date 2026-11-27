@@ -1365,3 +1365,41 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   background:radial-gradient(circle at 50% 25%,rgba(70,170,160,.55),rgba(18,62,70,.9) 75%);border-color:rgba(127,240,224,.5);
   box-shadow:0 0 0 4px #05080f,0 10px 22px -8px rgba(127,240,224,.55),inset 0 1px 0 rgba(255,255,255,.18)}
 @media (prefers-reduced-motion:reduce){.nav-glass-link.is-current{transform:none}}
+
+/* ---------- Credentials v3: text and tilted badge side by side (no overlap), full-width grid ---------- */
+#credentials .cred-grid{max-width:none!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#credentials .cred-card{display:grid!important;grid-template-columns:minmax(0,1fr) 112px;grid-template-rows:auto auto 1fr;column-gap:14px;min-height:150px;padding:16px 16px 14px!important;border-radius:16px}
+#credentials .cred-card::after{display:none}
+/* the badge keeps its perspective tilt, but lives in its own column */
+#credentials .cred-card .cred-art,#credentials .cred-card .cred-art:not(.cred-campus){position:relative!important;inset:auto!important;z-index:0;grid-column:2;grid-row:1/4;width:112px!important;height:100%;min-height:112px;padding:0!important;align-items:center;justify-content:center;overflow:visible;-webkit-mask-image:none!important;mask-image:none!important;background:none!important}
+#credentials .cred-card .cred-art img{width:100px!important;max-height:none!important;margin:0!important}
+#credentials .cred-card .cred-art-tile{width:96px!important;margin:0!important}
+#credentials .cred-heading,#credentials .cred-card .cred-description,#credentials .cred-degree .cred-heading,#credentials .cred-degree .cred-description{grid-column:1;max-width:none!important;text-shadow:none}
+#credentials .cred-heading{grid-row:1}
+#credentials .cred-card .cred-description{grid-row:2;margin-top:6px!important;font-size:13px!important;line-height:1.45!important;color:#b9c6d8!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#credentials .cred-card .cred-actions{grid-column:1/3;grid-row:4;margin-top:12px!important;padding-top:0!important}
+#credentials .cred-status{background:rgba(150,170,210,.07)!important;backdrop-filter:none!important}
+#credentials .cred-card .cred-verify{min-height:32px}
+/* the degree is a different kind of credential: one wide card */
+#credentials .cred-degree{grid-column:1/-1;grid-template-columns:minmax(0,1fr) 112px}
+#credentials .cred-degree .cred-campus{width:112px!important}
+#credentials .cred-degree .cred-campus .cred-campus-logo{width:96px!important}
+/* one quiet footer line instead of two expanders and small print */
+.cred-footer{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:22px;font-size:13.5px;color:#5d6e86}
+.cred-footer a{color:#9bdcff;text-decoration:underline;text-decoration-color:rgba(155,220,255,.35);text-underline-offset:3px}
+.cred-footer a:hover{color:#fff}
+@media (pointer:coarse){.cred-footer a{display:inline-flex;align-items:center;min-height:44px}}
+@media (max-width:1023px){#credentials .cred-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none!important}}
+@media (max-width:639px){
+  #credentials .cred-grid{grid-template-columns:minmax(0,1fr);max-width:none!important;gap:10px}
+  #credentials .cred-card{grid-template-columns:minmax(0,1fr) 92px;min-height:132px;padding:14px!important}
+  #credentials .cred-card .cred-art,#credentials .cred-card .cred-art:not(.cred-campus),#credentials .cred-degree .cred-campus{width:92px!important;min-height:92px}
+  #credentials .cred-card .cred-art img{width:84px!important}
+  #credentials .cred-card .cred-art-tile{width:80px!important}
+  #credentials .cred-degree .cred-campus .cred-campus-logo{width:80px!important}
+}
+/* badge column: extra height goes to the flexible row, not between title and issuer */
+#credentials .cred-card{grid-template-rows:auto auto 1fr auto!important;min-height:0!important}
+#credentials .cred-card .cred-art,#credentials .cred-card .cred-art:not(.cred-campus){grid-row:1 / span 3!important;height:auto!important;min-height:0!important;align-self:center}
+#credentials .cred-heading > p:last-child{margin-top:4px!important}
+@media (pointer:coarse){#credentials .cred-heading .cred-detail-trigger{min-height:0!important;padding-block:10px;margin-block:-10px}}

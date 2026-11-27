@@ -54,7 +54,7 @@ export default function Credentials() {
       <div className="wrap py-16 md:py-32">
         <h2 className="font-display text-[clamp(36px,4vw,56px)] font-bold uppercase leading-none">Creden<span className="title-accent">tials</span></h2>
         <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-smoke">
-          Four standalone industry certifications earned, one stackable credential, and one certification in progress. Select a certification title for its badge, skills, projects and sharing options.
+          Earned certifications, each with a way to verify it. Tap a name for its skills and projects.
         </p>
 
         <ul className="cred-grid mt-8">
@@ -106,26 +106,11 @@ export default function Credentials() {
             <div className="cred-actions"><span className="cred-status">📅 Final semester</span></div>
           </li>
         </ul>
-        <details className="cred-explore">
-          <summary>Certification journey <span aria-hidden="true">+</span></summary>
-          <div className="cred-explore-body">
-            <ol className="cred-timeline">
-              <li><time dateTime="2025-03">Mar 2025</time><a href="#credential-security-plus">Security+</a></li>
-              <li><time dateTime="2026-03">Mar 2026</time><div><a href="#credential-pentest-plus">PenTest+</a> · <a href="#credential-cnvp">CNVP</a> (stackable)</div></li>
-              <li><time dateTime="2026-03-26">Mar 26, 2026</time><a href="#credential-psaa">Practical SOC Analyst Associate</a></li>
-            </ol>
-            <p className="cred-detail-note"><a href="#credential-ccna">CCNA</a> is earned; its issue date is not listed. <a href="#credential-aws-security">AWS Security Specialty</a> is in progress. <a href="#credential-degree">B.S. Cybersecurity</a> is expected December 2026.</p>
-          </div>
-        </details>
-        <details className="cred-explore">
-          <summary>How the CompTIA credentials connect <span aria-hidden="true">+</span></summary>
-          <div className="cred-explore-body">
-            <div className="cred-combination"><a href="#credential-security-plus">Security+</a><span aria-hidden="true">+</span><a href="#credential-pentest-plus">PenTest+</a><span aria-hidden="true">→</span><a href="#credential-cnvp">CNVP</a></div>
-            <p className="cred-detail-note">CNVP is a stackable credential awarded from the qualifying Security+ and PenTest+ certifications; it does not require a separate exam.</p>
-          </div>
-        </details>
-        <p className="mt-4 max-w-[62ch] text-[13px] leading-relaxed"><a href="https://www.credly.com/users/joseph-allan-kamara" target="_blank" rel="noopener noreferrer" className="text-[#9bdcff] underline underline-offset-2">View all credentials on Credly ↗</a></p>
-        <p className="mt-3 max-w-[62ch] text-[12px] leading-relaxed text-smoke">Issuer lookup requires the individual verification code. <a href={requestProof("professional certifications")} className="text-[#9bdcff] underline underline-offset-2">Request verification links or codes</a> if needed.</p>
+        <p className="cred-footer">
+          <a href="https://www.credly.com/users/joseph-allan-kamara" target="_blank" rel="noopener noreferrer">View all on Credly ↗</a>
+          <span aria-hidden="true">·</span>
+          <a href={requestProof('professional certifications')}>Request verification codes ↗</a>
+        </p>
       </div>
     </section>
   )
