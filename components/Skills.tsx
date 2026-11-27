@@ -51,7 +51,7 @@ function Artwork({skill,cat,large=false}:{skill:Skill;cat:SkillCategory;large?:b
 }
 function projectFor(id:string) {return projects.find(p=>p.id===id && p.placement)}
 function Proof({skill,onNavigate}:{skill:Skill;onNavigate?:()=>void}) {
- return <div className={styles.proofs}>{skill.projects?.map(id=>{const p=projectFor(id);return p?<Link key={id} onClick={onNavigate} href={'/projects/'+id} className="sk-proof sk-proof-link">{PROJECT_NAMES[id]||p.title} ↗</Link>:null})}{skill.certs?.map(c=>CERTS[c]?<Link key={c} onClick={onNavigate} href={'/#'+CERTS[c]} className="sk-proof sk-proof-link">{c} ↗</Link>:<span key={c} className="sk-proof">{c}</span>)}</div>
+ return <div className={styles.proofs}>{skill.projects?.map(id=>{const p=projectFor(id);return p?<Link key={id} onClick={onNavigate} href={'/projects/'+id} className={'sk-proof sk-proof-link '+styles.proj} title="Project evidence"><span aria-hidden="true">🛠️</span>{PROJECT_NAMES[id]||p.title} ↗</Link>:null})}{skill.certs?.map(c=>CERTS[c]?<Link key={c} onClick={onNavigate} href={'/#'+CERTS[c]} className={'sk-proof sk-proof-link '+styles.cert} title="Certification coverage"><span aria-hidden="true">🏅</span>{c} ↗</Link>:<span key={c} className={'sk-proof '+styles.cert}><span aria-hidden="true">🏅</span>{c}</span>)}</div>
 }
 function Preview({project:p}:{project:Project}) {
  const source=p.screenshot||p.evidenceImages?.[0]?.src
@@ -72,7 +72,22 @@ export default function Skills() {
  const dialog=useRef<HTMLDialogElement>(null)
  const tabs=useRef<(HTMLButtonElement|null)[]>([])
  const lastFocus=useRef<HTMLElement|null>(null)
+ const tabsBox=useRef<HTMLDivElement>(null)
  const role=useRole()
+ // Sliding highlight: follows the active tab (vertical list on desktop, swipeable chips on phones)
+ useEffect(()=>{
+  const box=tabsBox.current, el=tabs.current[SKILL_CATEGORIES.findIndex(c=>c.id===active)]
+  if(!box||!el)return
+  const place=()=>{
+   box.style.setProperty('--ind-y',el.offsetTop+'px');box.style.setProperty('--ind-h',el.offsetHeight+'px')
+   box.style.setProperty('--ind-x',el.offsetLeft+'px');box.style.setProperty('--ind-w',el.offsetWidth+'px')
+   box.style.setProperty('--ind-accent',ACCENTS[active]||'#90baff')
+  }
+  place()
+  if(box.scrollWidth>box.clientWidth+4)box.scrollTo({left:el.offsetLeft-box.clientWidth/2+el.offsetWidth/2,behavior:'smooth'})
+  const ro=new ResizeObserver(place);ro.observe(box)
+  return()=>ro.disconnect()
+ },[active])
  useEffect(()=>{if(role&&ROLE_CATEGORY[role])setActive(ROLE_CATEGORY[role])},[role])
  const chosenRole=ROLES.find(r=>r.id===recruiter)
  const cat=SKILL_CATEGORIES.find(c=>c.id===active)||SKILL_CATEGORIES[0]
@@ -97,14 +112,15 @@ export default function Skills() {
      {searching&&<button className={styles.reset} onClick={()=>{setQuery('');setRecruiter('')}}>Reset ×</button>}
    </div>
    <div className={styles.layout}>
-    <div className={styles.tabs} role="tablist" aria-label="Skill categories" onKeyDown={onKey}>
-      {SKILL_CATEGORIES.map((c,i)=><button type="button" key={c.id} id={'skill-tab-'+c.id} ref={el=>{tabs.current[i]=el}} role="tab" tabIndex={c.id===active?0:-1} aria-selected={c.id===active&&!searching} aria-controls="skill-panel" className={styles.tab} data-active={c.id===active&&!searching} onClick={()=>choose(c.id)} style={artStyle(c)}><Icon name={c.icon} className={styles.tabIcon}/><span>{c.title}</span><Icon name={c.icon} className={styles.tabWatermark}/><small>{c.skills.length}</small></button>)}
+    <div ref={tabsBox} className={styles.tabs} role="tablist" aria-label="Skill categories" onKeyDown={onKey} data-searching={searching}>
+      <span className={styles.indicator} aria-hidden="true"/>
+      {SKILL_CATEGORIES.map((c,i)=><button type="button" key={c.id} id={'skill-tab-'+c.id} ref={el=>{tabs.current[i]=el}} role="tab" tabIndex={c.id===active?0:-1} aria-selected={c.id===active&&!searching} aria-controls="skill-panel" className={styles.tab} data-active={c.id===active&&!searching} onClick={()=>choose(c.id)} style={artStyle(c)}><Icon name={c.icon} className={styles.tabIcon}/><span className={styles.tabText}><b>{c.title}</b><em>{c.skills.slice(0,3).map(x=>x.name).join(' · ')}</em></span><Icon name={c.icon} className={styles.tabWatermark}/></button>)}
     </div>
     <div id="skill-panel" role={searching?'region':'tabpanel'} aria-labelledby={searching?undefined:'skill-tab-'+cat.id} aria-label={searching?'Skill search results':undefined} className={styles.panel}>
      <div className={styles.heading} style={artStyle(cat)}><Icon name={cat.icon}/><div><h3>{searching?'Matching skills':cat.title}</h3><p>{searching?shown.length+' skill'+(shown.length===1?'':'s')+(chosenRole?' · '+chosenRole.label:'') :cat.summary}</p></div></div>
      {searching&&chosenRole&&<p className={styles.note}>Role filters match subject areas, not measured proficiency.</p>}
      {!searching&&<details className={styles.relationship}><summary>How these skills connect <span aria-hidden="true">+</span></summary><p>Illustrative technical workflow — not a claim that every step was deployed together.</p><div className={styles.nodes}>{(FLOWS[cat.id]||[]).map((name,i)=>{const s=cat.skills.find(s=>s.name===name);return s?<div key={name}>{i>0&&<span aria-hidden="true">→</span>}<button onClick={()=>open(cat,s)}>{name}</button></div>:null})}</div></details>}
-     <ul className={styles.cards}>{shown.map(({cat:c,skill:s})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}><Artwork cat={c} skill={s}/><div className={styles.cardContent}><div className={styles.meta}>{searching&&<span>{c.title}</span>}<span className={'sk-ev '+ev.cls}>{ev.text}</span></div><button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog">{s.name}<span aria-hidden="true">↗</span></button><p>{s.what}</p><Proof skill={s}/></div></li>})}</ul>
+     <ul className={styles.cards}>{shown.map(({cat:c,skill:s})=>{const ev=evidence(s);return <li className={styles.card} key={c.id+'-'+s.name} style={artStyle(c)}>{BRAND[s.name]&&<Artwork cat={c} skill={s}/>}<div className={styles.cardContent}><div className={styles.meta}>{searching&&<span>{c.title}</span>}<span className={'sk-ev '+ev.cls}>{ev.text}</span></div><button className={styles.skillName} onClick={()=>open(c,s)} aria-haspopup="dialog">{s.name}<span aria-hidden="true">↗</span></button><p>{s.what}</p><Proof skill={s}/></div></li>})}</ul>
      {!shown.length&&<div className={styles.empty}>No matching skills. Try a different search or reset the role filter.</div>}
     </div>
    </div>
