@@ -109,8 +109,27 @@ export function projectFromSources(sources: Passage[]) {
   return null
 }
 
+const UNCONFIRMED = /10,000\+|95%\+/
+const firstSentences = (t?: string, n = 2) => (t || '').replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter((x) => x && !UNCONFIRMED.test(x)).slice(0, n).join(' ')
+
+/** In-chat proof card: media when the project has it, otherwise its verified result, stack and status. */
 export function projectCard(p: (typeof projects)[number]) {
-  return { title: p.title, subtitle: p.subtitle, href: `/projects/${p.id}`, image: p.screenshot || null, status: p.status || 'case-study', stack: p.stack.slice(0, 5) }
+  return {
+    title: p.title, subtitle: p.subtitle, href: `/projects/${p.id}`,
+    image: p.screenshot || null, video: p.video || null, github: p.github || null,
+    result: firstSentences(p.outcome || p.impact).slice(0, 260),
+    status: p.status || 'case-study', stack: p.stack.slice(0, 5),
+  }
+}
+
+/** The project an answer points to, from its proof links. */
+export function projectFromLinks(links: { href: string }[]) {
+  for (const l of links) {
+    const m = l.href.match(/^\/projects\/([^/#?]+)/)
+    const p = m && projects.find((x) => x.id === m[1] && x.placement)
+    if (p) return p
+  }
+  return null
 }
 
 /** The best place on the site to show for this answer (a section anchor if one fits). */

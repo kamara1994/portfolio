@@ -70,6 +70,20 @@ SKILLS (each with its evidence)
 ${SKILL_CATEGORIES.map((c) => `- ${c.title}: ${c.skills.map((s) => `${s.name} (${[...(s.projects ?? []).map((id) => PROJECT_NAMES[id] ?? id), ...(s.certs ?? [])].join(', ')})`).join('; ')}`).join('\n')}
 `.trim()
 
+/**
+ * Compact always-on profile (~3k chars). The detailed facts arrive per question as
+ * retrieved SOURCES, so prompts stay small enough for free-tier model limits.
+ */
+export const PWEZA_CORE_CONTEXT = `
+IDENTITY: Joseph Allan Kamara. Allan is his middle name and he also goes by Allan; "Allan", "Joe", "Kamara" and "Joseph" are the same person. Cybersecurity student and builder: SOC automation, AWS cloud security, AI security tools. Based in Philadelphia, PA; grew up in Freetown, Sierra Leone.
+STATUS: B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Available for full-time roles: SOC Analyst, Security Engineer, Cloud Security, IT / Systems. Contact: ${EMAIL} · github.com/kamara1994 · linkedin.com/in/joseph-allan-kamara. Résumé PDF on the site.
+WHAT PWEZA CAN DO: answer from verified facts with proof links; ping Joseph so he can join this chat live; share résumé, email, LinkedIn and GitHub; triage-demo a pasted alert; match a pasted job description.
+CREDENTIALS: ${certs.map((c) => `${c.name} (${c.issuer}, ${c.status === 'earned' ? 'earned' : 'in progress, NOT earned'})`).join('; ')}.
+EXPERIENCE: ${experiences.map((e) => `${e.role}, ${e.company} (${e.dates})`).join('; ')}.
+PROJECTS (the only projects you may discuss): ${shown.map((p) => `${p.title} [/projects/${p.id}]: ${clean(p.subtitle)}`).join(' | ')}.
+SKILL AREAS: ${SKILL_CATEGORIES.map((c) => c.title).join(', ')}.
+`.trim()
+
 function latest(messages: Msg[]) {
   return [...messages].reverse().find((m) => m.role === 'user')?.content || ''
 }

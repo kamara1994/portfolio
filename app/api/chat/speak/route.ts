@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'anon'
   const n = await safe(async (r) => { const k = `speak:${ip}:${Math.floor(Date.now() / 60_000)}`; const v = await r.incr(k); await r.expire(k, 120); return v }, 0)
   if (n > 30) return NextResponse.json({ audio: null, error: 'slow-down' }, { status: 429 })
-  const res = await synthesizeSpeech(text)
+  const lang = typeof b.lang === 'string' && /^[a-z]{2}$/.test(b.lang) ? b.lang : undefined
+  const res = await synthesizeSpeech(text, lang)
   return NextResponse.json({ audio: res.audio ?? null })
 }

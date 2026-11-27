@@ -1,3 +1,4 @@
+import { isEvalRequest } from '@/lib/pweza/eval-flag'
 import { sendSms } from '@/lib/integrations/sms'
 import type { NextRequest } from 'next/server'
 import { tgConfigured, sendMessage, esc } from './telegram'
@@ -12,7 +13,7 @@ import { linkChat, touch } from './live'
 const HIRING = /\b(hire|hiring|recruit|interview|available|availability|salary|rate|resume|résumé|cv|clearance|relocat|start date|full[- ]time|intern|contract|position|role|job|offer|reach|contact|email|phone|linkedin)\b/i
 
 export async function notifyChat(req: NextRequest, question: string, answer: string, turn: number, sid?: string) {
-  if (!tgConfigured() || !question) return
+  if (!tgConfigured() || !question || isEvalRequest(req)) return
   try {
     const settings = await getSettings()
     await Promise.all([bump('chats', settings.tz), logQuestion(question, settings.tz)])

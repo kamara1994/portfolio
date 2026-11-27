@@ -33,6 +33,9 @@ const AVG = DOCS.reduce((a, d) => a + d.toks.length, 0) / Math.max(1, DOCS.lengt
 const DF = new Map<string, number>()
 for (const d of DOCS) new Set(d.toks).forEach((t) => DF.set(t, (DF.get(t) || 0) + 1))
 
+const BROAD = /\b(different|special|unique|stand(s)? out|strength|strongest|best|why (should|would)|why hire|hire him|good fit|overview|summary|summari[sz]e|tell me about (him|joseph)|who is|what does (he|joseph) do|background|impress)/i
+const FLAGSHIP = ['blue-soc-p8', 'blue-x', 'fortress-v2', 'pweza-voice-agent']
+
 export function retrieve(query: string, k = 6, extra: Passage[] = []): Passage[] {
   const q = tokens(query)
   const expanded = q.concat(q.flatMap((t) => (SYNONYMS[t] || []).map(stem)))
@@ -50,6 +53,11 @@ export function retrieve(query: string, k = 6, extra: Passage[] = []): Passage[]
     return { p: d.p, s }
   }).filter((x) => x.s > 0).sort((a, b) => b.s - a.s)
   const picked = scored.slice(0, k).map((x) => x.p)
+  // Broad "who is he / why him" questions: ground them in the flagship project summaries too,
+  // so the slim prompt answers them as richly as the old full knowledge base did.
+  if (BROAD.test(query)) {
+    for (const p of CORPUS.filter((x) => FLAGSHIP.includes(x.id))) if (!picked.includes(p)) picked.push(p)
+  }
   // Always ground identity/availability questions even when wording is unusual.
   if (!picked.length) return CORPUS.filter((p) => p.id === 'identity' || p.id === 'availability')
   return picked
