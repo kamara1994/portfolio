@@ -1276,3 +1276,10 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 /* ---------- Phone/tablet hero: name | portrait | focus, like desktop ---------- */
 .p-hero-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:8px}
 @media (min-width:640px){.p-hero-row{gap:20px}}
+.more-library{color:#9fc2ff;white-space:nowrap;text-decoration:underline;text-decoration-color:rgba(159,194,255,.35);text-underline-offset:3px}
+.more-library:hover{color:#fff;text-decoration-color:#fff}
+.more-library-row{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 0 6px;text-align:center}
+.more-library-row p{font-size:14px;color:rgba(232,238,248,.55)}
+.more-library-cta{display:inline-flex;align-items:center;gap:8px;min-height:48px;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9fc2ff;border-bottom:1px solid rgba(159,194,255,.35)}
+.more-library-cta:hover{color:#fff;border-color:#fff}
+@media (pointer:coarse){.more-library{display:inline-flex;align-items:center;min-height:44px}}

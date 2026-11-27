@@ -117,7 +117,7 @@ export default function Work() {
               <span>{all ? 'Show fewer projects' : `Show ${extra.length} more projects`}</span>
               <svg aria-hidden="true" viewBox="0 0 24 24" className="more-caret"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-            {!all && <p className="more-teaser">{extra.map((p) => p.title).join(' · ')}</p>}
+            {!all && <p className="more-teaser">{extra.map((p) => p.title).join(' · ')} · <Link href="/projects" className="more-library">Full project library <span aria-hidden="true">↗</span></Link></p>}
           </div>
 
           <div id="more-projects" className="more-panel" data-open={all} ref={panel}>
@@ -143,11 +143,14 @@ export default function Work() {
                   </li>
                 ))}
               </ul>
+              <div className="more-library-row">
+                <Link href="/projects" className="more-library-cta">Explore the full project library <span aria-hidden="true">↗</span></Link>
+                <p>Coursework labs in AWS, networking and security, with evidence and limitations.</p>
+              </div>
             </div>
           </div>
         </div>
       )}
-      <div className="wrap project-wrap pb-12"><div className="flex flex-wrap items-center justify-between gap-5 rounded-xl border border-line bg-panel/60 p-6 sm:p-8"><div><p className="text-sm text-signal">Engineering project library</p><h2 className="mt-2 font-display text-3xl font-bold uppercase">Explore the complete work</h2><p className="mt-2 max-w-[60ch] text-smoke">Software projects, security investigations, cloud architecture and networking coursework, with evidence and limitations.</p></div><Link href="/projects" className="btn-primary">Explore project library ↗</Link></div></div>
     </section>
   )
 }
