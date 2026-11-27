@@ -68,20 +68,38 @@ async function claude(system: string, messages: Msg[], maxTokens: number): Promi
   return t
 }
 
-/** Streams the answer through `onDelta`. Returns the full text and the provider failures seen. */
+/**
+ * Streams the answer through `onDelta`. Returns the full text and the provider failures seen.
+ * Big prompts (the full knowledge base plus sources is ~10k tokens) blow through Groq's free-tier
+ * tokens-per-minute limit (the 8B fallback can't even accept one), so for those we try Gemini
+ * first, whose free tier handles them easily. Any provider that fails just falls through.
+ */
 export async function streamAnswer(system: string, messages: Msg[], onDelta: (t: string) => void, maxTokens = 320) {
   const failures: string[] = []
-  if (process.env.GROQ_API_KEY) {
-    for (const model of [BIG, FAST]) {
+  const approxTokens = Math.ceil((system.length + messages.reduce((n, m) => n + m.content.length, 0)) / 4) + maxTokens
+  const big = approxTokens > 5500
+
+  const tryGroq = async () => {
+    if (!process.env.GROQ_API_KEY) return null
+    for (const model of big ? [BIG] : [BIG, FAST]) {
       let sent = false
       try { return { text: await groqStream(model, system, messages, maxTokens, (t) => { sent = true; onDelta(t) }), failures } }
       catch (e: any) { failures.push(e?.message || String(e)); if (sent) return { text: '', failures, partial: true } }
     }
+    return null
   }
-  for (const [key, fn, name] of [[process.env.GOOGLE_AI_API_KEY, gemini, 'Gemini'], [process.env.ANTHROPIC_API_KEY, claude, 'Claude']] as const) {
-    if (!key) continue
+  const tryOne = async (key: string | undefined, fn: typeof gemini | typeof claude, name: string) => {
+    if (!key) return null
     try { const t = await fn(system, messages, maxTokens); onDelta(t); return { text: t, failures } }
-    catch (e: any) { failures.push(`${name}: ${e?.message || e}`) }
+    catch (e: any) { const m = e?.message || String(e); failures.push(m.startsWith(name) ? m : `${name}: ${m}`); return null }
+  }
+
+  const order = big
+    ? [() => tryOne(process.env.GOOGLE_AI_API_KEY, gemini, 'Gemini'), tryGroq, () => tryOne(process.env.ANTHROPIC_API_KEY, claude, 'Claude')]
+    : [tryGroq, () => tryOne(process.env.GOOGLE_AI_API_KEY, gemini, 'Gemini'), () => tryOne(process.env.ANTHROPIC_API_KEY, claude, 'Claude')]
+  for (const step of order) {
+    const r = await step()
+    if (r) return r
   }
   return { text: '', failures }
 }
