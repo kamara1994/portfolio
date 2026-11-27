@@ -7,6 +7,11 @@ import { BLUR } from '@/lib/blur'
 // shows until the real image paints over it. No JavaScript involved.
 const ph = (src?: string) => (src && BLUR[src] ? { backgroundImage: `url(${BLUR[src]})`, backgroundSize: 'cover', backgroundPosition: 'top center' } : undefined)
 
+/** First component of each documented architecture step, e.g. "Splunk → Alert Trigger" gives "Splunk". */
+function steps(arch?: string[]) {
+  return (arch || []).slice(0, 6).map((a) => a.split('→')[0].replace(/\s*\(.*?\)\s*/g, ' ').trim()).filter(Boolean)
+}
+
 /** Plays the project's 10-second demo loop; falls back to its screenshot, then to a quiet title card. */
 export default function ProjectMedia({ project, priority = false, controls = true }: { project: Project; priority?: boolean; controls?: boolean }) {
   const { video, screenshot, title } = project
@@ -42,6 +47,21 @@ export default function ProjectMedia({ project, priority = false, controls = tru
         decoding="async"
         style={ph(screenshot)}
       />
+    )
+  }
+
+  const flow = steps(project.architecture)
+  if (flow.length >= 3) {
+    return (
+      <div className="pm-flow" role="img" aria-label={`${title} architecture diagram: ${flow.join(', then ')}`}>
+        <span className="pm-flow-kicker">How it works · diagram</span>
+        <ol className="pm-flow-nodes" aria-hidden="true">
+          {flow.map((n, i) => (
+            <li key={i}><b>{String(i + 1).padStart(2, '0')}</b><span>{n}</span></li>
+          ))}
+        </ol>
+        <span className="pm-flow-note">Drawn from the case study architecture, not a screenshot</span>
+      </div>
     )
   }
 

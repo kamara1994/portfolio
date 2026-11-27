@@ -1283,3 +1283,24 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .more-library-cta{display:inline-flex;align-items:center;gap:8px;min-height:48px;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9fc2ff;border-bottom:1px solid rgba(159,194,255,.35)}
 .more-library-cta:hover{color:#fff;border-color:#fff}
 @media (pointer:coarse){.more-library{display:inline-flex;align-items:center;min-height:44px}}
+
+/* Project card buttons: always side by side */
+.card-btns{display:flex;flex-wrap:wrap;gap:12px}
+.card-btns>a{white-space:nowrap}
+@media (min-width:640px){.card-btns>a{padding-inline:24px}}
+@media (min-width:1024px) and (max-width:1279px){.card-btns>a{padding-inline:18px;font-size:12.5px;letter-spacing:.12em}}
+@media (max-width:639px){.card-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card-btns>a{padding-inline:8px!important;letter-spacing:.1em!important}}
+
+/* Project cards: headline result in brighter text */
+.card-result{color:rgba(238,244,252,.95);font-weight:500}
+
+/* Architecture diagram stand-in when a project has no screenshot or video yet */
+.pm-flow{container-type:inline-size;position:relative;display:flex;flex-direction:column;justify-content:center;gap:0;width:100%;height:100%;padding:4% 5%;background:radial-gradient(ellipse at 20% 0%,rgba(80,130,255,.14),transparent 60%),radial-gradient(ellipse at 100% 100%,rgba(70,200,255,.08),transparent 55%),#0a1220}
+.pm-flow::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(144,186,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(144,186,255,.05) 1px,transparent 1px);background-size:6cqw 6cqw;pointer-events:none}
+.pm-flow-kicker{position:relative;margin-bottom:4cqw;font-size:clamp(8px,2.1cqw,12px);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#7fb0ff}
+.pm-flow-nodes{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3cqw 4.5cqw;counter-reset:n}
+.pm-flow-nodes li{position:relative;display:flex;align-items:center;gap:1.8cqw;min-height:12.5cqw;padding:1.8cqw 2.4cqw;border:1px solid rgba(144,186,255,.28);border-radius:2cqw;background:rgba(16,28,48,.85);box-shadow:0 0 0 1px rgba(0,0,0,.2),0 8px 24px -14px rgba(80,140,255,.6)}
+.pm-flow-nodes li b{flex:none;font-family:ui-monospace,monospace;font-size:clamp(8px,2cqw,12px);color:#6fd6ff}
+.pm-flow-nodes li span{font-size:clamp(9px,2.45cqw,15px);font-weight:600;line-height:1.2;color:#e6eefc}
+.pm-flow-nodes li:not(:nth-child(3n)):not(:last-child)::after{content:'';position:absolute;right:-3.6cqw;top:50%;width:2.6cqw;height:1px;background:linear-gradient(90deg,rgba(111,214,255,.2),#6fd6ff)}
+.pm-flow-note{position:relative;margin-top:4cqw;font-size:clamp(8px,1.9cqw,11px);color:rgba(232,238,248,.45)}

@@ -27,6 +27,11 @@ function splitSub(t: string): [string, string] {
   return i === -1 ? [t, ''] : [t.slice(0, i), t.slice(i + 3)]
 }
 const more = projects.filter((p) => p.placement === 'more')
+/** Split the impact text after its first sentence so the headline result can be shown brighter. */
+function lead(t: string): [string, string] {
+  const m = t.match(/^(.+?[.!?])\s+(?=[A-Z])/)
+  return m ? [m[1], t.slice(m[0].length)] : [t, '']
+}
 
 export default function Work() {
   const role = useRole()
@@ -88,16 +93,16 @@ export default function Work() {
               </h3>
               <p className="mt-3 max-w-[46ch] text-[17px] leading-relaxed text-snow/85">{splitSub(p.subtitle)[0]}</p>
               {splitSub(p.subtitle)[1] && <p className="mt-1 text-[15px] text-smoke">{splitSub(p.subtitle)[1]}</p>}
-              <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-smoke">{p.impact}</p>
+              <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-smoke"><span className="card-result">{lead(p.impact)[0]}</span>{lead(p.impact)[1] && <> {lead(p.impact)[1]}</>}</p>
               <p className="mt-3 hidden text-[13px] leading-relaxed text-smoke sm:block">
                 {p.stack.slice(0, 6).join(', ')}
               </p>
-              <div className="btn-row card-actions mt-5 flex flex-wrap gap-3">
+              <div className="btn-row card-actions card-btns mt-5">
                 <Link href={`/projects/${p.id}`} className="btn-primary">How it works</Link>
-                <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>
-                {p.sourceAccess && <span className="self-center text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
+                {!p.sourceAccess && <Link href={`/projects/${p.id}#source-code`} className="btn-ghost">View source code</Link>}
                 {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="btn-ghost">Live demo</a>}
               </div>
+              {p.sourceAccess && <p className="mb-4 mt-3 text-sm text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</p>}
             </div>
 
             <div className={`order-first min-w-0 lg:col-span-7 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>
@@ -133,7 +138,7 @@ export default function Work() {
                         <p className="mt-2 text-smoke">{splitSub(p.subtitle)[0]}</p>
                         <div className="card-actions mt-4 flex flex-wrap items-center gap-4 text-sm">
                           <Link href={`/projects/${p.id}`} className="text-signal">How it works</Link>
-                          <Link href={`/projects/${p.id}#source-code`} className="text-signal">View source code</Link>
+                          {!p.sourceAccess && <Link href={`/projects/${p.id}#source-code`} className="text-signal">View source code</Link>}
                           {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer" className="text-signal">Live demo</a>}
                           {p.sourceAccess && <span className="text-smoke">{p.sourceAccess === 'private' ? 'Private source · available on request' : 'Source not published'}</span>}
                         </div>
