@@ -31,7 +31,7 @@ const ICONS:Record<string,string> = {
 const BRAND:Record<string,string> = {
  'Splunk SIEM':'splunk','Terraform IaC':'terraform','CloudWatch Logs':'amazonaws','Metric Filters':'amazonaws','CloudWatch Alarms':'amazonaws','Amazon SNS':'amazonaws','AWS CLI':'amazonaws','AWS Lambda':'amazonaws','Palo Alto NGFW':'paloaltonetworks','OSPF Routing':'cisco','VRRP Redundancy':'cisco','LACP EtherChannel':'cisco','VLANs and VTP':'cisco','SSH Hardening':'cisco','DHCP and STP':'cisco','Metasploit':'metasploit','Burp Suite':'burpsuite','PyTorch':'pytorch','Python':'python','TypeScript and Next.js':'typescript','Flask':'flask','Docker and Linux':'docker','Wireshark':'wireshark',
 }
-const CERTS:Record<string,string> = {'TCM PSAA':'credential-psaa','Security+':'credential-security-plus','PenTest+':'credential-pentest-plus',CCNA:'credential-ccna'}
+const CERTS:Record<string,string> = {'TCM PSAA':'credential-psaa','Security+':'credential-security-plus','PenTest+':'credential-pentest-plus',CCNA:'credential-ccna',CNVP:'credential-cnvp'}
 const FLOWS:Record<string,string[]> = {
  secops:['Splunk SIEM','SIEM Detection Rules','Alert Triage','Incident Response'],
  cloud:['Terraform IaC','CloudWatch Logs','Metric Filters','CloudWatch Alarms','Amazon SNS'],
