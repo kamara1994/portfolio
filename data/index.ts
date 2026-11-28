@@ -39,15 +39,6 @@ export const certs: Cert[] = [
     expires: 'March 2029',
   },
   {
-    name: 'Network Vulnerability Assessment Professional (CNVP)',
-    issuer: 'CompTIA',
-    status: 'earned',
-    stackable: true,
-    credlyUrl: 'https://www.credly.com/badges/a2442824-312d-400c-8ae4-a4a843125025/public_url',
-    date: 'March 2026',
-    expires: 'March 2029',
-  },
-  {
     name: 'AWS Security Specialty',
     issuer: 'Amazon Web Services',
     status: 'progress',

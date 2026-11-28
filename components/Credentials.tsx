@@ -21,7 +21,6 @@ const META: Record<string, { img?: string; tile?: { top: string; main: string; b
   CCNA: { img: '/certs/ccna.png', area: 'Routing, switching, VLANs, OSPF, SSH hardening' },
   'Practical SOC Analyst Associate (PSAA)': { img: '/certs/tcm-psaa.webp', when: 'Mar 2026', area: 'SOC operations, alert triage, incident response' },
   'PenTest+': { img: '/certs/pentest-plus.webp', when: 'Mar 2026', area: 'Penetration testing and vulnerability assessment' },
-  'Network Vulnerability Assessment Professional (CNVP)': { img: '/certs/cnvp.png', when: 'Mar 2026', area: 'Stackable credential · Security+ and PenTest+ · Vulnerability assessment and penetration testing' },
   'AWS Security Specialty': { tile: { top: 'AWS', main: 'SCS', bg: '#1B2433' }, area: 'Studying now: AWS security services and design' },
 }
 
@@ -32,13 +31,12 @@ const DETAIL: Record<string, { id: string; skills: string[]; projectIds: string[
   CCNA: { id: 'credential-ccna', skills: ['IP connectivity','Routing and switching','VLANs','Network access','Network security','Automation fundamentals'], projectIds: ['salone-aegis','enterprise-networking','wireless-vlan-ssid'] },
   'Practical SOC Analyst Associate (PSAA)': { id: 'credential-psaa', skills: ['Alert triage','Security monitoring','Log analysis','Incident investigation','Threat detection'], projectIds: ['cyber375-final-ir','cyber375-splunk','blue-soc-p8'] },
   'PenTest+': { id: 'credential-pentest-plus', skills: ['Reconnaissance','Vulnerability analysis','Penetration testing','Exploitation concepts','Reporting'], projectIds: ['cyber375-vuln-assess','cyber375-network-threat'] },
-  'Network Vulnerability Assessment Professional (CNVP)': { id: 'credential-cnvp', skills: ['Network security','Vulnerability assessment','Reconnaissance','Risk management','Penetration testing'], projectIds: ['cyber375-vuln-assess','cyber375-network-threat'] },
   'AWS Security Specialty': { id: 'credential-aws-security', skills: ['IAM','Cloud logging','Network security','Data protection'], projectIds: ['aws-iam-security','aws-vpc-peering','cloud-cafe-architecture'] },
 }
 const publicCredential = (c: typeof certs[number]) => c.credlyUrl || (c.name === 'Practical SOC Analyst Associate (PSAA)' ? VERIFY[c.name].href : undefined)
 
 // Strongest first for SOC, security and cloud roles
-const ORDER = ['Security+', 'Practical SOC Analyst Associate (PSAA)', 'CCNA', 'PenTest+', 'Network Vulnerability Assessment Professional (CNVP)', 'AWS Security Specialty']
+const ORDER = ['Security+', 'Practical SOC Analyst Associate (PSAA)', 'CCNA', 'PenTest+', 'AWS Security Specialty']
 const rank = (n: string) => { const i = ORDER.indexOf(n); return i === -1 ? 99 : i }
 const PHONE_FIRST = 3
 

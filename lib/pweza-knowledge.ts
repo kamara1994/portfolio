@@ -18,8 +18,7 @@ const shown = projects.filter((p) => p.placement)
 const byId = (id: string) => shown.find((p) => p.id === id)
 
 /** Figures still awaiting Joseph's confirmation; kept out of the assistant entirely. */
-const UNCONFIRMED_FIGURES = /10,000\+|95%\+/
-const verifiedBullets = (bullets: string[]) => bullets.filter((b) => !UNCONFIRMED_FIGURES.test(b))
+const verifiedBullets = (bullets: string[]) => bullets
 
 const projectLink = (id: string): ProofLink => ({ label: PROJECT_NAMES[id] ?? byId(id)?.title ?? id, href: `/projects/${id}` })
 const LINKS = {
@@ -32,7 +31,7 @@ const LINKS = {
 }
 
 const clean = (x?: string) => (x || '').replace(/\s+/g, ' ').trim()
-const verifiedText = (x?: string) => clean(x).split(/(?<=[.!?])\s+/).filter((sent) => !UNCONFIRMED_FIGURES.test(sent)).join(' ')
+const verifiedText = (x?: string) => clean(x)
 
 export const PWEZA_KNOWLEDGE_CONTEXT = `
 IDENTITY (names visitors may use)
@@ -47,7 +46,7 @@ WHAT YOU (PWEZA) CAN DO FOR VISITORS
 
 JOSEPH SNAPSHOT
 - Joseph Allan Kamara. Cybersecurity student and builder: SOC automation, AWS cloud security, AI security tools.
-- Based in Philadelphia, PA; grew up in Freetown, Sierra Leone.
+- Based in Rexburg, Idaho (open to relocation); grew up in Freetown, Sierra Leone.
 - B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Available now for full-time roles.
 - Target roles: SOC Analyst, Security Engineer, Cloud Security, IT / Systems.
 - Contact: ${EMAIL}. GitHub: github.com/kamara1994. LinkedIn: linkedin.com/in/joseph-allan-kamara.
@@ -75,7 +74,7 @@ ${SKILL_CATEGORIES.map((c) => `- ${c.title}: ${c.skills.map((s) => `${s.name} ($
  * retrieved SOURCES, so prompts stay small enough for free-tier model limits.
  */
 export const PWEZA_CORE_CONTEXT = `
-IDENTITY: Joseph Allan Kamara. Allan is his middle name and he also goes by Allan; "Allan", "Joe", "Kamara" and "Joseph" are the same person. Cybersecurity student and builder: SOC automation, AWS cloud security, AI security tools. Based in Philadelphia, PA; grew up in Freetown, Sierra Leone.
+IDENTITY: Joseph Allan Kamara. Allan is his middle name and he also goes by Allan; "Allan", "Joe", "Kamara" and "Joseph" are the same person. Cybersecurity student and builder: SOC automation, AWS cloud security, AI security tools. Based in Rexburg, Idaho (open to relocation); grew up in Freetown, Sierra Leone.
 STATUS: B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Available for full-time roles: SOC Analyst, Security Engineer, Cloud Security, IT / Systems. Contact: ${EMAIL} · github.com/kamara1994 · linkedin.com/in/joseph-allan-kamara. Résumé PDF on the site.
 WHAT PWEZA CAN DO: answer from verified facts with proof links; ping Joseph so he can join this chat live; share résumé, email, LinkedIn and GitHub; triage-demo a pasted alert; match a pasted job description.
 CREDENTIALS: ${certs.map((c) => `${c.name} (${c.issuer}, ${c.status === 'earned' ? 'earned' : 'in progress, NOT earned'})`).join('; ')}.

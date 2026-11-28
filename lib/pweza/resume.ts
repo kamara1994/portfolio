@@ -69,7 +69,7 @@ export async function renderPdf(t: Tailored): Promise<Uint8Array> {
 
   text('Joseph Allan Kamara', M, 22, bold); y -= 16
   para(t.headline || t.role, 11, reg, accent)
-  para('Philadelphia, PA · kamarajosephallan@gmail.com · linkedin.com/in/joseph-allan-kamara · github.com/kamara1994 · josephkamara.vercel.app', 8.6, reg, mute)
+  para('Rexburg, ID · open to relocation · kamarajosephallan@gmail.com · linkedin.com/in/joseph-allan-kamara · github.com/kamara1994 · josephkamara.vercel.app', 8.6, reg, mute)
   y -= 2
   section('Summary'); para(t.summary)
   section('Relevant projects')

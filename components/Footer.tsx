@@ -62,7 +62,7 @@ export default function Footer() {
           </p>
           <p className="foot-status mt-3 flex items-center gap-2.5 text-[15px] text-smoke">
             <span aria-hidden className="status-dot" />
-            Open to full-time roles. Graduating December 2026. Based in Philadelphia.
+            Open to full-time roles. Graduating December 2026. Based in Rexburg, Idaho · open to relocation.
           </p>
         </div>
 
