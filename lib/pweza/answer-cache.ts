@@ -29,7 +29,7 @@ const SEEDS: CachedAnswer[] = [
   },
   {
     q: 'who is joseph what does he do summary overview background',
-    a: "Joseph Allan Kamara (he goes by Allan too) is a cybersecurity student and builder focused on SOC automation, AWS cloud security and AI security tools. He's based in Philadelphia, graduates from BYU-Idaho in December 2026, and is open to SOC, security engineering, cloud security and IT roles.",
+    a: "Joseph Allan Kamara (he goes by Allan too) is a cybersecurity student and builder focused on SOC automation, AWS cloud security and AI security tools. He's based in Rexburg, Idaho (open to relocation), graduates from BYU-Idaho in December 2026, and is open to SOC, security engineering, cloud security and IT roles.",
     links: [{ label: 'His story', href: '/#story' }, { label: 'All work', href: '/#work' }],
     t: 0,
   },

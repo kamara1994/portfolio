@@ -18,7 +18,7 @@ function build(): Passage[] {
   const add = (id: string, title: string, href: string, text: string) => { const t = clean(text); if (t) out.push({ id, title, href, text: t }) }
 
   add('identity', 'About Joseph', '/#story',
-    'Joseph Allan Kamara. Allan is his middle name and he also goes by Allan; Joe and Kamara also refer to him. Cybersecurity student and builder focused on SOC automation, AWS cloud security and AI security tools. Based in Philadelphia, Pennsylvania; grew up in Freetown, Sierra Leone.')
+    'Joseph Allan Kamara. Allan is his middle name and he also goes by Allan; Joe and Kamara also refer to him. Cybersecurity student and builder focused on SOC automation, AWS cloud security and AI security tools. Based in Rexburg, Idaho, open to relocation; grew up in Freetown, Sierra Leone.')
   add('availability', 'Availability & contact', '/#contact',
     `B.S. Cybersecurity at BYU-Idaho, graduating December 2026. Available now for full-time roles: SOC Analyst, Security Engineer, Cloud Security, IT / Systems. Email ${EMAIL}. GitHub github.com/kamara1994. LinkedIn linkedin.com/in/joseph-allan-kamara. Résumé available as a PDF on the site.`)
   add('story', 'His story', '/#story',

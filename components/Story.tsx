@@ -27,7 +27,7 @@ const MILESTONES: Milestone[] = [
   { when: '2026', tag: 'Projects', title: 'BLUE SOC, FORTRESS, BLUE-X, PWEZA', sub: 'Security and AI systems built', color: '#7FA6FF', icon: '🛡️',
     desc: 'AI-assisted SOC automation, an AWS defense lab deployed with Terraform, a PyTorch threat classifier, and PWEZA, a voice-first portfolio agent.' },
   { when: 'Dec 2026', tag: 'Now', title: 'B.S. Cybersecurity', sub: 'Graduating from BYU-Idaho', color: '#4BE3C8', icon: '🚀', now: true,
-    desc: 'Based in Philadelphia and available for SOC Analyst, Security Engineer, Cloud Security, and IT roles.' },
+    desc: 'Based in Rexburg, Idaho, open to relocation, and available for SOC Analyst, Security Engineer, Cloud Security, and IT roles.' },
 ]
 
 export default function Story() {

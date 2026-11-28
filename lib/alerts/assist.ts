@@ -9,7 +9,7 @@ const JOSEPH = () => {
     .slice(0, 8)
     .map((p) => `- ${p.title}: ${p.subtitle}`)
     .join('\n')
-  return `Joseph Allan Kamara — senior Cybersecurity student at BYU-Idaho (graduating December 2026), based in Philadelphia.
+  return `Joseph Allan Kamara — senior Cybersecurity student at BYU-Idaho (graduating December 2026), based in Rexburg, Idaho, open to relocation.
 Certifications: CompTIA Security+, CompTIA PenTest+, Cisco CCNA, TCM Security PSAA (Practical SOC Analyst Associate), AWS Security Specialty.
 Targets: SOC analyst, security engineer, cloud security and IT roles. Portfolio: josephkamara.vercel.app
 Key projects:

@@ -43,7 +43,7 @@ const PERSON_LD = {
   image: `${SITE}/profile/joseph-portrait.jpg`,
   jobTitle: 'Cybersecurity student',
   email: 'mailto:kamarajosephallan@gmail.com',
-  address: { '@type': 'PostalAddress', addressLocality: 'Philadelphia', addressRegion: 'PA', addressCountry: 'US' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Rexburg', addressRegion: 'ID', addressCountry: 'US' },
   alumniOf: { '@type': 'CollegeOrUniversity', name: 'Brigham Young University-Idaho' },
   knowsAbout: ['Security operations', 'SIEM', 'AWS cloud security', 'Terraform', 'Network security', 'Python', 'AI security'],
   hasCredential: ['CompTIA Security+', 'CompTIA PenTest+', 'Cisco CCNA', 'TCM Security Practical SOC Analyst Associate'].map((name) => ({

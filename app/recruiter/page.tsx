@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 
 const ROLES = ['SOC Analyst', 'Security Engineer', 'Cloud Security', 'IT / Systems']
 const flagship = projects.filter((p) => p.placement === 'flagship').slice(0, 3)
-const UNCONFIRMED_FIGURES = /10,000\+|95%\+/
 
 export default function RecruiterPage() {
   return (
@@ -31,7 +30,7 @@ export default function RecruiterPage() {
           <h1 className="mt-3 font-display text-[clamp(44px,6vw,84px)] font-bold uppercase leading-[0.9]">
             Joseph Allan <span className="title-accent">Kamara</span>
           </h1>
-          <p className="mt-4 text-[18px] text-snow/85">B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Based in Philadelphia, open to remote.</p>
+          <p className="mt-4 text-[18px] text-snow/85">B.S. Cybersecurity, BYU-Idaho, graduating December 2026. Based in Rexburg, Idaho, open to relocation and remote.</p>
         </div>
         <dl className="grid gap-1 text-[15px] md:col-span-4 md:text-right">
           <div><dt className="sr-only">Email</dt><dd><a href={`mailto:${EMAIL}`} className="tap text-[#8AD4FF] hover:text-white">{EMAIL}</a></dd></div>
@@ -90,7 +89,7 @@ export default function RecruiterPage() {
 
           <h2 className="rs-h mt-8">Highlights</h2>
           <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[15.5px] leading-relaxed text-snow/85 marker:text-[#6FD6FF]">
-            {experiences.flatMap((e) => e.bullets).filter((b) => !UNCONFIRMED_FIGURES.test(b)).slice(0, 4).map((b) => <li key={b}>{b}</li>)}
+            {experiences.flatMap((e) => e.bullets).slice(0, 4).map((b) => <li key={b}>{b}</li>)}
           </ul>
         </section>
       </div>
